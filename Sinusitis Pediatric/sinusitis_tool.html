@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pediatric Sinusitis Treatment Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; }
+    header {
+      background: #1a5276;
+      color: white;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .disclaimer {
+      background: #fef9e7;
+      border-left: 5px solid #f39c12;
+      margin: 18px auto;
+      max-width: 700px;
+      padding: 14px 18px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .disclaimer strong { display: block; margin-bottom: 6px; color: #b7770d; font-size: 1rem; }
+    .container { max-width: 700px; margin: 0 auto; padding: 10px 16px 50px; }
+    .card {
+      background: white; border-radius: 8px;
+      padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+      margin-bottom: 22px;
+    }
+    .card h2 {
+      font-size: 1.05rem; margin-bottom: 18px;
+      color: #1a5276; border-bottom: 2px solid #d6eaf8;
+      padding-bottom: 8px;
+    }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 4px; font-weight: bold; color: #444; }
+    .hint { font-size: 0.8rem; color: #888; font-weight: normal; margin-left: 6px; }
+    input[type="number"], select {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #bdc3c7; border-radius: 5px;
+      font-size: 0.95rem; background: #fafafa;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none; border-color: #2e86c1; background: #fff;
+    }
+    /* High-risk criteria box */
+    .criteria-box {
+      background: #fef9e7; border-left: 4px solid #f39c12;
+      border-radius: 4px; padding: 10px 14px;
+      margin-bottom: 6px; font-size: 0.85rem; line-height: 1.7;
+    }
+    .criteria-box strong { color: #b7770d; }
+    .btn-row { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+    .btn-primary {
+      background: #1a5276; color: white;
+      border: none; border-radius: 6px;
+      padding: 12px 32px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #154360; }
+    .btn-reset {
+      background: #aab7b8; color: #222;
+      border: none; border-radius: 6px;
+      padding: 12px 24px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-reset:hover { background: #808b96; }
+    .result-box {
+      display: none;
+      border-radius: 6px; padding: 20px 22px;
+      margin-top: 22px; font-size: 0.95rem; line-height: 1.8;
+    }
+    .result-box.visible { display: block; }
+    .result-box.high-risk { background: #fef5ec; border-left: 5px solid #e67e22; }
+    .result-box.low-risk  { background: #eafaf1; border-left: 5px solid #28b463; }
+    .result-box.error-box { background: #fdedec; border-left: 5px solid #e74c3c; color: #c0392b; }
+    .result-box h3 {
+      font-size: 1rem; margin: 16px 0 8px;
+      border-bottom: 1px solid #d6eaf8; padding-bottom: 4px;
+    }
+    .result-box h3:first-child { margin-top: 0; }
+    .result-box .formulation {
+      background: #f7fbff; border: 1px solid #d5e8f7;
+      border-radius: 6px; padding: 12px 16px; margin-bottom: 10px;
+    }
+    .result-box .formulation strong { color: #1a5276; }
+    .result-box ul { margin-left: 20px; }
+    .result-box ul li { margin-bottom: 4px; }
+    .btn-back-bottom {
+      display: none;
+      background: #1a5276; color: white;
+      border: none; border-radius: 6px;
+      padding: 11px 24px; font-size: 0.95rem;
+      cursor: pointer; margin-top: 18px; width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-back-bottom:hover { background: #154360; }
+    .btn-back-bottom.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<header>Pediatric Sinusitis Treatment Calculator</header>
+
+<div class="container">
+
+  <div class="disclaimer">
+    <strong>&#9888;&#65039; MEDICAL DISCLAIMER</strong>
+    This tool is for educational purposes only and does not replace clinical judgment.
+    Always consult a qualified physician for medical decisions.
+  </div>
+
+  <div class="card">
+    <h2>Patient Details</h2>
+
+    <div class="form-group">
+      <label>Patient Weight <span class="hint">(kg)</span></label>
+      <input type="number" id="weight" min="1" max="200" step="0.1" placeholder="e.g. 20" />
+    </div>
+
+    <div class="form-group">
+      <label>Patient Age <span class="hint">(years)</span></label>
+      <input type="number" id="age" min="0" max="18" step="1" placeholder="e.g. 5" />
+    </div>
+
+    <div class="form-group">
+      <label>Temperature <span class="hint">(°C)</span></label>
+      <input type="number" id="temperature" min="30" max="45" step="0.1" placeholder="e.g. 38.5" />
+    </div>
+
+    <div class="form-group">
+      <label>Pain Level</label>
+      <select id="pain">
+        <option value="mild">Mild</option>
+        <option value="moderate">Moderate</option>
+        <option value="severe">Severe</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Dosing Frequency <span class="hint">(2 or 3 per day, default = 2)</span></label>
+      <input type="number" id="times_per_day" min="2" max="3" step="1" placeholder="2" />
+    </div>
+
+    <div class="form-group">
+      <label>Risk Level</label>
+      <div class="criteria-box">
+        <strong>High Risk</strong> if any of:<br/>
+        &bull; Age &lt;2 years<br/>
+        &bull; Antibiotics used in last 3 months<br/>
+        &bull; No response to amoxicillin in 3 days<br/>
+        &bull; Moderate/Severe illness
+      </div>
+      <select id="severity">
+        <option value="low_risk">Low Risk</option>
+        <option value="high_risk">High Risk</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Treatment Duration <span class="hint">(days, 10–14, default = 12)</span></label>
+      <input type="number" id="total_day" min="10" max="14" step="1" placeholder="12" />
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="calculate()">Calculate Treatment</button>
+      <button class="btn-reset" onclick="resetAll()">&#8635; Reset / Clear All</button>
+    </div>
+  </div>
+
+  <div class="result-box" id="resultBox"></div>
+  <button class="btn-back-bottom" id="bottomResetBtn" onclick="resetAll()">&#8635; Reset &amp; Clear All</button>
+
+</div>
+
+<script>
+function resetAll() {
+  ["weight","age","temperature","times_per_day","total_day"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("pain").selectedIndex = 0;
+  document.getElementById("severity").selectedIndex = 0;
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.innerHTML = "";
+  document.getElementById("bottomResetBtn").classList.remove("visible");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function calculate() {
+  // Force clear
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.innerHTML = "";
+  document.getElementById("bottomResetBtn").classList.remove("visible");
+
+  const weight_raw  = document.getElementById("weight").value;
+  const age_raw     = document.getElementById("age").value;
+  const temp_raw    = document.getElementById("temperature").value;
+  const pain        = document.getElementById("pain").value;
+  const times_raw   = document.getElementById("times_per_day").value;
+  const severity    = document.getElementById("severity").value;
+  const days_raw    = document.getElementById("total_day").value;
+
+  if (weight_raw === "" || age_raw === "" || temp_raw === "") {
+    setTimeout(() => {
+      box.innerHTML = `&#9888; Please enter Weight, Age, and Temperature.`;
+      box.className = "result-box visible error-box";
+    }, 10);
+    return;
+  }
+
+  const weight      = parseFloat(weight_raw);
+  const age         = parseInt(age_raw);
+  const temperature = parseFloat(temp_raw);
+
+  if (isNaN(weight) || isNaN(age) || isNaN(temperature) || weight <= 0) {
+    setTimeout(() => {
+      box.innerHTML = `&#9888; Please enter valid numeric values.`;
+      box.className = "result-box visible error-box";
+    }, 10);
+    return;
+  }
+
+  // Default: times_per_day = 2, total_day = 12
+  const times_per_day = (times_raw === "" || isNaN(parseInt(times_raw))) ? 2 : parseInt(times_raw);
+  const total_day     = (days_raw  === "" || isNaN(parseInt(days_raw)))  ? 12 : parseInt(days_raw);
+
+  // ── Total daily dose — exact Python logic ──
+  // total_dose = 90 * weight, capped at 3000
+  let total_dose = 90 * weight;
+  if (total_dose > 3000) total_dose = 3000;
+
+  const interval = 24 / times_per_day;
+
+  let html = "";
+
+  if (severity === "high_risk") {
+    // ── Co-Amoxiclav — exact Python formulas ──
+    // 643mg/5ml
+    const n1_643 = Math.ceil((total_dose * 5 / 643) * total_day / 75);
+    const n2_643 = Math.ceil((total_dose * 5 / 643) * total_day / 100);
+    const q_643  = Math.ceil((total_dose * 5 / 643) / times_per_day);
+    // 457mg/5ml
+    const n1_457 = Math.ceil((total_dose * 5 / 457) * total_day / 75);
+    const n2_457 = Math.ceil((total_dose * 5 / 457) * total_day / 100);
+    const q_457  = Math.ceil((total_dose * 5 / 457) / times_per_day);
+
+    html += `<h3>&#9888; High Risk Patient — Co-Amoxiclav Recommended</h3>`;
+    html += `<p>Total daily dose: <strong>${total_dose}mg</strong> &nbsp;|&nbsp; Duration: <strong>${total_day} days</strong></p>`;
+
+    html += `<h3>Dosage Options</h3>`;
+
+    html += `<div class="formulation">
+      <strong>Co-Amoxiclav 643mg/5ml</strong><br/>
+      &bull; Dosage: <strong>${q_643} ml</strong> every ${interval} hours<br/>
+      &bull; Duration: ${total_day} days<br/>
+      &bull; Bottles needed: <strong>${n1_643}</strong> (75ml) &nbsp;OR&nbsp; <strong>${n2_643}</strong> (100ml)
+    </div>`;
+
+    html += `<div class="formulation">
+      <strong>Co-Amoxiclav 457mg/5ml</strong><br/>
+      &bull; Dosage: <strong>${q_457} ml</strong> every ${interval} hours<br/>
+      &bull; Duration: ${total_day} days<br/>
+      &bull; Bottles needed: <strong>${n1_457}</strong> (75ml) &nbsp;OR&nbsp; <strong>${n2_457}</strong> (100ml)
+    </div>`;
+
+    box.className = "result-box visible high-risk";
+
+  } else {
+    // ── Amoxicillin — exact Python formulas ──
+    // 400mg/5ml
+    const n_400 = Math.ceil((total_dose * 5 / 400) * total_day / 70);
+    const q_400 = Math.ceil((total_dose * 5 / 400) / times_per_day);
+    // 200mg/5ml
+    const n_200 = Math.ceil((total_dose * 5 / 200) * total_day / 70);
+    const q_200 = Math.ceil((total_dose * 5 / 200) / times_per_day);
+
+    html += `<h3>&#10003; Low Risk Patient — Amoxicillin Recommended</h3>`;
+    html += `<p>Total daily dose: <strong>${total_dose}mg</strong> &nbsp;|&nbsp; Duration: <strong>${total_day} days</strong></p>`;
+
+    html += `<h3>Dosage Options</h3>`;
+
+    html += `<div class="formulation">
+      <strong>Amoxicillin 400mg/5ml (Faramox 400)</strong><br/>
+      &bull; Dosage: <strong>${q_400} ml</strong> every ${interval} hours<br/>
+      &bull; Duration: ${total_day} days<br/>
+      &bull; Bottles needed: <strong>${n_400}</strong> (70ml)
+    </div>`;
+
+    html += `<div class="formulation">
+      <strong>Amoxicillin 200mg/5ml (Faramox 200)</strong><br/>
+      &bull; Dosage: <strong>${q_200} ml</strong> every ${interval} hours<br/>
+      &bull; Duration: ${total_day} days<br/>
+      &bull; Bottles needed: <strong>${n_200}</strong> (70ml)
+    </div>`;
+
+    box.className = "result-box visible low-risk";
+  }
+
+  // Important notes — exact Python
+  html += `<h3>Important Notes</h3><ul>
+    <li>Complete full course of antibiotics</li>
+    <li>Symptoms should improve within 48–72 hours</li>
+    <li>Return if symptoms worsen or persist beyond 10 days</li>
+  </ul>`;
+
+  setTimeout(() => {
+    box.innerHTML = html;
+    document.getElementById("bottomResetBtn").classList.add("visible");
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 10);
+}
+</script>
+</body>
+</html>

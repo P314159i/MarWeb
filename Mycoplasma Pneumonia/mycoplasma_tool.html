@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mycoplasma Pneumonia Treatment Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; }
+    header {
+      background: #1a5276;
+      color: white;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .disclaimer {
+      background: #fef9e7;
+      border-left: 5px solid #f39c12;
+      margin: 18px auto;
+      max-width: 700px;
+      padding: 14px 18px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .disclaimer strong { display: block; margin-bottom: 6px; color: #b7770d; font-size: 1rem; }
+    .container { max-width: 700px; margin: 0 auto; padding: 10px 16px 50px; }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+      margin-bottom: 22px;
+    }
+    .card h2 {
+      font-size: 1.05rem; margin-bottom: 18px;
+      color: #1a5276; border-bottom: 2px solid #d6eaf8;
+      padding-bottom: 8px;
+    }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 4px; font-weight: bold; color: #444; }
+    .hint { font-size: 0.8rem; color: #888; font-weight: normal; margin-left: 6px; }
+    input[type="number"] {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #bdc3c7; border-radius: 5px;
+      font-size: 0.95rem; background: #fafafa;
+    }
+    input[type="number"]:focus {
+      outline: none; border-color: #2e86c1; background: #fff;
+    }
+    .btn-row { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+    .btn-primary {
+      background: #1a5276; color: white;
+      border: none; border-radius: 6px;
+      padding: 12px 32px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #154360; }
+    .btn-reset {
+      background: #aab7b8; color: #222;
+      border: none; border-radius: 6px;
+      padding: 12px 24px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-reset:hover { background: #808b96; }
+    /* Result box — hidden until calculation */
+    .result-box {
+      display: none;
+      background: #eafaf1; border-left: 5px solid #28b463;
+      border-radius: 6px; padding: 20px 22px;
+      margin-top: 22px; font-size: 0.95rem; line-height: 1.8;
+    }
+    .result-box.visible { display: block; }
+    .result-box h3 {
+      color: #1a5276; font-size: 1rem;
+      margin: 16px 0 8px; border-bottom: 1px solid #d6eaf8;
+      padding-bottom: 4px;
+    }
+    .result-box h3:first-child { margin-top: 0; }
+    .result-box ul { margin-left: 20px; }
+    .result-box ul li { margin-bottom: 4px; }
+    .result-box .note-block {
+      background: #fef9e7; border-left: 4px solid #f39c12;
+      border-radius: 4px; padding: 10px 14px;
+      margin: 10px 0; font-size: 0.9rem;
+    }
+    .result-box .formulation {
+      background: #f7fbff; border: 1px solid #d5e8f7;
+      border-radius: 6px; padding: 12px 16px;
+      margin-bottom: 10px;
+    }
+    .result-box .formulation strong { color: #1a5276; }
+    .result-box .error {
+      background: #fdedec; border-left: 4px solid #e74c3c;
+      border-radius: 4px; padding: 12px 16px; color: #c0392b;
+    }
+    .btn-back-bottom {
+      display: none;
+      background: #1a5276; color: white;
+      border: none; border-radius: 6px;
+      padding: 11px 24px; font-size: 0.95rem;
+      cursor: pointer; margin-top: 18px;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-back-bottom:hover { background: #154360; }
+    .btn-back-bottom.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<header>Mycoplasma Pneumonia — Pediatric Treatment Calculator</header>
+
+<div class="container">
+
+  <div class="disclaimer">
+    <strong>&#9888;&#65039; MEDICAL DISCLAIMER</strong>
+    This tool is for educational purposes only and does not replace clinical judgment.
+    Always consult a qualified physician for medical decisions.
+  </div>
+
+  <div class="card">
+    <h2>Patient Details</h2>
+
+    <div class="form-group">
+      <label>Patient Weight <span class="hint">(kg)</span></label>
+      <input type="number" id="weight" min="1" max="200" step="0.1" placeholder="e.g. 25" />
+    </div>
+
+    <div class="form-group">
+      <label>Patient Age <span class="hint">(years)</span></label>
+      <input type="number" id="age" min="0" max="18" step="1" placeholder="e.g. 8" />
+    </div>
+
+    <div class="form-group">
+      <label>Dosing Frequency <span class="hint">(doses per day, default = 1)</span></label>
+      <input type="number" id="times_per_day" min="1" max="3" step="1" placeholder="1" />
+    </div>
+
+    <div class="form-group">
+      <label>Treatment Duration <span class="hint">(days, range 3–7, default = 5)</span></label>
+      <input type="number" id="total_days" min="3" max="7" step="1" placeholder="5" />
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="calculate()">Calculate Treatment</button>
+      <button class="btn-reset" onclick="resetAll()">&#8635; Reset / Clear All</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-box" id="resultBox"></div>
+
+  <button class="btn-back-bottom" id="bottomResetBtn" onclick="resetAll()">&#8635; Reset &amp; Clear All</button>
+
+</div>
+
+<script>
+// ── Reset everything ──
+function resetAll() {
+  ["weight","age","times_per_day","total_days"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.innerHTML = "";
+  document.getElementById("bottomResetBtn").classList.remove("visible");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── Exact Python: math.floor ──
+function mFloor(x) { return Math.floor(x); }
+// ── Exact Python: math.ceil ──
+function mCeil(x) { return Math.ceil(x); }
+
+// ── calc_suspension — exact Python logic ──
+// dose_per_time = math.floor((total_med * 5 / strength) / (times_per_day * total_days))
+// bottles = [math.ceil((total_med * 5 / strength) / size) for size in bottle_sizes]
+function calc_suspension(total_med, total_days, times_per_day, strength, bottle_sizes) {
+  const dose_per_time = mFloor((total_med * 5 / strength) / (times_per_day * total_days));
+  const bottles = bottle_sizes.map(size => mCeil((total_med * 5 / strength) / size));
+  return {
+    label: `Azithromycin ${strength}mg/5ml Suspension`,
+    dose_per_time,
+    interval: Math.floor(24 / times_per_day),
+    total_days,
+    bottles,
+    bottle_sizes
+  };
+}
+
+// ── calc_tablets — exact Python logic ──
+// tabs_per_day = math.ceil(total_med / (strength * total_days))
+// total_tabs   = math.ceil(total_med / strength)
+function calc_tablets(total_med, total_days, times_per_day, strength) {
+  const tabs_per_day = mCeil(total_med / (strength * total_days));
+  const total_tabs   = mCeil(total_med / strength);
+  return {
+    label: `Azithromycin ${strength}mg Tablets`,
+    tabs_per_day,
+    interval: Math.floor(24 / times_per_day),
+    total_days,
+    total_tabs
+  };
+}
+
+// ── Main calculation ──
+function calculate() {
+  const weight_raw      = document.getElementById("weight").value;
+  const age_raw         = document.getElementById("age").value;
+  const times_raw       = document.getElementById("times_per_day").value;
+  const days_raw        = document.getElementById("total_days").value;
+
+  // Force clear before any render
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.innerHTML = "";
+  document.getElementById("bottomResetBtn").classList.remove("visible");
+
+  // Validate required fields
+  if (weight_raw === "" || age_raw === "") {
+    setTimeout(() => {
+      box.innerHTML = `<div class="error">&#9888; Please enter both Patient Weight and Patient Age.</div>`;
+      box.className = "result-box visible";
+    }, 10);
+    return;
+  }
+
+  const weight      = parseFloat(weight_raw);
+  const age         = parseInt(age_raw);
+  // defaults: times_per_day = 1, total_days = 5 (exact Python default)
+  const times_per_day = (times_raw === "" || isNaN(parseInt(times_raw))) ? 1 : parseInt(times_raw);
+  const total_days    = (days_raw  === "" || isNaN(parseInt(days_raw)))  ? 5 : parseInt(days_raw);
+
+  if (isNaN(weight) || isNaN(age) || weight <= 0) {
+    setTimeout(() => {
+      box.innerHTML = `<div class="error">&#9888; Please enter valid numeric values.</div>`;
+      box.className = "result-box visible";
+    }, 10);
+    return;
+  }
+
+  // ── Dose formula — exact Python logic ──
+  // age >= 12: dose_per_day = min(5 * weight, 250)
+  // age < 12:  dose_per_day = 10 * weight
+  const dose_per_day = age >= 12 ? Math.min(5 * weight, 250) : 10 * weight;
+
+  // ── double_first_day = (age >= 12) — exact Python logic ──
+  const double_first_day = age >= 12;
+
+  // ── total_medication — exact Python logic ──
+  // double_first_day: total = dose_per_day * (total_days + 1)
+  // else:             total = dose_per_day * total_days
+  const total_medication = double_first_day
+    ? dose_per_day * (total_days + 1)
+    : dose_per_day * total_days;
+
+  // ── Calculate all formulations ──
+  const susp100 = calc_suspension(total_medication, total_days, times_per_day, 100, [15, 30]);
+  const susp200 = calc_suspension(total_medication, total_days, times_per_day, 200, [15, 30]);
+  const tab250  = calc_tablets(total_medication, total_days, times_per_day, 250);
+  const tab500  = calc_tablets(total_medication, total_days, times_per_day, 500);
+
+  // ── Build HTML output ──
+  let html = "";
+
+  // Treatment recommendation
+  html += `<h3>Treatment Recommendation</h3>`;
+  html += `<p>Azithromycin <strong>${dose_per_day}mg</strong> daily for <strong>${total_days} days</strong></p>`;
+
+  if (double_first_day) {
+    html += `<div class="note-block">&#9888; <strong>NOTE:</strong> Patient (age &ge;12) needs <strong>double dose on first day</strong></div>`;
+  }
+
+  // Suspensions
+  html += `<h3>Azithromycin Dosage Options</h3>`;
+
+  // 100mg/5ml
+  html += `<div class="formulation">
+    <strong>${susp100.label}</strong><br/>
+    &bull; Dose: <strong>${susp100.dose_per_time} ml</strong> every ${susp100.interval} hours<br/>
+    &bull; Duration: ${susp100.total_days} days<br/>
+    &bull; Bottles needed: <strong>${susp100.bottles[0]}</strong> (${susp100.bottle_sizes[0]}ml) &nbsp;OR&nbsp; <strong>${susp100.bottles[1]}</strong> (${susp100.bottle_sizes[1]}ml)
+  </div>`;
+
+  // 200mg/5ml
+  html += `<div class="formulation">
+    <strong>${susp200.label}</strong><br/>
+    &bull; Dose: <strong>${susp200.dose_per_time} ml</strong> every ${susp200.interval} hours<br/>
+    &bull; Duration: ${susp200.total_days} days<br/>
+    &bull; Bottles needed: <strong>${susp200.bottles[0]}</strong> (${susp200.bottle_sizes[0]}ml) &nbsp;OR&nbsp; <strong>${susp200.bottles[1]}</strong> (${susp200.bottle_sizes[1]}ml)
+  </div>`;
+
+  // 250mg tablets
+  html += `<div class="formulation">
+    <strong>${tab250.label}</strong><br/>
+    &bull; Dose: <strong>${tab250.tabs_per_day} tablet(s)</strong> every ${tab250.interval} hours<br/>
+    &bull; Duration: ${tab250.total_days} days<br/>
+    &bull; Total tablets needed: <strong>${tab250.total_tabs}</strong>
+  </div>`;
+
+  // 500mg tablets
+  html += `<div class="formulation">
+    <strong>${tab500.label}</strong><br/>
+    &bull; Dose: <strong>${tab500.tabs_per_day} tablet(s)</strong> every ${tab500.interval} hours<br/>
+    &bull; Duration: ${tab500.total_days} days<br/>
+    &bull; Total tablets needed: <strong>${tab500.total_tabs}</strong>
+  </div>`;
+
+  // Important notes — exact Python logic
+  html += `<h3>Important Notes</h3><ul>`;
+  html += `<li>Take medication at the same time each day</li>`;
+  if (age >= 12) {
+    html += `<li>Take double dose on first day (500mg for adults)</li>`;
+  }
+  html += `<li>Complete full course even if symptoms improve</li>`;
+  html += `<li>May cause gastrointestinal side effects</li>`;
+  html += `</ul>`;
+
+  setTimeout(() => {
+    box.innerHTML = html;
+    box.className = "result-box visible";
+    document.getElementById("bottomResetBtn").classList.add("visible");
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 10);
+}
+</script>
+</body>
+</html>

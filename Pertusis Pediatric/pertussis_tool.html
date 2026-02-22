@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pertussis Pediatric Treatment Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; }
+    header {
+      background: #1b4f72;
+      color: white;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .disclaimer {
+      background: #fef9e7;
+      border-left: 5px solid #f39c12;
+      margin: 18px auto;
+      max-width: 700px;
+      padding: 14px 18px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .disclaimer strong { display: block; margin-bottom: 6px; color: #b7770d; font-size: 1rem; }
+    .container { max-width: 700px; margin: 0 auto; padding: 10px 16px 50px; }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+      margin-bottom: 22px;
+    }
+    .card h2 {
+      font-size: 1.05rem; margin-bottom: 18px;
+      color: #1b4f72; border-bottom: 2px solid #d6eaf8;
+      padding-bottom: 8px;
+    }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 4px; font-weight: bold; color: #444; }
+    .hint { font-size: 0.8rem; color: #888; font-weight: normal; margin-left: 6px; }
+    input[type="number"], select {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #bdc3c7; border-radius: 5px;
+      font-size: 0.95rem; background: #fafafa;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none; border-color: #2e86c1; background: #fff;
+    }
+    /* Age input row */
+    .age-row { display: flex; gap: 10px; }
+    .age-row input { flex: 1; }
+    .age-row select { flex: 0 0 120px; width: 120px; }
+    .btn-row { display: flex; gap: 12px; margin-top: 6px; flex-wrap: wrap; }
+    .btn-primary {
+      background: #1b4f72; color: white;
+      border: none; border-radius: 6px;
+      padding: 12px 32px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #154360; }
+    .btn-reset {
+      background: #aab7b8; color: #222;
+      border: none; border-radius: 6px;
+      padding: 12px 24px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-reset:hover { background: #808b96; }
+    .result-box {
+      display: none;
+      background: #eafaf1; border-left: 5px solid #28b463;
+      border-radius: 6px; padding: 20px 22px;
+      margin-top: 22px; font-size: 0.95rem; line-height: 1.8;
+    }
+    .result-box.visible { display: block; }
+    .result-box h3 {
+      color: #1b4f72; font-size: 1rem;
+      margin: 16px 0 8px; border-bottom: 1px solid #d6eaf8;
+      padding-bottom: 4px;
+    }
+    .result-box h3:first-child { margin-top: 0; }
+    .result-box .note-block {
+      background: #fef9e7; border-left: 4px solid #f39c12;
+      border-radius: 4px; padding: 10px 14px;
+      margin: 10px 0; font-size: 0.9rem;
+    }
+    .result-box .formulation {
+      background: #f7fbff; border: 1px solid #d5e8f7;
+      border-radius: 6px; padding: 12px 16px;
+      margin-bottom: 10px;
+    }
+    .result-box .formulation strong { color: #1b4f72; }
+    .result-box ul { margin-left: 20px; }
+    .result-box ul li { margin-bottom: 4px; }
+    .result-box .error-block {
+      background: #fdedec; border-left: 4px solid #e74c3c;
+      border-radius: 4px; padding: 12px 16px; color: #c0392b;
+    }
+    .btn-back-bottom {
+      display: none;
+      background: #1b4f72; color: white;
+      border: none; border-radius: 6px;
+      padding: 11px 24px; font-size: 0.95rem;
+      cursor: pointer; margin-top: 18px;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-back-bottom:hover { background: #154360; }
+    .btn-back-bottom.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<header>Pertussis (Whooping Cough) — Pediatric Treatment Calculator</header>
+
+<div class="container">
+
+  <div class="disclaimer">
+    <strong>&#9888;&#65039; MEDICAL DISCLAIMER</strong>
+    This tool is for educational purposes only and does not replace clinical judgment.
+    Always consult a qualified physician for medical decisions.
+  </div>
+
+  <div class="card">
+    <h2>Patient Details</h2>
+
+    <div class="form-group">
+      <label>Patient Weight <span class="hint">(kg)</span></label>
+      <input type="number" id="weight" min="0.5" max="200" step="0.1" placeholder="e.g. 12.5" />
+    </div>
+
+    <div class="form-group">
+      <label>Patient Age</label>
+      <div class="age-row">
+        <input type="number" id="age_value" min="0" max="999" step="1" placeholder="e.g. 6" />
+        <select id="age_unit">
+          <option value="months">Months</option>
+          <option value="years">Years</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Dosing Frequency <span class="hint">(doses per day, 1–3, default = 1)</span></label>
+      <input type="number" id="times_per_day" min="1" max="3" step="1" placeholder="1" />
+    </div>
+
+    <div class="form-group">
+      <label>Treatment Duration <span class="hint">(days, 3–7, default = 5)</span></label>
+      <input type="number" id="total_day" min="3" max="7" step="1" placeholder="5" />
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="calculate()">Calculate Treatment</button>
+      <button class="btn-reset" onclick="resetAll()">&#8635; Reset / Clear All</button>
+    </div>
+  </div>
+
+  <div class="result-box" id="resultBox"></div>
+  <button class="btn-back-bottom" id="bottomResetBtn" onclick="resetAll()">&#8635; Reset &amp; Clear All</button>
+
+</div>
+
+<script>
+function resetAll() {
+  ["weight","age_value","times_per_day","total_day"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  document.getElementById("age_unit").selectedIndex = 0;
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.innerHTML = "";
+  document.getElementById("bottomResetBtn").classList.remove("visible");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function calculate() {
+  // Force clear result first
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.innerHTML = "";
+  document.getElementById("bottomResetBtn").classList.remove("visible");
+
+  // Read inputs
+  const weight_raw    = document.getElementById("weight").value;
+  const age_val_raw   = document.getElementById("age_value").value;
+  const age_unit      = document.getElementById("age_unit").value;
+  const times_raw     = document.getElementById("times_per_day").value;
+  const days_raw      = document.getElementById("total_day").value;
+
+  if (weight_raw === "" || age_val_raw === "") {
+    setTimeout(() => {
+      box.innerHTML = `<div class="error-block">&#9888; Please enter both Patient Weight and Patient Age.</div>`;
+      box.className = "result-box visible";
+    }, 10);
+    return;
+  }
+
+  const weight = parseFloat(weight_raw);
+  const age_num = parseFloat(age_val_raw);
+
+  if (isNaN(weight) || isNaN(age_num) || weight <= 0 || age_num < 0) {
+    setTimeout(() => {
+      box.innerHTML = `<div class="error-block">&#9888; Please enter valid numeric values.</div>`;
+      box.className = "result-box visible";
+    }, 10);
+    return;
+  }
+
+  // Convert age to months — exact Python logic:
+  // if 'month' in age_input: age_months = float(value)
+  // else: age_months = float(value) * 12
+  const age_months = age_unit === "months" ? age_num : age_num * 12;
+
+  // Defaults: times_per_day = 1, total_day = 5
+  const times_per_day = (times_raw === "" || isNaN(parseInt(times_raw))) ? 1 : parseInt(times_raw);
+  const total_day     = (days_raw  === "" || isNaN(parseInt(days_raw)))  ? 5 : parseInt(days_raw);
+
+  // ── Dose formula — exact Python logic ──
+  // age_months > 6:  total_dose = 5 * weight, cap 250, double_first_day = True
+  // age_months <= 6: total_dose = 10 * weight, cap 500, double_first_day = False
+  let total_dose, double_first_day;
+  if (age_months > 6) {
+    total_dose = 5 * weight;
+    if (total_dose > 250) total_dose = 250;
+    double_first_day = true;
+  } else {
+    total_dose = 10 * weight;
+    if (total_dose > 500) total_dose = 500;
+    double_first_day = false;
+  }
+
+  // ── adjusted_total — exact Python logic ──
+  // double: total_dose * total_day + total_dose
+  // normal: total_dose * total_day
+  const adjusted_total = double_first_day
+    ? total_dose * total_day + total_dose
+    : total_dose * total_day;
+
+  const interval = 24 / times_per_day;
+
+  // ── 100mg/5ml suspension — exact Python formulas ──
+  // n1 = ceil((total_dose * 5 / 100) * total_day / 15)
+  // n2 = ceil((total_dose * 5 / 100) * total_day / 30)
+  // q  = floor((total_dose * 5 / 100) / times_per_day)
+  const n1_susp100 = Math.ceil((total_dose * 5 / 100) * total_day / 15);
+  const n2_susp100 = Math.ceil((total_dose * 5 / 100) * total_day / 30);
+  const q_susp100  = Math.floor((total_dose * 5 / 100) / times_per_day);
+
+  // ── 200mg/5ml suspension — exact Python formulas ──
+  const n1_susp200 = Math.ceil((total_dose * 5 / 200) * total_day / 15);
+  const n2_susp200 = Math.ceil((total_dose * 5 / 200) * total_day / 30);
+  const q_susp200  = Math.floor((total_dose * 5 / 200) / times_per_day);
+
+  // ── 250mg tablets — exact Python formulas ──
+  // n_tab250 = ceil(adjusted_total / 250)
+  // q_tab250 = floor((total_dose / 250) / times_per_day)
+  const n_tab250 = Math.ceil(adjusted_total / 250);
+  const q_tab250 = Math.floor((total_dose / 250) / times_per_day);
+
+  // ── 500mg tablets — exact Python formulas ──
+  // n_tab500 = ceil(adjusted_total / 500)
+  // q_tab500 = floor((total_dose / 500) / times_per_day)
+  const n_tab500 = Math.ceil(adjusted_total / 500);
+  const q_tab500 = Math.floor((total_dose / 500) / times_per_day);
+
+  // ── Build output HTML ──
+  let html = "";
+
+  // Treatment recommendation header
+  html += `<h3>Treatment Recommendation</h3>`;
+  if (age_months > 6) {
+    html += `<p>For patient &gt;6 months old (<strong>${(age_months/12).toFixed(1)} years</strong>):</p>`;
+  } else {
+    html += `<p>For infant &le;6 months old (<strong>${age_months} months</strong>):</p>`;
+  }
+  html += `<p style="margin-top:6px;">Azithromycin <strong>${total_dose}mg</strong> daily for <strong>${total_day} days</strong></p>`;
+
+  if (double_first_day) {
+    html += `<div class="note-block">&#9888; <strong>NOTE:</strong> Patient needs double dose on first day<br/>
+    Total adjusted dose (including double first day): <strong>${adjusted_total}mg</strong></div>`;
+  }
+
+  // Formulations
+  html += `<h3>Azithromycin Dosage Options</h3>`;
+
+  html += `<div class="formulation">
+    <strong>Azithromycin 100mg/5ml Suspension</strong><br/>
+    &bull; Dose: <strong>${q_susp100} ml</strong> every ${interval} hours<br/>
+    &bull; Duration: ${total_day} days<br/>
+    &bull; Bottles needed: <strong>${n1_susp100}</strong> (15ml) &nbsp;OR&nbsp; <strong>${n2_susp100}</strong> (30ml)
+  </div>`;
+
+  html += `<div class="formulation">
+    <strong>Azithromycin 200mg/5ml Suspension</strong><br/>
+    &bull; Dose: <strong>${q_susp200} ml</strong> every ${interval} hours<br/>
+    &bull; Duration: ${total_day} days<br/>
+    &bull; Bottles needed: <strong>${n1_susp200}</strong> (15ml) &nbsp;OR&nbsp; <strong>${n2_susp200}</strong> (30ml)
+  </div>`;
+
+  html += `<div class="formulation">
+    <strong>Azithromycin 250mg Tablets</strong><br/>
+    &bull; Dose: <strong>${q_tab250} tablet(s)</strong> every ${interval} hours<br/>
+    &bull; Duration: ${total_day} days<br/>
+    &bull; Tablets needed: <strong>${n_tab250}</strong>
+  </div>`;
+
+  html += `<div class="formulation">
+    <strong>Azithromycin 500mg Tablets</strong><br/>
+    &bull; Dose: <strong>${q_tab500} tablet(s)</strong> every ${interval} hours<br/>
+    &bull; Duration: ${total_day} days<br/>
+    &bull; Tablets needed: <strong>${n_tab500}</strong>
+  </div>`;
+
+  // Important notes — exact Python logic
+  html += `<h3>Important Notes</h3><ul>`;
+  html += `<li>Take the medication at the same time each day</li>`;
+  if (double_first_day) {
+    html += `<li>Double dose on first day only</li>`;
+  }
+  html += `<li>Complete full course even if symptoms improve</li>`;
+  html += `<li>Watch for gastrointestinal side effects</li>`;
+  html += `</ul>`;
+
+  setTimeout(() => {
+    box.innerHTML = html;
+    box.className = "result-box visible";
+    document.getElementById("bottomResetBtn").classList.add("visible");
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 10);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anemia Evaluation Assistant</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; }
+    header {
+      background: #922b21;
+      color: white;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .disclaimer {
+      background: #fef9e7;
+      border-left: 5px solid #f39c12;
+      margin: 18px auto;
+      max-width: 860px;
+      padding: 14px 18px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .disclaimer strong { display: block; margin-bottom: 6px; color: #b7770d; font-size: 1rem; }
+    .container { max-width: 860px; margin: 0 auto; padding: 10px 16px 50px; }
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+      margin-bottom: 22px;
+    }
+    .card h2 {
+      font-size: 1.05rem; margin-bottom: 18px;
+      color: #922b21; border-bottom: 2px solid #fadbd8;
+      padding-bottom: 8px;
+    }
+    .fieldset-group {
+      border: 1px solid #f5c6c6; border-radius: 6px;
+      padding: 14px 16px; margin-bottom: 18px; background: #fff8f8;
+    }
+    .fieldset-group legend {
+      font-weight: bold; color: #922b21;
+      font-size: 0.93rem; padding: 0 6px;
+    }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 4px; font-weight: bold; color: #444; }
+    input[type="number"], select {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #bdc3c7; border-radius: 5px;
+      font-size: 0.95rem; background: #fafafa;
+    }
+    input[type="number"]:focus, select:focus {
+      outline: none; border-color: #922b21; background: #fff;
+    }
+    .two-col { display: flex; flex-wrap: wrap; gap: 12px; }
+    .two-col .form-group { flex: 1 1 200px; }
+    .btn-row { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      background: #922b21; color: white;
+      border: none; border-radius: 6px;
+      padding: 12px 32px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #641e16; }
+    .btn-reset {
+      background: #aab7b8; color: #222;
+      border: none; border-radius: 6px;
+      padding: 12px 24px; font-size: 1rem;
+      cursor: pointer; flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-reset:hover { background: #808b96; }
+    .result-box {
+      background: #eaf4fb; border-left: 5px solid #2e86c1;
+      border-radius: 5px; padding: 18px 20px;
+      margin-top: 22px; font-size: 0.95rem; line-height: 1.8;
+      display: none;
+    }
+    .result-box.visible { display: block; }
+    .result-section { margin-bottom: 14px; }
+    .result-section h3 { color: #922b21; font-size: 0.97rem; margin-bottom: 6px; }
+    .result-section ul { margin-left: 18px; }
+    .result-section ul li { margin-bottom: 4px; }
+    .tag {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 12px; font-size: 0.85rem; font-weight: bold;
+      margin-left: 6px;
+    }
+    .anemia-yes { color: #c0392b; font-weight: bold; }
+    .anemia-no  { color: #1e8449; font-weight: bold; }
+    .rpi-box { font-weight: bold; }
+    .micro { color: #d35400; font-weight: bold; }
+    .macro { color: #8e44ad; font-weight: bold; }
+    .normo { color: #2471a3; font-weight: bold; }
+    .btn-back-bottom {
+      display: none;
+      background: #922b21; color: white;
+      border: none; border-radius: 6px;
+      padding: 11px 24px; font-size: 0.95rem;
+      cursor: pointer; margin-top: 18px;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-back-bottom:hover { background: #641e16; }
+    .btn-back-bottom.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<header>Anemia Evaluation Assistant</header>
+
+<div class="container">
+
+  <div class="disclaimer">
+    <strong>&#9888;&#65039; MEDICAL DISCLAIMER</strong>
+    This tool is for educational purposes only and does not replace clinical judgment.
+    Always consult with a qualified physician for medical decisions.
+  </div>
+
+  <!-- HEMATOLOGY RESULTS -->
+  <div class="card">
+    <h2>Hematology Lab Results</h2>
+    <div class="form-group">
+      <label>Sex</label>
+      <select id="sex">
+        <option value="female">Female</option>
+        <option value="male">Male</option>
+        <option value="pregnant">Pregnant</option>
+      </select>
+    </div>
+    <div class="two-col">
+      <div class="form-group">
+        <label>Hemoglobin — Hb (g/dL)</label>
+        <input type="number" id="Hb" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>RBC count (million/&micro;L)</label>
+        <input type="number" id="RBC" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label>WBC count (cells/&micro;L)</label>
+        <input type="number" id="WBC" step="1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>MCV (fL)</label>
+        <input type="number" id="MCV" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>MCH (pg)</label>
+        <input type="number" id="MCH" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>MCHC (g/dL)</label>
+        <input type="number" id="MCHC" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>RDW (%)</label>
+        <input type="number" id="RDW" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Reticulocyte count (%)</label>
+        <input type="number" id="retic" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Ferritin (ng/mL)</label>
+        <input type="number" id="ferritin" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>TIBC (&micro;g/dL)</label>
+        <input type="number" id="TIBC" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Serum Iron — SI (&micro;g/dL)</label>
+        <input type="number" id="SI" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>LDH (U/L)</label>
+        <input type="number" id="LDH" step="0.1" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Total Bilirubin (mg/dL)</label>
+        <input type="number" id="total_bilirubin" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label>Direct Bilirubin (mg/dL)</label>
+        <input type="number" id="direct_bilirubin" step="0.01" min="0" />
+      </div>
+      <div class="form-group">
+        <label>AST (U/L)</label>
+        <input type="number" id="AST" step="0.1" min="0" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Coombs Test</label>
+      <select id="coombs">
+        <option value="negative">Negative</option>
+        <option value="positive">Positive</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- PATIENT HISTORY -->
+  <div class="card">
+    <h2>Patient History</h2>
+    <fieldset class="fieldset-group">
+      <legend>Yes / No</legend>
+      <div class="two-col" id="history_fields"></div>
+    </fieldset>
+  </div>
+
+  <!-- PHYSICAL EXAM -->
+  <div class="card">
+    <h2>Physical Exam Findings</h2>
+    <fieldset class="fieldset-group">
+      <legend>Yes / No</legend>
+      <div class="two-col" id="exam_fields"></div>
+    </fieldset>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="btn-row">
+    <button class="btn-primary" onclick="runEvaluation()">Evaluate Anemia</button>
+    <button class="btn-reset" onclick="resetAll()">&#8635; Reset / Clear All</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="result-box" id="resultBox">
+    <div class="result-section" id="res_overview"></div>
+    <div class="result-section" id="res_causes"></div>
+    <div class="result-section" id="res_workup"></div>
+  </div>
+
+  <button class="btn-back-bottom" id="bottomResetBtn" onclick="resetAll()">&#8635; Reset &amp; Clear All</button>
+
+</div>
+
+<script>
+const HISTORY_LABELS = {
+  pica:             "Pica (ice/dirt cravings)?",
+  vegetarian:       "Vegetarian diet?",
+  recent_travel:    "Recent travel to tropical areas?",
+  recent_infection: "Recent infection (fever/URI symptoms)?",
+  sepsis:           "Signs of sepsis (SIRS)?",
+  fava_beans:       "Consumed fava beans (baghali)?",
+  menorrhagia:      "Heavy menstrual bleeding?",
+  GI_bleed:         "GI bleeding (melena/hematochezia)?",
+  dark_urine:       "Dark/cola-colored urine?",
+  B_symptoms:       "B symptoms (fever, night sweats, weight loss)?",
+  drugs:            "Taking MTX, azathioprine, hydroxyurea?",
+  family_anemia:    "Family history of anemia?",
+  opium:            "Opium use?",
+  alcohol:          "Heavy alcohol use?",
+  liver_disease:    "History of liver disease?",
+  neurologic:       "Neurologic symptoms (gait problems)?"
+};
+
+const EXAM_LABELS = {
+  shock:              "Signs of shock (hypotension, tachycardia)?",
+  cachexia:           "Cachexia/bitemporal wasting?",
+  icterus:            "Scleral icterus?",
+  palmar_erythema:    "Palmar erythema?",
+  LAD:                "Lymphadenopathy?",
+  goiter:             "Goiter?",
+  geographic_tongue:  "Geographic tongue?",
+  burton_line:        "Burton's line (lead line)?",
+  hepatosplenomegaly: "Hepatosplenomegaly?",
+  koilonychia:        "Koilonychia (spoon nails)?",
+  petechiae:          "Petechiae/purpura?",
+  skin_icterus:       "Skin icterus?"
+};
+
+function buildYesNoFields(containerId, labels) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = "";
+  Object.entries(labels).forEach(([key, label]) => {
+    c.innerHTML += `
+      <div class="form-group">
+        <label>${label}</label>
+        <select id="${containerId}_${key}">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>`;
+  });
+}
+
+function getYesNoBool(containerId, labels) {
+  const result = {};
+  Object.keys(labels).forEach(key => {
+    result[key] = document.getElementById(`${containerId}_${key}`).value === "yes";
+  });
+  return result;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  buildYesNoFields("history_fields", HISTORY_LABELS);
+  buildYesNoFields("exam_fields", EXAM_LABELS);
+});
+
+// ── Reset all fields and hide result ──
+function resetAll() {
+  // Clear number inputs
+  ["Hb","RBC","WBC","MCV","MCH","MCHC","RDW","retic","ferritin","TIBC","SI","LDH","total_bilirubin","direct_bilirubin","AST"].forEach(id => {
+    document.getElementById(id).value = "";
+  });
+  // Reset selects to first option
+  ["sex","coombs"].forEach(id => {
+    document.getElementById(id).selectedIndex = 0;
+  });
+  Object.keys(HISTORY_LABELS).forEach(key => {
+    document.getElementById(`history_fields_${key}`).selectedIndex = 0;
+  });
+  Object.keys(EXAM_LABELS).forEach(key => {
+    document.getElementById(`exam_fields_${key}`).selectedIndex = 0;
+  });
+  // Hide result
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.style.display = "none";
+  document.getElementById("res_overview").innerHTML = "";
+  document.getElementById("res_causes").innerHTML = "";
+  document.getElementById("res_workup").innerHTML = "";
+  document.getElementById("bottomResetBtn").classList.remove("visible");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── RPI formula — exact Python logic ──
+function calculate_rpi(h) {
+  return h.sex === "male"
+    ? (h.retic * h.Hb) / 15
+    : (h.retic * h.Hb) / 13;
+}
+
+// ── Microcytic (MCV < 80) ──
+function determine_microcytic(h, history, exam) {
+  const ferritin_low = (h.sex === "female" || h.sex === "pregnant")
+    ? h.ferritin < 30
+    : h.ferritin < 50;
+
+  const iron_all = h.SI < 60 && h.TIBC > 360 && ferritin_low;
+
+  if (iron_all) {
+    let cause = "Iron Deficiency Anemia";
+    if (history.pica || history.menorrhagia || history.GI_bleed || exam.koilonychia) {
+      cause += " (likely due to: ";
+      if (history.pica)        cause += "nutritional deficiency/pica, ";
+      if (history.menorrhagia) cause += "menorrhagia, ";
+      if (history.GI_bleed)    cause += "GI bleeding, ";
+      if (exam.koilonychia)    cause += "chronic deficiency";
+      cause = cause.replace(/, $/, "") + ")";
+    }
+    return [cause];
+  } else if (h.MCV / h.RBC > 13) {
+    return ["Suggestive of Iron Deficiency Anemia (Mentzer index >13) rather than thalassemia"];
+  } else if (history.family_anemia) {
+    return ["Consider Thalassemia (family history present)"];
+  } else if (history.opium && exam.burton_line) {
+    return ["Lead poisoning (opium use + Burton's line)"];
+  }
+  return ["Consider other microcytic anemias (sideroblastic, chronic disease)"];
+}
+
+// ── Macrocytic (MCV > 100) ──
+function determine_macrocytic(h, history, exam) {
+  if (history.vegetarian || history.alcohol || exam.geographic_tongue) {
+    let cause = "Possible B12/Folate Deficiency";
+    if (history.vegetarian)      cause += " (dietary)";
+    if (history.alcohol)         cause += " (alcohol-related)";
+    if (exam.geographic_tongue)  cause += " (folate deficiency sign)";
+    return [cause];
+  } else if (history.neurologic) {
+    return ["B12 Deficiency with neurologic manifestations"];
+  } else if (history.drugs) {
+    return ["Drug-induced macrocytosis (check medications)"];
+  } else if (history.liver_disease || exam.palmar_erythema) {
+    return ["Liver disease-associated macrocytosis"];
+  }
+  return ["Consider other macrocytic anemias (MDS, hypothyroidism)"];
+}
+
+// ── Normocytic (MCV 80–100) ──
+function determine_normocytic(h, history, exam) {
+  if (history.B_symptoms || exam.cachexia || exam.LAD || exam.hepatosplenomegaly) {
+    return ["Consider hematologic malignancies (leukemia, lymphoma)"];
+  } else if (exam.icterus || exam.skin_icterus || history.dark_urine) {
+    let cause = "Hemolytic anemia";
+    if (h.coombs === "positive")    cause += " (autoimmune)";
+    else if (history.fava_beans)    cause += " (G6PD deficiency suspected)";
+    else                            cause += " (workup needed for exact cause)";
+    return [cause];
+  } else if (history.GI_bleed) {
+    return ["Acute blood loss anemia"];
+  } else if (history.recent_infection || history.sepsis) {
+    return ["Anemia of inflammation/infection"];
+  }
+  return ["Consider anemia of chronic disease, renal disease, or early iron deficiency"];
+}
+
+// ── Main evaluation ──
+function runEvaluation() {
+  const h = {
+    sex:              document.getElementById("sex").value,
+    Hb:               parseFloat(document.getElementById("Hb").value),
+    RBC:              parseFloat(document.getElementById("RBC").value),
+    WBC:              parseFloat(document.getElementById("WBC").value),
+    MCV:              parseFloat(document.getElementById("MCV").value),
+    MCH:              parseFloat(document.getElementById("MCH").value),
+    MCHC:             parseFloat(document.getElementById("MCHC").value),
+    RDW:              parseFloat(document.getElementById("RDW").value),
+    retic:            parseFloat(document.getElementById("retic").value),
+    ferritin:         parseFloat(document.getElementById("ferritin").value),
+    TIBC:             parseFloat(document.getElementById("TIBC").value),
+    SI:               parseFloat(document.getElementById("SI").value),
+    LDH:              parseFloat(document.getElementById("LDH").value),
+    total_bilirubin:  parseFloat(document.getElementById("total_bilirubin").value),
+    direct_bilirubin: parseFloat(document.getElementById("direct_bilirubin").value),
+    AST:              parseFloat(document.getElementById("AST").value),
+    coombs:           document.getElementById("coombs").value
+  };
+
+  const required = ["Hb","RBC","MCV","retic","ferritin","TIBC","SI"];
+  for (const f of required) {
+    if (isNaN(h[f])) {
+      alert("Please fill in: Hb, RBC, MCV, Reticulocyte count, Ferritin, TIBC, and Serum Iron.");
+      return;
+    }
+  }
+
+  const history = getYesNoBool("history_fields", HISTORY_LABELS);
+  const exam    = getYesNoBool("exam_fields", EXAM_LABELS);
+
+  // Hb threshold
+  const hb_threshold = h.sex === "male" ? 13 : h.sex === "pregnant" ? 10 : 12;
+  const anemia_present = h.Hb < hb_threshold;
+
+  const rpi = calculate_rpi(h);
+  const rpi_ok = rpi > 2.5;
+
+  // MCV classification
+  let mcv_class, mcv_label, causes;
+  if (h.MCV < 80) {
+    mcv_class = "micro"; mcv_label = "Microcytic (MCV < 80 fL)";
+    causes = determine_microcytic(h, history, exam);
+  } else if (h.MCV > 100) {
+    mcv_class = "macro"; mcv_label = "Macrocytic (MCV > 100 fL)";
+    causes = determine_macrocytic(h, history, exam);
+  } else {
+    mcv_class = "normo"; mcv_label = "Normocytic (MCV 80–100 fL)";
+    causes = determine_normocytic(h, history, exam);
+  }
+
+  // Workup
+  let workup = [];
+  if (h.MCV < 80 && !h.TIBC) {
+    workup.push("Complete iron profile (SI, TIBC, ferritin)");
+    workup.push("Consider Hb electrophoresis if iron studies normal");
+  } else if (h.MCV > 100) {
+    workup.push("B12 and folate levels");
+    workup.push("TSH if hypothyroidism suspected");
+  } else {
+    workup.push("Further evaluation based on suspected cause:");
+    workup.push("CBC with differential, peripheral smear");
+    workup.push("Renal function tests, LFTs");
+    workup.push("Inflammatory markers if chronic disease suspected");
+  }
+  if (rpi > 2.5) workup.push("Evaluate for acute blood loss or hemolysis");
+
+  // ── Force clear before rendering ──
+  const box = document.getElementById("resultBox");
+  box.className = "result-box";
+  box.style.display = "none";
+  document.getElementById("res_overview").innerHTML = "";
+  document.getElementById("res_causes").innerHTML = "";
+  document.getElementById("res_workup").innerHTML = "";
+
+  setTimeout(() => {
+    document.getElementById("res_overview").innerHTML = `
+      <h3>Overview</h3>
+      <p>Anemia present (Hb &lt; ${hb_threshold} g/dL):
+        <span class="${anemia_present ? "anemia-yes" : "anemia-no"}">
+          ${anemia_present ? "Yes" : "No"}
+        </span>
+      </p>
+      <p style="margin-top:6px;" class="rpi-box">
+        RPI: ${rpi.toFixed(2)}
+        &nbsp;<span style="font-weight:normal; font-size:0.9rem; color:${rpi_ok ? "#1e8449" : "#c0392b"}">
+          (${rpi_ok ? "Appropriate response &gt;2.5" : "Inappropriate response ≤2.5"})
+        </span>
+      </p>
+      <p style="margin-top:6px;">
+        MCV Classification: <span class="${mcv_class}">${mcv_label}</span>
+      </p>`;
+
+    document.getElementById("res_causes").innerHTML = `
+      <h3>Potential Causes</h3>
+      <ul>${causes.map((c, i) => `<li><strong>${i+1}.</strong> ${c}</li>`).join("")}</ul>`;
+
+    document.getElementById("res_workup").innerHTML = `
+      <h3>Recommended Workup</h3>
+      <ul>${workup.map(w => `<li>${w}</li>`).join("")}</ul>`;
+
+    box.className = "result-box visible";
+    box.style.display = "block";
+    document.getElementById("bottomResetBtn").classList.add("visible");
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 10);
+}
+</script>
+</body>
+</html>

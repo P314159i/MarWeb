@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hypothyroidism Assessment Tool</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f4f8; color: #222; }
+    header {
+      background: #1a5276;
+      color: white;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .disclaimer {
+      background: #fef9e7;
+      border-left: 5px solid #f39c12;
+      margin: 18px auto;
+      max-width: 820px;
+      padding: 14px 18px;
+      border-radius: 4px;
+      font-size: 0.88rem;
+    }
+    .disclaimer strong { display: block; margin-bottom: 6px; color: #b7770d; font-size: 1rem; }
+    .container { max-width: 820px; margin: 0 auto; padding: 10px 16px 40px; }
+    .menu-card {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+      margin-bottom: 20px;
+    }
+    .menu-card h2 { font-size: 1.05rem; margin-bottom: 16px; color: #1a5276; }
+    .menu-btn {
+      display: block; width: 100%; margin: 8px 0;
+      background: #2e86c1; color: white;
+      border: none; border-radius: 6px;
+      padding: 12px 16px; font-size: 0.97rem;
+      cursor: pointer; text-align: left;
+      transition: background 0.2s;
+    }
+    .menu-btn:hover { background: #1a5276; }
+    .section {
+      background: white; border-radius: 8px;
+      padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+      margin-bottom: 20px; display: none;
+    }
+    .section.active { display: block; }
+    .section h2 { font-size: 1.1rem; margin-bottom: 18px; color: #1a5276; border-bottom: 2px solid #d6eaf8; padding-bottom: 8px; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.9rem; margin-bottom: 4px; font-weight: bold; color: #444; }
+    input[type="number"], input[type="text"], select {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid #bdc3c7; border-radius: 5px;
+      font-size: 0.95rem; background: #fafafa;
+    }
+    input[type="number"]:focus, input[type="text"]:focus, select:focus {
+      outline: none; border-color: #2e86c1; background: #fff;
+    }
+    .fieldset-group {
+      border: 1px solid #d5e8f7; border-radius: 6px;
+      padding: 14px 16px; margin-bottom: 16px; background: #f7fbff;
+    }
+    .fieldset-group legend { font-weight: bold; color: #1a5276; font-size: 0.93rem; padding: 0 6px; }
+    .btn-primary {
+      background: #1a5276; color: white;
+      border: none; border-radius: 6px;
+      padding: 11px 28px; font-size: 0.97rem;
+      cursor: pointer; margin-top: 10px;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #154360; }
+    .btn-back {
+      background: #aab7b8; color: #222;
+      border: none; border-radius: 6px;
+      padding: 9px 20px; font-size: 0.9rem;
+      cursor: pointer; margin-top: 8px; margin-right: 10px;
+    }
+    .btn-back:hover { background: #808b96; }
+    .btn-back-bottom {
+      display: none;
+      background: #1a5276; color: white;
+      border: none; border-radius: 6px;
+      padding: 11px 24px; font-size: 0.95rem;
+      cursor: pointer; margin-top: 18px;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-back-bottom:hover { background: #154360; }
+    .btn-back-bottom.visible { display: block; }
+    .result-box {
+      background: #eaf4fb; border-left: 5px solid #2e86c1;
+      border-radius: 5px; padding: 16px 18px;
+      margin-top: 18px; font-size: 0.95rem; line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .result-box.success { border-color: #28b463; background: #eafaf1; }
+    .result-box.warning { border-color: #e67e22; background: #fef5ec; }
+    .result-box.error { border-color: #e74c3c; background: #fdedec; }
+    .notes-box {
+      background: #fdfefe; border: 1px solid #d5e8f7;
+      border-radius: 5px; padding: 14px 18px;
+      margin-top: 16px; font-size: 0.88rem; line-height: 1.7;
+    }
+    .notes-box h4 { color: #1a5276; margin-bottom: 8px; }
+    .conditional-block { display: none; margin-top: 12px; }
+    .conditional-block.active { display: block; }
+    hr.section-divider { border: none; border-top: 1px solid #d6eaf8; margin: 18px 0; }
+  </style>
+</head>
+<body>
+
+<header>Hypothyroidism Assessment and Management Tool</header>
+
+<div class="container">
+
+  <div class="disclaimer">
+    <strong>&#9888;&#65039; MEDICAL DISCLAIMER</strong>
+    This tool is an assistant only and does NOT replace clinical judgment or consultation with a qualified physician.
+    All recommendations must be reviewed and approved by a licensed healthcare professional before administration.
+  </div>
+
+  <!-- MAIN MENU -->
+  <div class="menu-card" id="mainMenu">
+    <h2>Select Visit Type</h2>
+    <button class="menu-btn" onclick="showSection('sec1')">1. Initial Screening (suspicious symptoms)</button>
+    <button class="menu-btn" onclick="showSection('sec2')">2. Confirm Diagnosis</button>
+    <button class="menu-btn" onclick="showSection('sec3')">3. Management Plan for New Diagnosis</button>
+    <button class="menu-btn" onclick="showSection('sec4')">4. Follow-up Visit on Treatment</button>
+  </div>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="sec1">
+    <h2>Initial Screening Visit</h2>
+    <fieldset class="fieldset-group">
+      <legend>Symptoms (yes/no)</legend>
+      <div id="s1_symptoms_fields"></div>
+    </fieldset>
+    <div class="conditional-block" id="s1_risk_block">
+      <fieldset class="fieldset-group">
+        <legend>Risk Factors (yes/no)</legend>
+        <div id="s1_risk_fields"></div>
+      </fieldset>
+    </div>
+    <button class="btn-back" onclick="goMenu()">&#8592; Menu</button>
+    <button class="btn-primary" onclick="runSection1()">Assess</button>
+    <div id="s1_result"></div>
+    <button class="btn-back-bottom" id="s1_menu_btn" onclick="goMenu()">&#8592; Back to Main Menu</button>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section" id="sec2">
+    <h2>Diagnosis Confirmation Visit</h2>
+    <fieldset class="fieldset-group">
+      <legend>Thyroid Test Results (up / down / normal / not checked)</legend>
+      <div id="s2_tests_fields"></div>
+    </fieldset>
+    <div class="conditional-block" id="s2_symptoms_block">
+      <fieldset class="fieldset-group">
+        <legend>Symptoms (yes/no) — shown when TSH is normal</legend>
+        <div id="s2_symptoms_fields"></div>
+      </fieldset>
+    </div>
+    <div class="conditional-block" id="s2_second_tests_block">
+      <fieldset class="fieldset-group">
+        <legend>Second Test Results (up / down / normal / not checked)</legend>
+        <div id="s2_second_fields"></div>
+      </fieldset>
+    </div>
+    <button class="btn-back" onclick="goMenu()">&#8592; Menu</button>
+    <button class="btn-primary" onclick="runSection2()">Assess Diagnosis</button>
+    <div id="s2_result"></div>
+    <button class="btn-back-bottom" id="s2_menu_btn" onclick="goMenu()">&#8592; Back to Main Menu</button>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section" id="sec3">
+    <h2>Management Plan for New Diagnosis</h2>
+    <div class="form-group">
+      <label>Patient Status</label>
+      <select id="s3_status" onchange="s3StatusChange()">
+        <option value="">-- Select --</option>
+        <option value="subclinical hypothyroidism">Subclinical Hypothyroidism</option>
+        <option value="overt hypothyroidism">Overt Hypothyroidism</option>
+        <option value="central hypothyroidism">Central Hypothyroidism</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Patient Age (years)</label>
+      <input type="number" id="s3_age" min="0" max="120" />
+    </div>
+    <div class="form-group">
+      <label>Patient Weight (kg)</label>
+      <input type="number" id="s3_weight" min="1" max="300" step="0.1" />
+    </div>
+    <div class="form-group">
+      <label>Current TSH Level</label>
+      <input type="number" id="s3_TSH" min="0" step="0.01" />
+    </div>
+    <div class="form-group">
+      <label>Lab's Upper Limit for Normal TSH</label>
+      <input type="number" id="s3_upper_TSH" min="0" step="0.01" />
+    </div>
+    <div class="form-group">
+      <label>Acute Coronary Disease (ACD)?</label>
+      <select id="s3_ACD">
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Ischemic Heart Disease (IHD)?</label>
+      <select id="s3_IHD">
+        <option value="no">No</option>
+        <option value="yes">Yes</option>
+      </select>
+    </div>
+    <div class="conditional-block" id="s3_duration_block">
+      <div class="form-group">
+        <label>Less than 2 months since hypothyroidism onset?</label>
+        <select id="s3_duration">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+    </div>
+    <fieldset class="fieldset-group">
+      <legend>Symptoms (yes/no)</legend>
+      <div id="s3_symptoms_fields"></div>
+    </fieldset>
+    <button class="btn-back" onclick="goMenu()">&#8592; Menu</button>
+    <button class="btn-primary" onclick="runSection3()">Generate Plan</button>
+    <div id="s3_result"></div>
+    <button class="btn-back-bottom" id="s3_menu_btn" onclick="goMenu()">&#8592; Back to Main Menu</button>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="section" id="sec4">
+    <h2>Follow-up Visit</h2>
+    <div class="form-group">
+      <label>Patient Age (years)</label>
+      <input type="number" id="s4_age" min="0" max="120" />
+    </div>
+    <div class="form-group">
+      <label>Patient Status</label>
+      <select id="s4_status">
+        <option value="">-- Select --</option>
+        <option value="subclinical hypothyroidism">Subclinical Hypothyroidism</option>
+        <option value="overt hypothyroidism">Overt Hypothyroidism</option>
+        <option value="central hypothyroidism">Central Hypothyroidism</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Current TSH Level</label>
+      <input type="number" id="s4_TSH" min="0" step="0.01" />
+    </div>
+    <div class="form-group">
+      <label>Current Free T4 Level</label>
+      <input type="number" id="s4_free_T4" min="0" step="0.01" />
+    </div>
+    <div class="form-group">
+      <label>Lab's Lower Limit for Free T4</label>
+      <input type="number" id="s4_lower_T4" min="0" step="0.01" />
+    </div>
+    <div class="form-group">
+      <label>Lab's Upper Limit for Free T4</label>
+      <input type="number" id="s4_upper_T4" min="0" step="0.01" />
+    </div>
+    <div class="conditional-block active" id="s4_compliance_block">
+      <hr class="section-divider" />
+      <div class="form-group">
+        <label>Has patient been taking medication regularly?</label>
+        <select id="s4_compliance">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Any medications taken within 4 hours of levothyroxine?</label>
+        <select id="s4_interactions">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-back" onclick="goMenu()">&#8592; Menu</button>
+    <button class="btn-primary" onclick="runSection4()">Assess Follow-up</button>
+    <div id="s4_result"></div>
+    <button class="btn-back-bottom" id="s4_menu_btn" onclick="goMenu()">&#8592; Back to Main Menu</button>
+  </div>
+
+</div>
+
+<script>
+const SYMPTOM_LABELS = {
+  fatigue:          "Fatigue",
+  constipation:     "Constipation",
+  feeling_cold:     "Feeling cold",
+  goiter:           "Goiter",
+  weight_gain:      "Weight gain",
+  dry_skin:         "Dry skin",
+  hair_loss:        "Hair loss",
+  depression:       "Depression",
+  memory_problems:  "Memory problems",
+  muscle_weakness:  "Muscle weakness"
+};
+
+const RISK_FACTOR_LABELS = {
+  goiter:               "Does patient have goiter?",
+  autoimmune_disease:   "Any autoimmune disease?",
+  diabetes:             "Diabetes?",
+  family_history:       "Family history of thyroid disease?",
+  pericardial_effusion: "Pericardial effusion?"
+};
+
+const TEST_LABELS = {
+  TSH:      "TSH",
+  T3:       "T3",
+  free_T4:  "free T4",
+  PRL:      "PRL",
+  Na:       "Na",
+  TG:       "TG",
+  Hb:       "Hb",
+  chol:     "chol",
+  anti_TPO: "anti-TPO"
+};
+
+const SECOND_TEST_LABELS = {
+  TSH_second_time: "TSH second test",
+  T4_second_time:  "T4 second test",
+  T3_second_time:  "T3 second test"
+};
+
+function buildYesNoFields(containerId, labels) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = "";
+  Object.entries(labels).forEach(([key, label]) => {
+    c.innerHTML += `
+      <div class="form-group">
+        <label>${label}</label>
+        <select id="${containerId}_${key}">
+          <option value="no">No</option>
+          <option value="yes">Yes</option>
+        </select>
+      </div>`;
+  });
+}
+
+function buildDropdownFields(containerId, labels, options) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = "";
+  const opts = options.map(o => `<option value="${o}">${o}</option>`).join("");
+  Object.entries(labels).forEach(([key, label]) => {
+    c.innerHTML += `
+      <div class="form-group">
+        <label>${label}</label>
+        <select id="${containerId}_${key}">${opts}</select>
+      </div>`;
+  });
+}
+
+function getYesNo(containerId, labels) {
+  const result = {};
+  Object.keys(labels).forEach(key => {
+    result[key] = document.getElementById(`${containerId}_${key}`).value;
+  });
+  return result;
+}
+
+function anyYes(obj) {
+  return Object.values(obj).some(v => v === "yes");
+}
+
+// ── FIXED showResult: always clears before writing ──
+function showResult(id, html, type) {
+  type = type || "";
+  const el = document.getElementById(id);
+
+  // Force clear — removes old content and class completely
+  el.className = "";
+  el.innerHTML = "";
+
+  // Small timeout ensures browser registers the DOM change before re-writing
+  setTimeout(function() {
+    el.className = "result-box " + type;
+    el.innerHTML = html;
+
+    // Show bottom menu button — map result id to button id directly
+    const btnMap = {
+      "s1_result": "s1_menu_btn",
+      "s2_result": "s2_menu_btn",
+      "s3_result": "s3_menu_btn",
+      "s4_result": "s4_menu_btn"
+    };
+    const btnId = btnMap[id];
+    if (btnId) document.getElementById(btnId).classList.add("visible");
+
+    el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, 10);
+}
+
+function managementNotesHTML() {
+  return `<div class="notes-box">
+    <h4>Management Notes:</h4>
+    <ol>
+      <li>Visit for TSH test if you have any hypo or hyper symptoms</li>
+      <li>Visit for TSH test if you become pregnant</li>
+      <li>Visit for TSH test if you start menopause or HRT/OCP treatment</li>
+      <li>Visit for TSH test if you start medications that interact with levothyroxine</li>
+      <li>Visit for TSH test if you gain or lose 10% of your weight</li>
+      <li>Visit for TSH test if you change your levothyroxine brand</li>
+    </ol>
+    <br/>
+    <h4>Levothyroxine Usage Instructions:</h4>
+    <ul>
+      <li>Take on an empty stomach</li>
+      <li>Wait 30 minutes before eating</li>
+      <li>Take with a glass of water</li>
+      <li>Avoid other medications/supplements for 4 hours</li>
+      <li>No interaction with diabetes or blood pressure medications</li>
+    </ul>
+  </div>`;
+}
+
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  document.getElementById("mainMenu").style.display = "none";
+  // Clear all results and hide bottom buttons when entering a section
+  ["s1_result","s2_result","s3_result","s4_result"].forEach(r => {
+    const el = document.getElementById(r);
+    if (el) { el.className = ""; el.innerHTML = ""; }
+  });
+  document.querySelectorAll(".btn-back-bottom").forEach(b => b.classList.remove("visible"));
+}
+
+function goMenu() {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById("mainMenu").style.display = "";
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  buildYesNoFields("s1_symptoms_fields", SYMPTOM_LABELS);
+  buildYesNoFields("s1_risk_fields", RISK_FACTOR_LABELS);
+  buildDropdownFields("s2_tests_fields", TEST_LABELS, ["normal", "up", "down", "not checked"]);
+  buildYesNoFields("s2_symptoms_fields", SYMPTOM_LABELS);
+  buildDropdownFields("s2_second_fields", SECOND_TEST_LABELS, ["normal", "up", "down", "not checked"]);
+  buildYesNoFields("s3_symptoms_fields", SYMPTOM_LABELS);
+
+  document.getElementById("s2_tests_fields_TSH").addEventListener("change", function() {
+    const val = this.value;
+    document.getElementById("s2_symptoms_block").classList.toggle("active", val === "normal");
+    document.getElementById("s2_second_tests_block").classList.toggle("active", val === "normal" || val === "up");
+  });
+});
+
+function s3StatusChange() {
+  const status = document.getElementById("s3_status").value;
+  document.getElementById("s3_duration_block").classList.toggle("active", status === "overt hypothyroidism");
+}
+
+function runSection1() {
+  const symptoms = getYesNo("s1_symptoms_fields", SYMPTOM_LABELS);
+  if (anyYes(symptoms)) {
+    showResult("s1_result", "&#10003; <strong>Recommendation:</strong> Check TSH and free T4 levels", "success");
+  } else {
+    document.getElementById("s1_risk_block").classList.add("active");
+    const risk = getYesNo("s1_risk_fields", RISK_FACTOR_LABELS);
+    if (anyYes(risk)) {
+      showResult("s1_result", "&#10003; <strong>Recommendation:</strong> Check TSH level", "warning");
+    } else {
+      showResult("s1_result", "No thyroid testing recommended at this time", "");
+    }
+  }
+}
+
+function runSection2() {
+  const tests = {};
+  Object.keys(TEST_LABELS).forEach(key => {
+    tests[key] = document.getElementById(`s2_tests_fields_${key}`).value;
+  });
+  Object.keys(SECOND_TEST_LABELS).forEach(key => {
+    tests[key] = document.getElementById(`s2_second_fields_${key}`).value;
+  });
+
+  let lines = [];
+  let status = null;
+
+  if (tests.TSH === "normal") {
+    const symptoms = getYesNo("s2_symptoms_fields", SYMPTOM_LABELS);
+    if (anyYes(symptoms)) {
+      lines.push("Recommendation: Repeat TSH and free T4 testing");
+      if (tests.T4_second_time === "down") {
+        status = "central hypothyroidism";
+        lines.push("Diagnosis: " + status);
+      }
+    } else {
+      lines.push("Hypothyroidism ruled out");
+    }
+  } else if (tests.TSH === "up") {
+    if (tests.free_T4 === "down") {
+      status = "overt hypothyroidism";
+      lines.push("Diagnosis: " + status);
+    } else if (tests.T3 === "normal" && tests.free_T4 === "normal") {
+      status = "subclinical hypothyroidism";
+      lines.push("Diagnosis: " + status);
+      lines.push("Recommendation: Check anti-TPO, repeat TSH and free T4 in 1-3 months");
+      lines.push("If patient is pregnant, check TSH and free T4 next week");
+    }
+  }
+
+  if (tests.TSH === "up" && tests.T3 === "normal" && tests.free_T4 === "normal" &&
+      tests.T3_second_time === "normal" && tests.TSH_second_time === "normal" &&
+      tests.T4_second_time === "normal" && tests.anti_TPO === "positive") {
+    lines.push("Recommendation: Follow up with TSH and free T4 annually");
+  }
+
+  if (lines.length === 0) lines.push("No specific recommendation based on entered values.");
+  showResult("s2_result", lines.join("<br/>"), status ? "success" : "warning");
+}
+
+function runSection3() {
+  const status    = document.getElementById("s3_status").value;
+  const age       = parseInt(document.getElementById("s3_age").value);
+  const weight    = parseFloat(document.getElementById("s3_weight").value);
+  const TSH       = parseFloat(document.getElementById("s3_TSH").value);
+  const upperTSH  = parseFloat(document.getElementById("s3_upper_TSH").value);
+  const ACD       = document.getElementById("s3_ACD").value === "yes";
+  const IHD       = document.getElementById("s3_IHD").value === "yes";
+  const symptoms  = getYesNo("s3_symptoms_fields", SYMPTOM_LABELS);
+  const symptomatic = anyYes(symptoms);
+
+  if (!status || isNaN(age) || isNaN(weight) || isNaN(TSH) || isNaN(upperTSH)) {
+    showResult("s3_result", "Please fill in all required fields.", "error");
+    return;
+  }
+
+  let lines = [];
+  lines.push(`<strong>Management Plan for: ${status}</strong>`);
+
+  if (status === "subclinical hypothyroidism") {
+    if (TSH > 10) {
+      lines.push(age > 65
+        ? "Recommendation: Levothyroxine 25 mcg daily, recheck TSH in 6 weeks"
+        : "Recommendation: Levothyroxine 50 mcg daily, recheck TSH in 6 weeks");
+    } else if (TSH > 7 && TSH <= 10) {
+      if (age > 65) {
+        lines.push(symptomatic
+          ? "Recommendation: Levothyroxine 25 mcg daily, recheck TSH in 6 weeks"
+          : "Recommendation: No treatment needed, follow up TSH and free T4 in 6 months");
+      } else {
+        lines.push("Recommendation: Levothyroxine 50 mcg daily, recheck TSH in 6 weeks");
+      }
+    } else if (TSH > upperTSH && TSH <= 7) {
+      lines.push(age > 65
+        ? "Recommendation: No treatment needed, follow up TSH and free T4 in 6 months"
+        : "Recommendation: Levothyroxine 50 mcg daily, recheck TSH in 6 weeks");
+    }
+  } else if (status === "overt hypothyroidism") {
+    let levo_dose = Math.min(1.6 * weight, 200);
+    if (age > 65 || ACD || IHD) {
+      const duration = document.getElementById("s3_duration").value;
+      levo_dose = (duration === "yes") ? 1.2 * weight : (age > 70 ? 25 : 50);
+    }
+    lines.push(`Recommendation: Levothyroxine ${Math.round(levo_dose)} mcg daily, recheck TSH in 6 weeks`);
+  }
+
+  showResult("s3_result", lines.join("<br/>") + managementNotesHTML(), "success");
+}
+
+function runSection4() {
+  const age      = parseInt(document.getElementById("s4_age").value);
+  const status   = document.getElementById("s4_status").value;
+  const TSH      = parseFloat(document.getElementById("s4_TSH").value);
+  const free_T4  = parseFloat(document.getElementById("s4_free_T4").value);
+  const lower_T4 = parseFloat(document.getElementById("s4_lower_T4").value);
+  const upper_T4 = parseFloat(document.getElementById("s4_upper_T4").value);
+
+  if (!status || isNaN(age) || isNaN(TSH) || isNaN(free_T4) || isNaN(lower_T4) || isNaN(upper_T4)) {
+    showResult("s4_result", "Please fill in all required fields.", "error");
+    return;
+  }
+
+  let target_TSH_min, target_TSH_max;
+  if (age < 65) { target_TSH_min = 0.5; target_TSH_max = 2.0; }
+  else          { target_TSH_min = 3.0; target_TSH_max = 5.0; }
+
+  let TSH_status;
+  if (TSH > target_TSH_max)                                TSH_status = "up";
+  else if (TSH >= target_TSH_min && TSH <= target_TSH_max) TSH_status = "normal";
+  else                                                     TSH_status = "low";
+
+  let lines = [];
+  lines.push(`Target TSH range for this patient: ${target_TSH_min}–${target_TSH_max}`);
+  lines.push(`Current TSH status: ${TSH_status}`);
+
+  if (status === "subclinical hypothyroidism") {
+    const compliance   = document.getElementById("s4_compliance").value;
+    const interactions = document.getElementById("s4_interactions").value;
+    if (compliance === "no" || interactions === "yes") {
+      lines.push("Recommendation:");
+      lines.push("- Take medication regularly on empty stomach");
+      lines.push("- No other medications/supplements within 4 hours");
+      lines.push("- Recheck TSH in 6 weeks");
+    }
+    if (TSH_status === "normal") {
+      lines.push("Recommendation: Continue current dose, follow up TSH annually (or every 6 months if compliance concerns)");
+    } else if (TSH_status === "up") {
+      lines.push("Recommendation: Increase dose by 12.5–25 mcg daily, recheck TSH in 6 weeks");
+    }
+  } else if (status === "overt hypothyroidism") {
+    if (TSH_status === "normal") {
+      lines.push("Recommendation: Continue current dose, follow up TSH annually");
+    } else if (TSH > target_TSH_max) {
+      if (TSH <= 10) {
+        lines.push("Recommendation: Increase dose by 12.5–25 mcg daily (or additional 50/100 mcg on Fridays)");
+      } else if (TSH > 10 && TSH <= 20) {
+        lines.push("Recommendation: Increase dose by 25–50 mcg daily (or additional 50/100 mcg on Thursdays and Fridays)");
+      } else if (TSH > 20) {
+        if (free_T4 < lower_T4) {
+          lines.push("Recommendation: Double current dose, recheck TSH in 6 weeks");
+        } else if (free_T4 > upper_T4) {
+          lines.push("Recommendation: Add one extra dose per week (e.g., 2 pearls on Fridays)");
+        }
+      }
+    } else if (TSH_status === "low") {
+      if (TSH > 0.05 && TSH < target_TSH_min) {
+        lines.push("Recommendation: Reduce dose by one dose per week (e.g., skip Fridays)");
+      } else if (TSH <= 0.05) {
+        lines.push("Recommendation: Reduce dose by 50%, recheck TSH in 6 weeks");
+      }
+    }
+  }
+
+  showResult("s4_result", lines.join("<br/>") + managementNotesHTML(), "success");
+}
+</script>
+</body>
+</html>
