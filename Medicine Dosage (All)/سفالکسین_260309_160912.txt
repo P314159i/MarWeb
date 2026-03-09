@@ -1,0 +1,180 @@
+import math
+
+def prescribe_cephalexin(weight_kg, age_months, mg_kg_day, total_days, times_per_day):
+111111
+
+
+Pediatric Cephalexin Prescribing Assistant Parameters
+weight_kg : float
+  Patient weight (kg) - **MUST be > 0** age_months : int
+  Patient age in **MONTHS** (critical for age restrictions!) mg_kg_day : float
+    Desired dose (mg/kg/day). Suggested values: 20, 50, 75, or 100 mg/ kg/day.
+total_days : int
+  Days of therapy ( 3 for most infections) times_per_day: int
+Doses per day. **Accepted values: 3 or 4** (standard for cephalexin).
+Returns str
+Prescription order+ safety warnings. Returns errors on invalid input.
+
+111111
+
+
+
+
+
+#
+# 1. INPUT VALIDATION
+#
+if weight_kg <= O:
+  return"X ERROR: Weight must be > 0 kg." if age_months < 0:
+  return"X ERROR: Age cannot be negative." if total_days < 3:
+return"X ERROR: Minimum treatment duration is 3 days."
+
+if times_per_day not in (3, 4):
+return"X ERROR: Doses/day must be 3 or 4 for cephalexin."
+
+# Validate mg_kg_day (must be one of the suggested values) suggested_doses = [20, 50, 75, 100]
+if mg_kg_day not in suggested_doses:
+    return f''X	ERROR: mg_kg_day must be ONE of {suggested_doses} mg/kg/day."
+
+#
+# 2. AGE-SPECIFIC RESTRICTIONS
+#
+warnings= D
+
+  # Capsules/Tablets are FORBIDDEN under 5 YEARS (60 months) use suspension ONLY
+if age_months < 60:
+    warnings.append(" !	CAPSULES/TABLETS are NOT permitted for patients< 5 years. SUSPENSION will be used.")
+else:
+warnings.append("	Capsules may be used (patient 5 years).")
+
+#
+# 3. CALCULATE DOSES & SAFETY CHECKS
+#
+# Total daily dose (mg)
+total_daily_dose = round(weight_kg * mg_kg_day, 2)
+
+#---- MAX DAILY DOSE CHECK----
+MAX_DAILY _DOSE= 4000 # mg (absolute max for children) if total_daily_dose > MAX_DAILY _DOSE:
+warnings.append(f'' !	Daily dose reduced to max allowed:
+{MAX_DAILY_DOSE} mg (was {total_daily_dose} mg).") total_daily_dose = MAX_DAILY _DOSE
+
+# Dose per administration
+
+dose_per_admin = round(total_daily_dose / times_per_day, 2)
+
+#---- MAX SINGLE DOSE CHECK (Pediatric safe limit)---­ MAX_SINGLE_DOSE = 500 # mg per dose (standard pediatric limit) if dose_per_admin > MAX_SINGLE_DOSE:
+warnings.append(f"  !	Single dose reduced to max allowed:
+{MAX_SINGLE_DOSE} mg (was {dose_per_admin} mg).") dose_per_admin = MAX_SINGLE_DOSE
+# Re-calculate total daily dose after capping single dose total_daily_dose = dose_per_admin * times_per_day warnings.append(f"	Adjusted total daily dose to
+{total_daily_dose} mg.")
+
+#
+# 4. FORMULATION CALCULATIONS
+#
+#----SUSPENSION 125 mg/	5 ml	(= 25 mg/ml)---­
+SUSP_125_CONC = 25.0	# mg per ml
+#---- SUSPENSION 250 mg/	5 ml	(= 50 mg/ml)---­
+SUSP_250_CONC = 50.0
+#---- CAPSULE STRENGTHS---­ CAP_250 = 250
+CAP_500 = 500
+
+#
+# 5. DETERMINE APPROPRIATE FORMULATIONS
+#
+prescriptions = D
+
+#
+# A. SUSPENSION 125 mg/5 ml
+#
+ml_per_dose_ 125 = round(dose_per_admin / SUSP_125_CONC, 1) total_ml_125 = ml_per_dose_125 * times_per_day * total_days bottles_125 = math.ceil(total_ml_125 / 100)  # Standard bottle= 100
+ml
+
+prescriptions.append({
+"form": "Suspension 125 mg/5 ml", "dose_ml": ml_per_dose_125,
+"total ml"· total ml 125
+"dispense": f''{bottles_125} x 100 ml bottle(s)", "strength": "125 mg per 5 ml (25 mg/ml)"
+})
+
+#
+# B. SUSPENSION 250 mg/5 ml
+#
+ml_per_dose_250 = round(dose_per_admin / SUSP_250_CONC, 1) total_ml_250 = ml_per_dose_250 * times_per_day * total_days bottles_250 = math.ceil(total_ml_250 / 100)
+
+prescriptions.append({
+"form": "Suspension 250 mg/5 ml", "dose_ml": ml_per_dose_250,
+"total ml": total ml 250
+"dispense": f''{bottles_250} x 100 ml bottle(s)", "strength": "250 mg per 5 ml (50 mg/ml)"
+})
+
+#
+# C. CAPSULES (ONLY if age 5 years)
+#
+if age_months >= 60:
+# ---- 250 mg Capsules----
+caps_per_dose_250 = math.ceil(dose_per_admin / CAP_250)  #
+Round UP to whole capsule
+total_caps_250 = caps_per_dose_250 * times_per_day * total_days prescriptions.append({
+"form": "Capsule 250 mg", "dose_caps": caps_per_dose_250, "total_caps": total_caps_250,
+
+"dispense": f"{total_caps_250} capsule(s)", "strength": "250 mg"
+})
+
+
+# ---- 500 mg Capsules----
+caps_per_dose_500 = math.ceil(dose_per_admin / CAP_500) total_caps_500 = caps_per_dose_500 * times_per_day * total_days prescriptions.append({
+"form": "Capsule 500 mg", "dose_caps": caps_per_dose_500, "total_caps": total_caps_500,
+"dispense": f"{total_caps_500} capsule(s)", "strength": "500 mg"
+})
+
+#
+# 6. GENERATE NEAT PRESCRIPTION ORDER #
+output= "\n".join(warnings) + "\n" output += "=" * 60 + "\n"
+output+= "PRESCRIPTION ORDER - CEPHALEXIN\n"
+output += "=" * 60 + "\n"
+output+= f"Patient Weight	: {weight_kg} kg\n"
+output+= f"Patient Age		: {age_months//12}y {age_months%12}m\n" output+= f"Dose	: {mg_kg_day} mg/kg/day
+{total_daily_dose} mg/day\n"
+  output += f"Doses per Day	: {times_per _day} (every {24/ times_per_day:.1f} hours)\n"
+output+= f'Duration	: {total_days} days\n\n"
+
+
+
+# Print each feasible formulation for p in prescriptions:
+output+=
+"
+
+
+
+
+
+\n"
+
+output+= f"FORMULATION: {p['form']} I Strength: {p['strength']}\n" output+=
+
+11	\nll
+
+
+
+
+if11dose_ml11 in p: # It's a suspension
+output+= f''Dose Volume	: {p['dose_ml']} ml	(:::::
+{p['dose_ml']*2:.1f} ml	= 1 tsp )\n11
+output+= f11Total Volume		: {p['total_ml']:.1f} ml \n11 output+= f''DISPENSE	: {p['dispense']}\n11 output+= 11\nADMINISTRATION:\n11
+      output+= f'' Give **{p['dose_ml']} ml** ({round(p['dose_ml']*2,1)} tsp) **{times_per_day} times daily** for {total_days} days.\n11
+output += 11  ? Shake bottle well before each dose.\n11
+else: # It's a capsule
+output+= f11Capsules per Dose: {p['dose_caps']}\n11 output+= f11Total Capsules		: {p['total_caps']}\n11 output += f11DISPENSE	: {p['dispense']}\n" output+= 11\nADMINISTRATION:\n11
+      output+= f'' Give **{p['dose_caps']} capsule(s)** {times_per_day} times daily for {total_days} days.\n"
+output += 11 ?	Swallow whole with a full glass of water. Do NOT
+crush.\n"
+output+=
+11	11
+	\n\n
+
+
+#Final  notes
+output += 11=" * 60 + 11\n11
+output+=  11	IMPORTANT NOTES:\n"
+output+= 11  Complete the FULL course even if symptoms improve.\n11 output+= "- Store suspension in the refrigerator (shake before use).\n" output+= "- Discard any unused suspension after 14 days.\n" output+= 11  Report rash, diarrhea, or severe stomach pain immediately.
+\n"
+output += 11=" * 60 return output

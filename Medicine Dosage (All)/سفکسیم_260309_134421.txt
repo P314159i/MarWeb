@@ -1,0 +1,103 @@
+import math
+
+def Cefixim(weight, age, mg_kg_day, TotalDay, Times_perday):
+111111
+
+
+Cefixime prescription calculator
+
+Suggested values:
+- mg_kg_day = 8 mg/kg/day
+- Times_perday = 1 or 2 times per day
+111111
+
+
+
+
+
+# Age restrictions if age< 6:
+    print("WARNING: Tablets are generally not recommended under 6 years of age")
+print()
+
+# Calculate total daily dose TotalDose= weight* mg_kg_day
+
+
+# Maximum dose limits max_dose_daily = 400
+max_single_dose = 400
+
+
+# mg/day
+# mg per dose
+
+
+
+if TotalDose > max_dose_daily:
+print(f"Note: Daily dose capped at {max_dose_daily} mg (was
+{TotalDose:.0f} mg)")
+TotalDose = max_dose_daily
+
+# Calculate single dose
+single_dose_mg = TotalDose / Times_perday
+
+if single_dose_mg > max_single_dose: single_dose_mg = max_single_dose
+
+print(f"Daily dose: {TotalDose:.0f} mg")
+
+print(f"Single dose: {single_dose_mg:.0f} mg") print(f"Dosing interval: every {24/Times_perday:.1f} hours") print("-"* 60)
+
+# =====================
+#  Suspension 100mg/5cc (bottles: 100ml and 50ml)
+# =====================
+# Volume per single dose (cc)
+Q_susp_cc = (single_dose_mg * 5) / 100
+
+# Total volume needed for entire treatment (cc) total_volume_cc = Q_susp_cc * Times_perday * TotalDay
+
+# Number of bottles needed
+N1_susp100 = math.ceil(total_volume_cc / 100) # 100ml bottles N2_susp100 = math.ceil(total_volume_cc / 50)	# 50ml bottles
+
+print(f"Suspension 100mg/5cc:")
+print(f" Dose: {Q_susp_cc:.1 f} cc ({single_dose_mg:.0f} mg)") print(f" Every {24/Times_perday:.1f} hours for {TotalDay} days") print(f" Total volume needed: {total_volume_cc:.1f} cc")
+print(f" N (100ml bottle) = {N1_susp100}") print(f" N (50ml bottle) = {N2_susp100}") print("-"* 60)
+
+# =====================
+# Tablet 200mg
+# =====================
+total_doses = Times_perday * TotalDay
+Q_Tab200 = single_dose_mg / 200 # tablets per dose
+
+if Q_Tab200 >= 1:
+Q_Tab200_whole = math.floor(Q_Tab200) N_Tab200 = Q_Tab200_whole * total_doses print(f''Tablet 200mg:")
+print(f'' Dose: {Q_Tab200_whole} tab(s) ({Q_Tab200_whole * 200}
+
+mg)")
+print(f'' Every {24/Times_perday:.1f} hours for {TotalDay} days") print(f'' N = {N_Tab200} tablets")
+else:
+    print(f''Tablet 200mg: Dose too low ({single_dose_mg:.0f} mg< 200 mg)")
+print("-"* 60)
+
+# =====================
+# Tablet 400mg
+# =====================
+Q_Tab400 = single_dose_mg / 400 # tablets per dose
+
+if Q_Tab400 >= 1:
+Q_Tab400_whole = math.floor(Q_Tab400) N_Tab400 = Q_Tab400_whole * total_doses print(f"Tablet 400mg:")
+    print(f'' Dose: {Q_Tab400_whole} tab(s) ({Q_Tab400_whole * 400} mg)")
+print(f'' Every {24/Times_perday:.1f} hours for {TotalDay} days") print(f'' N = {N_Tab400} tablets")
+else:
+    print(f''Tablet 400mg: Dose too low ({single_dose_mg:.0f} mg< 400 mg)")
+
+
+# Example usage print("="* 60)
+print("EXAMPLE 1: Child 15kg, age 4, 8mg/kg/day, 7 days, 1x/day")
+print("=" * 60)
+Cefixim(weight=15, age=4, mg_kg_day=8, TotaIDay=7, Times_perday=1)
+
+print("\n" + "=" * 60)
+print("EXAMPLE 2: Child 20kg, age=8, 8mg/kg/day, 5 days, 2x/day") print("=" * 60)
+Cefixim(weight=20, age=8, mg_kg_day=8, TotalDay=S, Times_perday=2)
+
+print("\n" + "=" * 60)
+print("EXAMPLE 3: Adult 50kg, age=25, 8mg/kg/day, 10 days, 1 x/day") print("=" * 60)
+Cefixim(weight=S0, age=25, mg_kg_day=8, TotaIDay=10, Times_perday=1)

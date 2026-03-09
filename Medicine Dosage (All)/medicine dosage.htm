@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doctor Assistant - Headache & Prescription Calculator</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #cbd5e1;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    text-align: center;
+    color: var(--primary);
+    margin-bottom: 10px;
+    font-size: 1.8em;
+  }
+
+  h2 {
+    color: var(--primary-dark);
+    margin: 20px 0 10px 0;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 5px;
+  }
+
+  h3 {
+    color: var(--text);
+    margin: 15px 0 8px 0;
+  }
+
+  .subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 30px;
+  }
+
+  /* ---- Menu Grid ---- */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .menu-card {
+    background: var(--card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .menu-card:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 16px rgba(37,99,235,0.15);
+    transform: translateY(-2px);
+  }
+
+  .menu-card .icon { font-size: 2.2em; margin-bottom: 8px; }
+  .menu-card .label { font-weight: 600; font-size: 1.1em; }
+  .menu-card .desc { color: var(--muted); font-size: 0.85em; margin-top: 4px; }
+
+  /* ---- Sections ---- */
+  .section {
+    display: none;
+    background: var(--card);
+    border-radius: 12px;
+    padding: 30px;
+    margin-top: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .section.active { display: block; }
+
+  /* ---- Forms ---- */
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 0.95em;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1em;
+    background: #f8fafc;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-row-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 4px;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--primary-dark); }
+
+  .btn-back {
+    background: #e2e8f0;
+    color: var(--text);
+  }
+
+  .btn-back:hover { background: #cbd5e1; }
+
+  .btn-danger {
+    background: var(--danger);
+    color: white;
+  }
+
+  .btn-danger:hover { background: #b91c1c; }
+
+  /* ---- Output ---- */
+  .output {
+    background: #f1f5f9;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 16px;
+    white-space: pre-wrap;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.7;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .red-flag-item {
+    background: #fef2f2;
+    border-left: 4px solid var(--danger);
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .safe-item {
+    background: #f0fdf4;
+    border-left: 4px solid var(--success);
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .warning-item {
+    background: #fffbeb;
+    border-left: 4px solid var(--warning);
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* Yes/No toggle buttons */
+  .yn-group {
+    margin-bottom: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .yn-group .yn-label {
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .yn-btn {
+    padding: 6px 20px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    margin-right: 6px;
+    transition: all 0.15s;
+  }
+
+  .yn-btn.selected-yes {
+    background: #fee2e2;
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .yn-btn.selected-no {
+    background: #f0fdf4;
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    background: #fffbeb;
+    border: 2px solid var(--warning);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    text-align: center;
+    font-size: 0.92em;
+  }
+
+  .disclaimer strong { color: var(--danger); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .form-row, .form-row-3 { grid-template-columns: 1fr; }
+    .menu-grid { grid-template-columns: 1fr; }
+    body { padding: 10px; }
+    .section { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🩺 Doctor Assistant Tool</h1>
+  <p class="subtitle">Headache Approach & Medication Dosage Calculator</p>
+
+  <!-- ===================== MAIN MENU ===================== -->
+  <div id="mainMenu">
+    <h2>Choose a Module</h2>
+    <div class="menu-grid">
+      <div class="menu-card" onclick="showSection('headache')">
+        <div class="icon">🧠</div>
+        <div class="label">Headache Approach</div>
+        <div class="desc">Red flag assessment, ICHD-3 diagnosis, and management</div>
+      </div>
+      <div class="menu-card" onclick="showSection('acetaminophen')">
+        <div class="icon">💊</div>
+        <div class="label">Acetaminophen</div>
+        <div class="desc">Drops, suspension, tablets, suppositories</div>
+      </div>
+      <div class="menu-card" onclick="showSection('ibuprofen')">
+        <div class="icon">💊</div>
+        <div class="label">Ibuprofen</div>
+        <div class="desc">Suspension & tablets dosing</div>
+      </div>
+      <div class="menu-card" onclick="showSection('azithromycin')">
+        <div class="icon">💊</div>
+        <div class="label">Azithromycin</div>
+        <div class="desc">Diagnosis-specific dosing protocols</div>
+      </div>
+      <div class="menu-card" onclick="showSection('cefixime')">
+        <div class="icon">💊</div>
+        <div class="label">Cefixime</div>
+        <div class="desc">Suspension & tablet dosing</div>
+      </div>
+      <div class="menu-card" onclick="showSection('cephalexin')">
+        <div class="icon">💊</div>
+        <div class="label">Cephalexin</div>
+        <div class="desc">Suspension & capsule dosing</div>
+      </div>
+      <div class="menu-card" onclick="showSection('cotrimoxazole')">
+        <div class="icon">💊</div>
+        <div class="label">Cotrimoxazole</div>
+        <div class="desc">TMP-SMX suspension & tablets</div>
+      </div>
+      <div class="menu-card" onclick="showSection('penicillinV')">
+        <div class="icon">💊</div>
+        <div class="label">Penicillin V (Oral)</div>
+        <div class="desc">Oral suspension & tablets</div>
+      </div>
+      <div class="menu-card" onclick="showSection('penicillinG')">
+        <div class="icon">💉</div>
+        <div class="label">Penicillin G (IM)</div>
+        <div class="desc">Intramuscular injection dosing</div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>⚠️ DISCLAIMER:</strong> This tool is intended <strong>only as a clinical assistant</strong>.
+      It does <strong>NOT</strong> replace clinical judgment, thorough patient evaluation, or consultation
+      with a qualified physician. Always verify dosages against current guidelines and adjust for
+      individual patient factors. The developers assume no liability for clinical decisions made
+      based on this tool.
+    </div>
+  </div>
+
+  <!-- ===================== HEADACHE APPROACH ===================== -->
+  <div id="headache" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>🧠 Headache Approach</h2>
+
+    <!-- STEP 1: Red Flags -->
+    <div id="ha-step1">
+      <h3>Step 1: Red Flag Assessment</h3>
+      <p style="color:var(--muted); margin-bottom:12px;">Answer each question. Red flags will prompt urgent evaluation.</p>
+
+      <div id="redFlagQuestions"></div>
+
+      <button class="btn btn-danger" onclick="evaluateRedFlags()" style="margin-top:14px;">Evaluate Red Flags</button>
+      <div id="redFlagOutput"></div>
+    </div>
+
+    <!-- STEP 2: Low-Risk Diagnosis -->
+    <div id="ha-step2" style="display:none;">
+      <h3>Step 2: Primary Headache Diagnosis (ICHD-3)</h3>
+
+      <div id="ha-prior" class="form-group" style="margin-bottom:16px;">
+        <label>Previously diagnosed with migraine/tension/cluster and on medication?</label>
+        <select id="priorDx" onchange="handlePriorDx()">
+          <option value="">-- Select --</option>
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+        </select>
+        <div id="priorDxMsg"></div>
+      </div>
+
+      <div id="ha-ichd" style="display:none;">
+        <!-- Migraine -->
+        <h3>Migraine Check (ICHD-3)</h3>
+        <p style="color:var(--muted); font-size:0.9em;">Requires ≥5 attacks, 4–72 h untreated, ≥2 features, ≥1 accompaniment</p>
+        <div id="migraineFeatures"></div>
+        <div id="migraineAccomp"></div>
+        <div class="yn-group">
+          <span class="yn-label">≥5 lifetime attacks, each 4–72 h untreated?</span>
+          <button class="yn-btn" onclick="toggleYN(this,'migAttacks','yes')">Yes</button>
+          <button class="yn-btn" onclick="toggleYN(this,'migAttacks','no')">No</button>
+          <input type="hidden" id="migAttacks" value="">
+        </div>
+
+        <!-- Tension -->
+        <h3 style="margin-top:20px;">Tension Headache Check (ICHD-3)</h3>
+        <p style="color:var(--muted); font-size:0.9em;">Requires ≥10 episodes, 30 min–7 days, ≥2 features, limited accompaniment</p>
+        <div id="tensionFeatures"></div>
+        <div class="yn-group">
+          <span class="yn-label">No nausea/vomiting, and ≤1 of photophobia/phonophobia?</span>
+          <button class="yn-btn" onclick="toggleYN(this,'tensAccomp','yes')">Yes</button>
+          <button class="yn-btn" onclick="toggleYN(this,'tensAccomp','no')">No</button>
+          <input type="hidden" id="tensAccomp" value="">
+        </div>
+        <div class="yn-group">
+          <span class="yn-label">≥10 episodes, &lt;1/month average, 30 min–7 days each?</span>
+          <button class="yn-btn" onclick="toggleYN(this,'tensEpisodes','yes')">Yes</button>
+          <button class="yn-btn" onclick="toggleYN(this,'tensEpisodes','no')">No</button>
+          <input type="hidden" id="tensEpisodes" value="">
+        </div>
+
+        <!-- Cluster -->
+        <h3 style="margin-top:20px;">Cluster Headache Check (ICHD-3)</h3>
+        <p style="color:var(--muted); font-size:0.9em;">Requires ≥5 attacks, severe unilateral 15–180 min, ≥1 autonomic + agitation/alcohol trigger</p>
+        <div id="clusterAutos"></div>
+        <div class="yn-group">
+          <span class="yn-label">Restless/agitated during attack?</span>
+          <button class="yn-btn" onclick="toggleYN(this,'clAgitation','yes')">Yes</button>
+          <button class="yn-btn" onclick="toggleYN(this,'clAgitation','no')">No</button>
+          <input type="hidden" id="clAgitation" value="">
+        </div>
+        <div class="yn-group">
+          <span class="yn-label">Severe unilateral orbital/temporal pain, 15–180 min, 1–8/day?</span>
+          <button class="yn-btn" onclick="toggleYN(this,'clTiming','yes')">Yes</button>
+          <button class="yn-btn" onclick="toggleYN(this,'clTiming','no')">No</button>
+          <input type="hidden" id="clTiming" value="">
+        </div>
+        <div class="yn-group">
+          <span class="yn-label">Triggered/worsened by alcohol?</span>
+          <button class="yn-btn" onclick="toggleYN(this,'clAlcohol','yes')">Yes</button>
+          <button class="yn-btn" onclick="toggleYN(this,'clAlcohol','no')">No</button>
+          <input type="hidden" id="clAlcohol" value="">
+        </div>
+
+        <button class="btn btn-primary" onclick="diagnoseHeadache()" style="margin-top:16px;">Diagnose &amp; Manage</button>
+        <div id="diagnosisOutput"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ACETAMINOPHEN ===================== -->
+  <div id="acetaminophen" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💊 Acetaminophen Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="acet-weight" min="0.5" step="0.1" placeholder="e.g. 20">
+      </div>
+      <div class="form-group">
+        <label>Age (years)</label>
+        <input type="number" id="acet-age" min="0" step="0.1" placeholder="e.g. 5">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>mg/kg/day (10–15)</label>
+        <input type="number" id="acet-mgkg" min="1" max="75" value="15" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>Total Days</label>
+        <input type="number" id="acet-days" min="1" value="3">
+      </div>
+      <div class="form-group">
+        <label>Times per Day (4–6)</label>
+        <select id="acet-times">
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="calcAcetaminophen()">Calculate</button>
+    <div id="acet-output" class="output" style="display:none;"></div>
+  </div>
+
+  <!-- ===================== IBUPROFEN ===================== -->
+  <div id="ibuprofen" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💊 Ibuprofen Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="ibu-weight" min="0.5" step="0.1" placeholder="e.g. 20">
+      </div>
+      <div class="form-group">
+        <label>Age (years)</label>
+        <input type="number" id="ibu-age" min="0" step="0.1" placeholder="e.g. 5">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>mg/kg/day (5–10)</label>
+        <input type="number" id="ibu-mgkg" min="1" max="40" value="10" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>Total Days</label>
+        <input type="number" id="ibu-days" min="1" value="5">
+      </div>
+      <div class="form-group">
+        <label>Times per Day (3–4)</label>
+        <select id="ibu-times">
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="calcIbuprofen()">Calculate</button>
+    <div id="ibu-output" class="output" style="display:none;"></div>
+  </div>
+
+  <!-- ===================== AZITHROMYCIN ===================== -->
+  <div id="azithromycin" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💊 Azithromycin Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="azi-weight" min="0.5" step="0.1" placeholder="e.g. 20">
+      </div>
+      <div class="form-group">
+        <label>Age (years)</label>
+        <input type="number" id="azi-age" min="0" step="0.1" placeholder="e.g. 6">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Diagnosis</label>
+        <select id="azi-dx" onchange="aziDxChange()">
+          <option value="streptococcal pharyngitis">Streptococcal Pharyngitis</option>
+          <option value="vibrio diarrhea">Vibrio Diarrhea</option>
+          <option value="shigella diarrhea">Shigella Diarrhea</option>
+          <option value="other infections">Other Infections</option>
+          <option value="empty">Custom Dosing</option>
+        </select>
+      </div>
+      <div class="form-group" id="azi-custom-group" style="display:none;">
+        <label>mg/kg/day (custom)</label>
+        <input type="number" id="azi-mgkg" min="1" value="10" step="0.5">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" id="azi-days-group" style="display:none;">
+        <label>Total Days</label>
+        <input type="number" id="azi-days" min="1" value="5">
+      </div>
+      <div class="form-group" id="azi-times-group" style="display:none;">
+        <label>Times per Day</label>
+        <select id="azi-times">
+          <option value="1" selected>1</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="calcAzithromycin()">Calculate</button>
+    <div id="azi-output" class="output" style="display:none;"></div>
+  </div>
+
+  <!-- ===================== CEFIXIME ===================== -->
+  <div id="cefixime" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💊 Cefixime Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="cef-weight" min="0.5" step="0.1" placeholder="e.g. 15">
+      </div>
+      <div class="form-group">
+        <label>Age (years)</label>
+        <input type="number" id="cef-age" min="0" step="0.1" placeholder="e.g. 4">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>mg/kg/day (8)</label>
+        <input type="number" id="cef-mgkg" min="1" max="20" value="8" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>Total Days</label>
+        <input type="number" id="cef-days" min="1" value="7">
+      </div>
+      <div class="form-group">
+        <label>Times per Day (1–2)</label>
+        <select id="cef-times">
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="calcCefixime()">Calculate</button>
+    <div id="cef-output" class="output" style="display:none;"></div>
+  </div>
+
+  <!-- ===================== CEPHALEXIN ===================== -->
+  <div id="cephalexin" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💊 Cephalexin Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="ceph-weight" min="0.5" step="0.1" placeholder="e.g. 20">
+      </div>
+      <div class="form-group">
+        <label>Age (months)</label>
+        <input type="number" id="ceph-age" min="0" step="1" placeholder="e.g. 60">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>mg/kg/day</label>
+        <select id="ceph-mgkg">
+          <option value="20">20</option>
+          <option value="50" selected>50</option>
+          <option value="75">75</option>
+          <option value="100">100</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Total Days</label>
+        <input type="number" id="ceph-days" min="3" value="7">
+      </div>
+      <div class="form-group">
+        <label>Times per Day (3–4)</label>
+        <select id="ceph-times">
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="calcCephalexin()">Calculate</button>
+    <div id="ceph-output" class="output" style="display:none;"></div>
+  </div>
+
+  <!-- ===================== COTRIMOXAZOLE ===================== -->
+  <div id="cotrimoxazole" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💊 Cotrimoxazole (TMP-SMX) Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="cotri-weight" min="0.5" step="0.1" placeholder="e.g. 15">
+      </div>
+      <div class="form-group">
+        <label>Age (months)</label>
+        <input type="number" id="cotri-age" min="0" step="1" placeholder="e.g. 36">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>Diagnosis</label>
+        <select id="cotri-dx">
+          <option value="URI">URI</option>
+          <option value="UTI">UTI</option>
+          <option value="other_infections">Other Infections</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Total Days</label>
+        <input type="number" id="cotri-days" min="1" value="7">
+      </div>
+      <div class="form-group">
+        <label>Times per Day (2–3)</label>
+        <select id="cotri-times">
+          <option value="2" selected>2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Custom TMP mg/kg/day (leave 0 for standard)</label>
+      <input type="number" id="cotri-mgkg" min="0" value="0" step="0.5">
+    </div>
+    <button class="btn btn-primary" onclick="calcCotrimoxazole()">Calculate</button>
+    <div id="cotri-output" class="output" style="display:none;"></div>
+  </div>
+
+  <!-- ===================== PENICILLIN V ===================== -->
+  <div id="penicillinV" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💊 Penicillin V (Oral) Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="penV-weight" min="0.5" step="0.1" placeholder="e.g. 20">
+      </div>
+      <div class="form-group">
+        <label>Age (months)</label>
+        <input type="number" id="penV-age" min="0" step="1" placeholder="e.g. 60">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>mg/kg/day</label>
+        <select id="penV-mgkg">
+          <option value="25">25</option>
+          <option value="50" selected>50</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Total Days</label>
+        <input type="number" id="penV-days" min="3" value="10">
+      </div>
+      <div class="form-group">
+        <label>Times per Day</label>
+        <select id="penV-times">
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="calcPenicillinV()">Calculate</button>
+    <div id="penV-output" class="output" style="display:none;"></div>
+  </div>
+
+  <!-- ===================== PENICILLIN G ===================== -->
+  <div id="penicillinG" class="section">
+    <button class="btn btn-back" onclick="goHome()">← Back to Menu</button>
+    <h2>💉 Penicillin G (IM) Dosage Calculator</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" id="penG-weight" min="0.5" step="0.1" placeholder="e.g. 15">
+      </div>
+      <div class="form-group">
+        <label>Age (months)</label>
+        <input type="number" id="penG-age" min="0" step="1" placeholder="e.g. 24">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label>mg/kg/day (50)</label>
+        <input type="number" id="penG-mgkg" min="50" max="50" value="50" readonly>
+      </div>
+      <div class="form-group">
+        <label>Total Days (≥3)</label>
+        <input type="number" id="penG-days" min="3" value="5">
+      </div>
+      <div class="form-group">
+        <label>Times per Day</label>
+        <select id="penG-times">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="calcPenicillinG()">Calculate</button>
+    <div id="penG-output" class="output" style="display:none;"></div>
+  </div>
+
+</div><!-- end container -->
+
+<script>
+// ===================== NAVIGATION =====================
+function showSection(id) {
+  document.getElementById('mainMenu').style.display = 'none';
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function goHome() {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('mainMenu').style.display = 'block';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ===================== UTILITY =====================
+function ceil(x) { return Math.ceil(x); }
+function floor(x) { return Math.floor(x); }
+function round2(x) { return Math.round(x * 100) / 100; }
+function round1(x) { return Math.round(x * 10) / 10; }
+function round0(x) { return Math.round(x); }
+
+function gv(id) {
+  let el = document.getElementById(id);
+  return el ? parseFloat(el.value) : NaN;
+}
+function gs(id) {
+  let el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+// ===================== YES/NO TOGGLE =====================
+function toggleYN(btn, hiddenId, val) {
+  let hidden = document.getElementById(hiddenId);
+  let parent = btn.parentElement;
+  parent.querySelectorAll('.yn-btn').forEach(b => {
+    b.classList.remove('selected-yes', 'selected-no');
+  });
+  hidden.value = val;
+  if (val === 'yes') btn.classList.add('selected-yes');
+  else btn.classList.add('selected-no');
+}
+
+function makeYNGroup(label, id) {
+  return `<div class="yn-group">
+    <span class="yn-label">${label}</span>
+    <button class="yn-btn" onclick="toggleYN(this,'${id}','yes')">Yes</button>
+    <button class="yn-btn" onclick="toggleYN(this,'${id}','no')">No</button>
+    <input type="hidden" id="${id}" value="">
+  </div>`;
+}
+
+function isYes(id) {
+  return document.getElementById(id) && document.getElementById(id).value === 'yes';
+}
+
+// ===================== HEADACHE: RED FLAGS =====================
+const redFlagQs = [
+  {id:'rf_age50', label:'Age >50?', ddx:'ICH, mass, GCA', plan:'Neuro exam/imaging (CT/MRI) + ESR/CRP for GCA.'},
+  {id:'rf_pattern', label:'Change in headache pattern/frequency/severity?', ddx:'Tumor, SDH, progression of underlying pathology', plan:'MRI brain.'},
+  {id:'rf_treatfail', label:'No response to oral OR IV therapy?', ddx:'Refractory secondary headache, medication overuse', plan:'MRI + neuro consult.'},
+  {id:'rf_pregnant', label:'Pregnant?', ddx:'Pre-eclampsia, CVST', plan:'Brain MRI for CVST, evaluate pre-eclampsia.'},
+  {id:'rf_thunderclap', label:"Severe onset, peaks in 1–2 min, or 'worst headache ever'?", ddx:'SAH, abscess, meningitis, ICH, CVST, encephalitis', plan:'Urgent non-contrast brain CT.'},
+  {id:'rf_infection', label:'Active/recent infection (sinusitis, otitis, pharyngitis)?', ddx:'Abscess, meningitis', plan:'Brain CT.'},
+  {id:'rf_personality', label:'Change in personality/behavior?', ddx:'Encephalitis, meningitis', plan:'Brain CT.'},
+  {id:'rf_consciousness', label:'Decreased consciousness or LOC?', ddx:'Encephalitis, meningitis', plan:'Brain CT.'},
+  {id:'rf_seizure', label:'Concomitant seizure?', ddx:'Pre-eclampsia, PRES', plan:'Brain CT.'},
+  {id:'rf_exertional', label:'Onset after exercise/intercourse?', ddx:'Ruptured aneurysm, RCVS', plan:'Brain CT/MRI.'},
+  {id:'rf_immuno', label:'Immunocompromised (lupus, RA, DM, HIV, CKD, steroids)?', ddx:'Abscess, meningitis, fungal, toxoplasmosis', plan:'Urgent brain CT.'},
+  {id:'rf_vision', label:'Any vision disturbance (blurred/transient loss)?', ddx:'GCA, glaucoma', plan:'ESR/CRP if >50; ophthalmology if red eye + dilated pupil.'},
+  {id:'rf_postpartum', label:'Recent childbirth (postpartum)?', ddx:'Pseudotumor cerebri (C-section), intracranial hypotension (NVD)', plan:'Brain MRI/MRV, neurology consult.'},
+  {id:'rf_ocp', label:'OCP use?', ddx:'CVST, pseudotumor cerebri', plan:'Brain MRI/MRV.'},
+  {id:'rf_anticoag', label:'Anticoagulant/antiplatelet use?', ddx:'ICH', plan:'Non-contrast brain CT.'},
+  {id:'rf_drugs', label:'Drug abuse (cocaine, amphetamines)?', ddx:'ICH, RCVS, stroke', plan:'Brain CT/MRI.'},
+  {id:'rf_co', label:'Household members with similar headache?', ddx:'CO poisoning', plan:'CO level, hyperbaric if severe.'},
+  {id:'rf_obese', label:'Obese (BMI >30)?', ddx:'Pseudotumor cerebri', plan:'Brain MRI/MRV.'},
+  {id:'rf_focal', label:'Decreased power/sensation (focal deficit)?', ddx:'Stroke, ICH', plan:'Urgent brain CT/MRI.'},
+  {id:'rf_temp', label:'Temp >38°C or <36°C?', ddx:'Infection/sepsis', plan:'Full evaluation.'},
+  {id:'rf_toxic', label:'Fever >38°C + toxic appearance?', ddx:'Meningitis, abscess, encephalitis', plan:'Brain MRI, LP if safe.'},
+  {id:'rf_gcs', label:'GCS decreased?', ddx:'SAH, ICH, infection', plan:'Urgent brain CT.'},
+  {id:'rf_neuro', label:'Abnormal neuro exam (Babinski, pupils, pronator drift)?', ddx:'Mass, stroke, ICH', plan:'Urgent brain CT/MRI.'},
+  {id:'rf_papilledema', label:'Papilledema on fundoscopy?', ddx:'Increased ICP', plan:'Urgent neuroimaging, LP.'},
+  {id:'rf_meningeal', label:'Meningeal signs (Kernig/Brudzinski)?', ddx:'Meningitis', plan:'CT then LP.'},
+];
+
+// Build red flag questions on load
+(function buildRedFlags(){
+  let html = '';
+  redFlagQs.forEach(q => {
+    html += makeYNGroup(q.label, q.id);
+  });
+  document.getElementById('redFlagQuestions').innerHTML = html;
+})();
+
+function evaluateRedFlags() {
+  let flags = [];
+  let details = [];
+  redFlagQs.forEach(q => {
+    if (isYes(q.id)) {
+      flags.push(q.label.replace('?','').trim());
+      details.push(`<div class="red-flag-item"><strong>🚩 ${q.label}</strong><br>DDx: ${q.ddx}<br>Plan: ${q.plan}</div>`);
+    }
+  });
+
+  let out = document.getElementById('redFlagOutput');
+  if (flags.length > 0) {
+    out.innerHTML = `<h3 style="color:var(--danger); margin-top:16px;">⚠️ RED FLAGS IDENTIFIED (${flags.length})</h3>
+      <p><strong>URGENT IMAGING AND NEUROLOGY CONSULT REQUIRED.</strong></p>
+      ${details.join('')}`;
+    document.getElementById('ha-step2').style.display = 'none';
+  } else {
+    out.innerHTML = `<div class="safe-item" style="margin-top:16px;">
+      <strong>✅ NO RED FLAGS IDENTIFIED.</strong><br>
+      Safe to proceed to primary headache evaluation (migraine / tension / cluster).
+    </div>`;
+    document.getElementById('ha-step2').style.display = 'block';
+  }
+}
+
+// ===================== HEADACHE: LOW-RISK DIAGNOSIS =====================
+function handlePriorDx() {
+  let v = gs('priorDx');
+  let msg = document.getElementById('priorDxMsg');
+  let ichd = document.getElementById('ha-ichd');
+  if (v === 'yes') {
+    msg.innerHTML = '<div class="warning-item">Patient has prior diagnosis. Adjust dosage or re-evaluate therapy (e.g., triptans for migraine, amitriptyline for tension).</div>';
+    ichd.style.display = 'none';
+  } else if (v === 'no') {
+    msg.innerHTML = '';
+    ichd.style.display = 'block';
+  } else {
+    msg.innerHTML = '';
+    ichd.style.display = 'none';
+  }
+}
+
+// Build ICHD questions
+(function buildICHD(){
+  // Migraine features
+  let mfHTML = '';
+  ['Unilateral?','Pulsating?','Moderate–severe?','Worsens with activity?'].forEach((q,i) => {
+    mfHTML += makeYNGroup(q, 'migFeat'+i);
+  });
+  document.getElementById('migraineFeatures').innerHTML = mfHTML;
+
+  // Migraine accompaniments
+  let maHTML = '';
+  ['Nausea/vomiting?','Photophobia?','Phonophobia?','Osmophobia?'].forEach((q,i) => {
+    maHTML += makeYNGroup(q, 'migAcc'+i);
+  });
+  document.getElementById('migraineAccomp').innerHTML = maHTML;
+
+  // Tension features
+  let tfHTML = '';
+  ['Bilateral?','Pressing/tightening (non-pulsating)?','Mild–moderate?','Not worsened by activity?'].forEach((q,i) => {
+    tfHTML += makeYNGroup(q, 'tensFeat'+i);
+  });
+  document.getElementById('tensionFeatures').innerHTML = tfHTML;
+
+  // Cluster autonomic
+  let caHTML = '<p style="font-weight:600; margin-bottom:4px;">Autonomic/Horner ipsilateral:</p>';
+  ['Red eye/lacrimation?','Nasal congestion/rhinorrhea?','Ptosis/miosis/anhidrosis?'].forEach((q,i) => {
+    caHTML += makeYNGroup(q, 'clAuto'+i);
+  });
+  document.getElementById('clusterAutos').innerHTML = caHTML;
+})();
+
+function diagnoseHeadache() {
+  let out = document.getElementById('diagnosisOutput');
+  let html = '';
+  let dx = 'undetermined';
+
+  // Migraine check
+  let migFeats = 0;
+  for (let i=0; i<4; i++) { if (isYes('migFeat'+i)) migFeats++; }
+  let migAccomps = 0;
+  for (let i=0; i<4; i++) { if (isYes('migAcc'+i)) migAccomps++; }
+  let migAttacks = isYes('migAttacks');
+
+  if (migAttacks && migFeats >= 2 && migAccomps >= 1) {
+    dx = 'migraine';
+  }
+
+  // Tension check
+  let tensFeats = 0;
+  for (let i=0; i<4; i++) { if (isYes('tensFeat'+i)) tensFeats++; }
+  let tensAccomp = isYes('tensAccomp');
+  let tensEps = isYes('tensEpisodes');
+
+  if (tensEps && tensFeats >= 2 && tensAccomp) {
+    if (dx === 'migraine') dx = 'mixed_tension_migraine';
+    else dx = 'tension';
+  }
+
+  // Cluster check
+  let clAutos = 0;
+  for (let i=0; i<3; i++) { if (isYes('clAuto'+i)) clAutos++; }
+  let clAgit = isYes('clAgitation');
+  let clTime = isYes('clTiming');
+  let clAlc = isYes('clAlcohol');
+
+  if (clTime && clAutos >= 1 && (clAgit || clAlc)) {
+    dx = 'cluster';
+  }
+
+  // Build output
+  html += `<h3 style="margin-top:16px;">Primary Diagnosis: ${dx.toUpperCase().replace(/_/g,' ')}</h3>`;
+  html += '<p style="color:var(--muted); font-size:0.9em;">Pediatric note: Adjust for age; consider sinus/viral if &lt;5 years old.</p>';
+
+  if (dx === 'migraine') {
+    html += getMigraineManagement();
+  } else if (dx === 'tension') {
+    html += getTensionManagement();
+  } else if (dx === 'cluster') {
+    html += getClusterManagement();
+  } else if (dx === 'mixed_tension_migraine') {
+    html += getMixedManagement();
+  } else {
+    html += '<div class="warning-item">Diagnosis undetermined. Consider referral to neurology for further evaluation.</div>';
+  }
+
+  out.innerHTML = html;
+}
+
+function getClusterManagement() {
+  return `<div class="output">
+<strong>═══ CLUSTER HEADACHE ACUTE MANAGEMENT ═══</strong>
+
+1. OXYGEN THERAPY: 100% O₂ at 10–15 L/min via non-rebreather mask
+   Duration: 15–20 minutes at attack onset (abortive in 70–80%)
+
+2. PHARMACOTHERAPY (use 1st OR 2nd line):
+   - Sumatriptan 6 mg SUBCUTANEOUS (ipsilateral to pain) – 1st line
+   OR
+   - Sumatriptan 20 mg INTRANASAL spray (ipsilateral) – if SC contraindicated
+   OR
+   - Lidocaine 4% intranasal spray/drops (painful side) – 3rd line
+
+3. CONSULTATION: Urgent neurology referral + MR Angiography (MRA)
+   Consider verapamil prophylaxis (240–960 mg/day titrated)
+
+Pediatric note: O₂ preferred; adjust sumatriptan dose by weight/neuro.
+</div>`;
+}
+
+function getMigraineManagement() {
+  return `<div class="output">
+<strong>═══ MIGRAINE MANAGEMENT (AAN Guidelines) ═══</strong>
+
+<strong>ACUTE TREATMENT (stratified by severity):</strong>
+
+<u>MILD–MODERATE (Home/Clinic PO):</u>
+- Treat EARLY (at first symptoms), high initial dose
+- 1st: NSAID (ibuprofen 400–800 mg) + PPI OR acetaminophen 1000 mg STAT
+- Anti-emetic PRN: Metoclopramide 10 mg OR promethazine 25 mg PO
+- Hydrate well, rest in dark/quiet room
+
+<u>MODERATE–SEVERE (Home/Clinic PO):</u>
+- 1st: NSAID + PPI
+- Triptan: Sumatriptan 50–100 mg (max 200 mg/day) OR rizatriptan 10 mg (max 30 mg/day)
+  Repeat q2h if needed (max weekly)
+- Anti-emetic: Metoclopramide 10 mg OR promethazine 25 mg PO PRN
+
+<u>ER IV PROTOCOL:</u>
+- 1. Hydration: NS 500–1000 mL IV
+- 2. Ketorolac 30 mg IV / 60 mg IM OR acetaminophen 1 g IV STAT
+- 3. Sumatriptan 6 mg SC OR DHE 1 mg IV/IM (monitor BP)
+- 4. N/V: Metoclopramide 10 mg IV OR promethazine 25 mg IV/IM
+     AVOID ondansetron in migraine
+- 5. Akathisia prophylaxis: Diphenhydramine 25 mg IV (q2h PRN x2)
+
+<strong>TRIGGERS TO AVOID:</strong> Stress, Alcohol, Skipping meals, Menstruation,
+Weather changes, Bright lights, Fasting
+- Limit acute meds &lt;2–3×/week to avoid MOH
+
+<strong>PROPHYLAXIS (if &gt;4/month OR &gt;12 h disturbing attacks):</strong>
+Duration: 6+ months, follow-up every 2 months
+
+<u>Non-pregnant 1st line:</u>
+- Propranolol 40 mg BID (titrate to 160–240 mg/day; avoid HR &lt;60)
+- Nortriptyline 25 mg QHS (titrate to 50–75 mg; week 1: ½ tab)
+
+<u>2nd line:</u> Topiramate 25 mg BID (titrate slow), Venlafaxine 37.5 mg BID
+Avoid valproate (teratogen). Expect 4+ weeks for effect.
+
+<u>Pregnancy-safe 1st line:</u>
+- Propranolol 20 mg BID (titrate to 120 mg/day; avoid HR &lt;60)
+- Amitriptyline 10–25 mg QHS (titrate slowly)
+Follow-up at 1.5 months; taper after 6-month response.
+</div>`;
+}
+
+function getTensionManagement() {
+  return `<div class="output">
+<strong>═══ TENSION HEADACHE MANAGEMENT ═══</strong>
+
+<strong>NON-PHARMACOLOGIC (1st line):</strong>
+- Stress management (CBT, mindfulness)
+- Regular sleep hygiene, hydration
+- Physical therapy, neck/shoulder stretches
+- Limit caffeine, avoid triggers
+
+<strong>ACUTE TREATMENT:</strong>
+- Ibuprofen 400–600 mg OR acetaminophen 1000 mg PRN
+- Avoid opioids, limit acute use &lt;2×/week
+
+<strong>PROPHYLAXIS (if &gt;15 days/month):</strong>
+<u>1st Line:</u>
+- Amitriptyline 10–25 mg QHS (titrate; week 1: ½ tab)
+- Nortriptyline 25 mg QHS (titrate; week 1: ½ tab, max 75 mg)
+
+<u>SSRIs (if anxiety/depression):</u>
+- Sertraline 50 mg AM (week 1: 25 mg, then 50 mg × 2 months)
+- Citalopram 20 mg QHS (week 1: 10 mg, max 40 mg if no response)
+
+<u>SNRIs (2nd line):</u>
+- Venlafaxine 37.5 mg daily after lunch → week 2: 75 mg → 150 mg daily
+- Duloxetine 30 mg daily (titrate to 60 mg)
+
+<u>Pregnancy-safe:</u>
+- Maprotiline 50 mg QHS (week 1: ½ tab, then 1 tab)
+  If no response: 75 mg QHS
+- Non-pharmacologic approaches preferred
+
+Duration: Minimum 3–6 months. Follow-up every 2 months.
+
+<strong>FOLLOW-UP:</strong>
+If improved → continue ×3 months, taper over 2–4 weeks
+If not improved → increase dose, switch class (TCA→SSRI/SNRI), add CBT/PT, or refer neurology
+</div>`;
+}
+
+function getMixedManagement() {
+  return `<div class="output">
+<strong>═══ MIXED TENSION–MIGRAINE MANAGEMENT ═══</strong>
+
+<strong>NON-PHARMACOLOGIC (Essential):</strong>
+- Stress reduction (CBT, mindfulness, biofeedback)
+- Regular sleep schedule (7–8 h/night)
+- Hydration (&gt;2 L/day), consistent meals
+- Limit caffeine (&lt;200 mg/day), avoid triggers
+
+<strong>ACUTE TREATMENT (limit &lt;2–3×/week):</strong>
+- Mild–mod: Ibuprofen 400–600 mg + metoclopramide 10 mg PO
+- Severe: Sumatriptan 50–100 mg OR rizatriptan 10 mg + anti-emetic
+
+<strong>PROPHYLAXIS (SNRIs – 1st line for mixed pattern):</strong>
+<u>Venlafaxine:</u>
+  Week 1: 37.5 mg daily after lunch
+  Week 2: 75 mg daily
+  Maintenance: 150 mg daily (max 225 mg)
+
+<u>Duloxetine:</u>
+  Start: 30 mg QHS
+  Titrate: 60 mg daily after 2 weeks
+
+<u>Pregnancy-safe alternatives:</u>
+- Maprotiline 50 mg QHS (titrate to 75 mg if needed)
+- Non-pharmacologic + acetaminophen PRN
+
+Duration: Minimum 6 months
+Follow-up: every 2 months, taper slowly over 4 weeks
+Monitor: BP (venlafaxine), suicidality (SNRIs)
+</div>`;
+}
+
+// ===================== ACETAMINOPHEN =====================
+function calcAcetaminophen() {
+  let weight = gv('acet-weight');
+  let age = gv('acet-age');
+  let mgkg = gv('acet-mgkg');
+  let days = gv('acet-days');
+  let times = parseInt(gs('acet-times'));
+  let el = document.getElementById('acet-output');
+
+  if (isNaN(weight) || weight <= 0 || isNaN(age) || age < 0) {
+    el.style.display = 'block';
+    el.innerHTML = '❌ Please enter valid weight and age.';
+    return;
+  }
+
+  let MAX_DAILY_MG_PER_KG = 75;
+  let MAX_DAILY_MG_ADULT = 4000;
+  let MAX_SINGLE_MG_PER_KG = 15;
+
+  let TAB325_MIN = 6, TAB500_MIN = 12, SUPP125_MIN = 0.25, SUPP325_MIN = 2;
+
+  let lines = [];
+  let dailyDose = mgkg * weight;
+  let maxDaily = Math.min(MAX_DAILY_MG_PER_KG * weight, MAX_DAILY_MG_ADULT);
+
+  if (dailyDose > maxDaily) {
+    lines.push(`⚠️ Daily dose capped at ${round0(maxDaily)} mg (was ${round0(dailyDose)} mg)`);
+    dailyDose = maxDaily;
+  }
+
+  let singleDose = dailyDose / times;
+  let maxSingle = MAX_SINGLE_MG_PER_KG * weight;
+  if (singleDose > maxSingle) singleDose = maxSingle;
+
+  let hours = 24 / times;
+  let totalDoses = times * days;
+
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`Patient: ${weight} kg, ${age} years old`);
+  lines.push(`Daily dose: ${round0(dailyDose)} mg`);
+  lines.push(`Single dose: ${round0(singleDose)} mg`);
+  lines.push(`Dosing interval: every ${round1(hours)} hours`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+
+  // Drops
+  if (age < 2) {
+    let conc = 80;
+    let mlDose = singleDose / conc;
+    let totalMl = mlDose * totalDoses;
+    lines.push(``);
+    lines.push(`Drops 80 mg/mL:`);
+    lines.push(`  Dose: ${mlDose.toFixed(2)} mL (${round0(singleDose)} mg)`);
+    lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+    lines.push(`  Total volume: ${round1(totalMl)} mL`);
+    lines.push(`  N (15 mL bottle) = ${ceil(totalMl/15)}`);
+    lines.push(`  N (30 mL bottle) = ${ceil(totalMl/30)}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Suspension 160mg/5ml
+  {
+    let mlDose = (singleDose * 5) / 160;
+    let totalMl = mlDose * totalDoses;
+    lines.push(``);
+    lines.push(`Suspension 160 mg/5 mL:`);
+    lines.push(`  Dose: ${round1(mlDose)} mL (${round0(singleDose)} mg)`);
+    lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+    lines.push(`  Total volume: ${round1(totalMl)} mL`);
+    lines.push(`  N (60 mL bottle) = ${ceil(totalMl/60)}`);
+    lines.push(`  N (120 mL bottle) = ${ceil(totalMl/120)}`);
+    lines.push(`  N (240 mL bottle) = ${ceil(totalMl/240)}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Tablet 325
+  if (age >= TAB325_MIN) {
+    let q = singleDose / 325;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(``);
+      lines.push(`Tablet 325 mg:`);
+      lines.push(`  Dose: ${w} tab(s) (${w*325} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} tablets`);
+    } else {
+      lines.push(`\nTablet 325 mg: Dose too low (${round0(singleDose)} mg < 325 mg)`);
+    }
+  } else {
+    lines.push(`\nTablet 325 mg: Not recommended under ${TAB325_MIN} years`);
+  }
+  lines.push(`────────────────────────────────────────────────────────────`);
+
+  // Tablet 500
+  if (age >= TAB500_MIN) {
+    let q = singleDose / 500;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(``);
+      lines.push(`Tablet 500 mg:`);
+      lines.push(`  Dose: ${w} tab(s) (${w*500} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} tablets`);
+    } else {
+      lines.push(`\nTablet 500 mg: Dose too low (${round0(singleDose)} mg < 500 mg)`);
+    }
+  } else {
+    lines.push(`\nTablet 500 mg: Not recommended under ${TAB500_MIN} years`);
+  }
+  lines.push(`────────────────────────────────────────────────────────────`);
+
+  // Suppository 125
+  if (age >= SUPP125_MIN) {
+    let q = singleDose / 125;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(``);
+      lines.push(`Suppository 125 mg:`);
+      lines.push(`  Dose: ${w} supp(s) (${w*125} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} suppositories`);
+    } else {
+      lines.push(`\nSuppository 125 mg: Dose too low (${round0(singleDose)} mg < 125 mg)`);
+    }
+  } else {
+    lines.push(`\nSuppository 125 mg: Not recommended under ${SUPP125_MIN} years`);
+  }
+  lines.push(`────────────────────────────────────────────────────────────`);
+
+  // Suppository 325
+  if (age >= SUPP325_MIN) {
+    let q = singleDose / 325;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(``);
+      lines.push(`Suppository 325 mg:`);
+      lines.push(`  Dose: ${w} supp(s) (${w*325} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} suppositories`);
+    } else {
+      lines.push(`\nSuppository 325 mg: Dose too low (${round0(singleDose)} mg < 325 mg)`);
+    }
+  } else {
+    lines.push(`\nSuppository 325 mg: Not recommended under ${SUPP325_MIN} years`);
+  }
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+
+// ===================== IBUPROFEN =====================
+function calcIbuprofen() {
+  let weight = gv('ibu-weight');
+  let age = gv('ibu-age');
+  let mgkg = gv('ibu-mgkg');
+  let days = gv('ibu-days');
+  let times = parseInt(gs('ibu-times'));
+  let el = document.getElementById('ibu-output');
+
+  if (isNaN(weight) || weight <= 0 || isNaN(age) || age < 0) {
+    el.style.display = 'block'; el.innerHTML = '❌ Please enter valid weight and age.'; return;
+  }
+
+  let lines = [];
+  if (age < 0.5) {
+    lines.push(`⛔ WARNING: Ibuprofen is contraindicated under 6 months of age`);
+    el.style.display = 'block'; el.textContent = lines.join('\n'); return;
+  }
+  if (age < 10) {
+    lines.push(`⚠️ WARNING: Tablets are generally not recommended under 10 years of age`);
+  }
+
+  let totalDose = weight * mgkg;
+  let maxDaily = 800, maxSingle = 400;
+  if (totalDose > maxDaily) {
+    lines.push(`⚠️ Daily dose capped at ${maxDaily} mg (was ${round0(totalDose)} mg)`);
+    totalDose = maxDaily;
+  }
+
+  let singleDose = totalDose / times;
+  if (singleDose > maxSingle) singleDose = maxSingle;
+
+  let hours = 24 / times;
+  let totalDoses = times * days;
+
+  lines.push(`Daily dose: ${round0(totalDose)} mg`);
+  lines.push(`Single dose: ${round0(singleDose)} mg`);
+  lines.push(`Dosing interval: every ${round1(hours)} hours`);
+  lines.push(`────────────────────────────────────────────────────────────`);
+
+  // Suspension 100mg/5cc
+  {
+    let mlDose = (singleDose * 5) / 100;
+    let totalMl = mlDose * times * days;
+    lines.push(`\nSuspension 100 mg/5 mL:`);
+    lines.push(`  Dose: ${round1(mlDose)} mL (${round0(singleDose)} mg)`);
+    lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+    lines.push(`  Total volume needed: ${round1(totalMl)} mL`);
+    lines.push(`  N (100 mL bottle) = ${ceil(totalMl/100)}`);
+    lines.push(`  N (60 mL bottle) = ${ceil(totalMl/60)}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Tablet 200
+  {
+    let q = singleDose / 200;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(`\nTablet 200 mg:`);
+      lines.push(`  Dose: ${w} tab(s) (${w*200} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} tablets`);
+    } else {
+      lines.push(`\nTablet 200 mg: Dose too low (${round0(singleDose)} mg < 200 mg)`);
+    }
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Tablet 400
+  {
+    let q = singleDose / 400;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(`\nTablet 400 mg:`);
+      lines.push(`  Dose: ${w} tab(s) (${w*400} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} tablets`);
+    } else {
+      lines.push(`\nTablet 400 mg: Dose too low (${round0(singleDose)} mg < 400 mg)`);
+    }
+  }
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+
+// ===================== AZITHROMYCIN =====================
+function aziDxChange() {
+  let dx = gs('azi-dx');
+  let customGrp = document.getElementById('azi-custom-group');
+  let daysGrp = document.getElementById('azi-days-group');
+  let timesGrp = document.getElementById('azi-times-group');
+  if (dx === 'empty') {
+    customGrp.style.display = 'block';
+    daysGrp.style.display = 'block';
+    timesGrp.style.display = 'block';
+  } else {
+    customGrp.style.display = 'none';
+    daysGrp.style.display = 'none';
+    timesGrp.style.display = 'none';
+  }
+}
+
+function calcAzithromycin() {
+  let weight = gv('azi-weight');
+  let age = gv('azi-age');
+  let dx = gs('azi-dx').toLowerCase().trim();
+  let el = document.getElementById('azi-output');
+
+  if (isNaN(weight) || weight <= 0 || isNaN(age) || age < 0) {
+    el.style.display = 'block'; el.innerHTML = '❌ Please enter valid weight and age.'; return;
+  }
+
+  let lines = [];
+  if (age < 10) lines.push(`⚠️ Tablets/Capsules are generally not recommended under 10 years of age`);
+  if (age < 0.5) lines.push(`⚠️ Azithromycin safety not established for infants < 6 months`);
+
+  let singleDose, totalDay, timesPerDay = 1, loadingDose = false, extraDoseCount = 0;
+
+  if (dx === 'streptococcal pharyngitis') {
+    singleDose = 6 * weight;
+    totalDay = 5;
+    loadingDose = true;
+    extraDoseCount = 1;
+    lines.push(`Diagnosis: Streptococcal Pharyngitis`);
+    lines.push(`Protocol: 12 mg/kg Day 1, then 6 mg/kg Days 2–5 (5 days total)`);
+  } else if (dx === 'vibrio diarrhea') {
+    singleDose = 20 * weight;
+    totalDay = 1;
+    timesPerDay = 1;
+    lines.push(`Diagnosis: Vibrio Diarrhea`);
+    lines.push(`Protocol: Single dose 20 mg/kg`);
+  } else if (dx === 'shigella diarrhea') {
+    singleDose = 6 * weight;
+    totalDay = 4;
+    loadingDose = true;
+    extraDoseCount = 1;
+    lines.push(`Diagnosis: Shigella Diarrhea`);
+    lines.push(`Protocol: 12 mg/kg Day 1, then 6 mg/kg Days 2–4 (4 days total)`);
+  } else if (dx === 'other infections') {
+    if (age >= 0.5) {
+      singleDose = 5 * weight;
+      totalDay = 5;
+      loadingDose = true;
+      extraDoseCount = 1;
+      lines.push(`Diagnosis: Other Infections`);
+      lines.push(`Protocol: 10 mg/kg Day 1, then 5 mg/kg Days 2–5 (5 days total)`);
+    } else {
+      singleDose = 5 * weight;
+      totalDay = 5;
+      lines.push(`Diagnosis: Other Infections (Infant < 6 months)`);
+      lines.push(`Protocol: 5 mg/kg daily for 5 days (no loading dose)`);
+    }
+  } else {
+    // empty / custom
+    let mgkg = gv('azi-mgkg') || 10;
+    totalDay = gv('azi-days') || 5;
+    timesPerDay = parseInt(gs('azi-times')) || 1;
+    singleDose = (mgkg * weight) / timesPerDay;
+    lines.push(`Diagnosis: Custom`);
+    lines.push(`Protocol: ${mgkg} mg/kg/day for ${totalDay} days`);
+  }
+
+  let maxSingle = 500, maxDaily = 500;
+  if (dx === 'vibrio diarrhea') { maxSingle = 1000; maxDaily = 1000; }
+
+  if (singleDose > maxSingle) {
+    lines.push(`⚠️ Single dose capped at ${maxSingle} mg (was ${round0(singleDose)} mg)`);
+    singleDose = maxSingle;
+  }
+
+  let totalMg;
+  if (loadingDose) {
+    totalMg = singleDose * (totalDay + 1);
+  } else {
+    totalMg = singleDose * timesPerDay * totalDay;
+  }
+
+  let hours = 24 / timesPerDay;
+  lines.push(``);
+  lines.push(`Maintenance single dose: ${round0(singleDose)} mg`);
+  if (loadingDose) lines.push(`Loading dose (Day 1): ${round0(singleDose * 2)} mg`);
+  lines.push(`Duration: ${totalDay} days`);
+  lines.push(`Total medication needed: ${round0(totalMg)} mg`);
+  lines.push(`────────────────────────────────────────────────────────────`);
+
+  // Suspension 100mg/5ml (20mg/ml)
+  {
+    let conc = 20;
+    let mlDose = singleDose / conc;
+    let totalVol = totalMg / conc;
+    lines.push(`\nSuspension 100 mg/5 mL:`);
+    lines.push(`  Maintenance dose: ${round1(mlDose)} mL (${round0(singleDose)} mg)`);
+    if (loadingDose && age >= 0.5) lines.push(`  Loading dose (Day 1): ${round1(mlDose*2)} mL (${round0(singleDose*2)} mg)`);
+    lines.push(`  Every ${round0(hours)} hours for ${totalDay} days`);
+    lines.push(`  Total volume: ${round1(totalVol)} mL`);
+    lines.push(`  N (15 mL bottle) = ${ceil(totalVol/15)}`);
+    lines.push(`  N (30 mL bottle) = ${ceil(totalVol/30)}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Suspension 200mg/5ml (40mg/ml)
+  {
+    let conc = 40;
+    let mlDose = singleDose / conc;
+    let totalVol = totalMg / conc;
+    lines.push(`\nSuspension 200 mg/5 mL:`);
+    lines.push(`  Maintenance dose: ${round1(mlDose)} mL (${round0(singleDose)} mg)`);
+    if (loadingDose && age >= 0.5) lines.push(`  Loading dose (Day 1): ${round1(mlDose*2)} mL (${round0(singleDose*2)} mg)`);
+    lines.push(`  Every ${round0(hours)} hours for ${totalDay} days`);
+    lines.push(`  Total volume: ${round1(totalVol)} mL`);
+    lines.push(`  N (15 mL bottle) = ${ceil(totalVol/15)}`);
+    lines.push(`  N (30 mL bottle) = ${ceil(totalVol/30)}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Capsule 250
+  {
+    let q = singleDose / 250;
+    let nCaps = ceil(totalMg / 250);
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(`\nCapsule 250 mg:`);
+      lines.push(`  Maintenance dose: ${w} cap(s) (${w*250} mg)`);
+      if (loadingDose && age >= 0.5) lines.push(`  Loading dose (Day 1): ${w*2} caps (${w*500} mg)`);
+      lines.push(`  N = ${nCaps} capsules`);
+    } else {
+      lines.push(`\nCapsule 250 mg: Dose too low for whole capsule (${round0(singleDose)} mg < 250 mg)`);
+      lines.push(`  Consider suspension. Total caps needed if divided: ${nCaps}`);
+    }
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Capsule/Tablet 500
+  {
+    let q = singleDose / 500;
+    let nCaps = ceil(totalMg / 500);
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(`\nCapsule/Tablet 500 mg:`);
+      lines.push(`  Maintenance dose: ${w} cap(s) (${w*500} mg)`);
+      if (loadingDose && age >= 0.5) lines.push(`  Loading dose (Day 1): ${w*2} caps (${w*1000} mg)`);
+      lines.push(`  N = ${nCaps} capsules`);
+    } else {
+      lines.push(`\nCapsule/Tablet 500 mg: Dose too low (${round0(singleDose)} mg < 500 mg)`);
+      lines.push(`  Consider 250 mg capsules or suspension. Total 500 mg caps if divided: ${nCaps}`);
+    }
+  }
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+
+// ===================== CEFIXIME =====================
+function calcCefixime() {
+  let weight = gv('cef-weight');
+  let age = gv('cef-age');
+  let mgkg = gv('cef-mgkg');
+  let days = gv('cef-days');
+  let times = parseInt(gs('cef-times'));
+  let el = document.getElementById('cef-output');
+
+  if (isNaN(weight) || weight <= 0 || isNaN(age) || age < 0) {
+    el.style.display = 'block'; el.innerHTML = '❌ Please enter valid weight and age.'; return;
+  }
+
+  let lines = [];
+  if (age < 6) lines.push(`⚠️ Tablets are generally not recommended under 6 years of age`);
+
+  let totalDose = weight * mgkg;
+  let maxDaily = 400, maxSingle = 400;
+
+  if (totalDose > maxDaily) {
+    lines.push(`⚠️ Daily dose capped at ${maxDaily} mg (was ${round0(totalDose)} mg)`);
+    totalDose = maxDaily;
+  }
+
+  let singleDose = totalDose / times;
+  if (singleDose > maxSingle) singleDose = maxSingle;
+
+  let hours = 24 / times;
+  let totalDoses = times * days;
+
+  lines.push(`Daily dose: ${round0(totalDose)} mg`);
+  lines.push(`Single dose: ${round0(singleDose)} mg`);
+  lines.push(`Dosing interval: every ${round1(hours)} hours`);
+  lines.push(`────────────────────────────────────────────────────────────`);
+
+  // Suspension 100mg/5cc
+  {
+    let mlDose = (singleDose * 5) / 100;
+    let totalMl = mlDose * times * days;
+    lines.push(`\nSuspension 100 mg/5 mL:`);
+    lines.push(`  Dose: ${round1(mlDose)} mL (${round0(singleDose)} mg)`);
+    lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+    lines.push(`  Total volume needed: ${round1(totalMl)} mL`);
+    lines.push(`  N (100 mL bottle) = ${ceil(totalMl/100)}`);
+    lines.push(`  N (50 mL bottle) = ${ceil(totalMl/50)}`);
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Tablet 200
+  {
+    let q = singleDose / 200;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(`\nTablet 200 mg:`);
+      lines.push(`  Dose: ${w} tab(s) (${w*200} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} tablets`);
+    } else {
+      lines.push(`\nTablet 200 mg: Dose too low (${round0(singleDose)} mg < 200 mg)`);
+    }
+    lines.push(`────────────────────────────────────────────────────────────`);
+  }
+
+  // Tablet 400
+  {
+    let q = singleDose / 400;
+    if (q >= 1) {
+      let w = floor(q);
+      lines.push(`\nTablet 400 mg:`);
+      lines.push(`  Dose: ${w} tab(s) (${w*400} mg)`);
+      lines.push(`  Every ${round1(hours)} hours for ${days} days`);
+      lines.push(`  N = ${w * totalDoses} tablets`);
+    } else {
+      lines.push(`\nTablet 400 mg: Dose too low (${round0(singleDose)} mg < 400 mg)`);
+    }
+  }
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+
+// ===================== CEPHALEXIN =====================
+function calcCephalexin() {
+  let weight = gv('ceph-weight');
+  let ageMonths = gv('ceph-age');
+  let mgkg = parseInt(gs('ceph-mgkg'));
+  let days = gv('ceph-days');
+  let times = parseInt(gs('ceph-times'));
+  let el = document.getElementById('ceph-output');
+
+  if (isNaN(weight) || weight <= 0 || isNaN(ageMonths) || ageMonths < 0) {
+    el.style.display = 'block'; el.innerHTML = '❌ Please enter valid weight and age.'; return;
+  }
+  if (days < 3) { el.style.display = 'block'; el.innerHTML = '❌ Minimum treatment duration is 3 days.'; return; }
+
+  let lines = [];
+  if (ageMonths < 60) {
+    lines.push(`⚠️ CAPSULES/TABLETS are NOT permitted for patients < 5 years. SUSPENSION will be used.`);
+  } else {
+    lines.push(`✅ Capsules may be used (patient ≥ 5 years).`);
+  }
+
+  let totalDaily = round2(weight * mgkg);
+  let MAX_DAILY = 4000, MAX_SINGLE = 500;
+
+  if (totalDaily > MAX_DAILY) {
+    lines.push(`⚠️ Daily dose reduced to max allowed: ${MAX_DAILY} mg (was ${totalDaily} mg).`);
+    totalDaily = MAX_DAILY;
+  }
+
+  let dosePerAdmin = round2(totalDaily / times);
+  if (dosePerAdmin > MAX_SINGLE) {
+    lines.push(`⚠️ Single dose reduced to max allowed: ${MAX_SINGLE} mg (was ${dosePerAdmin} mg).`);
+    dosePerAdmin = MAX_SINGLE;
+    totalDaily = dosePerAdmin * times;
+    lines.push(`  Adjusted total daily dose to ${totalDaily} mg.`);
+  }
+
+  let ageY = Math.floor(ageMonths/12);
+  let ageM = ageMonths % 12;
+  let hours = 24 / times;
+
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`PRESCRIPTION ORDER - CEPHALEXIN`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`Patient Weight   : ${weight} kg`);
+  lines.push(`Patient Age      : ${ageY}y ${ageM}m`);
+  lines.push(`Dose             : ${mgkg} mg/kg/day → ${totalDaily} mg/day`);
+  lines.push(`Doses per Day    : ${times} (every ${round1(hours)} hours)`);
+  lines.push(`Duration         : ${days} days`);
+  lines.push(``);
+
+  // Suspension 125mg/5ml
+  {
+    let conc = 25;
+    let mlDose = round1(dosePerAdmin / conc);
+    let totalMl = mlDose * times * days;
+    let bottles = ceil(totalMl / 100);
+    lines.push(`─── Suspension 125 mg/5 mL (25 mg/mL) ───`);
+    lines.push(`  Dose Volume    : ${mlDose} mL`);
+    lines.push(`  Total Volume   : ${round1(totalMl)} mL`);
+    lines.push(`  DISPENSE       : ${bottles} × 100 mL bottle(s)`);
+    lines.push(`  Give ${mlDose} mL ${times} times daily for ${days} days.`);
+    lines.push(`  Shake bottle well before each dose.`);
+    lines.push(``);
+  }
+
+  // Suspension 250mg/5ml
+  {
+    let conc = 50;
+    let mlDose = round1(dosePerAdmin / conc);
+    let totalMl = mlDose * times * days;
+    let bottles = ceil(totalMl / 100);
+    lines.push(`─── Suspension 250 mg/5 mL (50 mg/mL) ───`);
+    lines.push(`  Dose Volume    : ${mlDose} mL`);
+    lines.push(`  Total Volume   : ${round1(totalMl)} mL`);
+    lines.push(`  DISPENSE       : ${bottles} × 100 mL bottle(s)`);
+    lines.push(`  Give ${mlDose} mL ${times} times daily for ${days} days.`);
+    lines.push(`  Shake bottle well before each dose.`);
+    lines.push(``);
+  }
+
+  // Capsules (only if ≥60 months)
+  if (ageMonths >= 60) {
+    // 250mg
+    let caps250 = ceil(dosePerAdmin / 250);
+    let total250 = caps250 * times * days;
+    lines.push(`─── Capsule 250 mg ───`);
+    lines.push(`  Capsules/Dose  : ${caps250}`);
+    lines.push(`  Total Capsules : ${total250}`);
+    lines.push(`  Give ${caps250} capsule(s) ${times} times daily for ${days} days.`);
+    lines.push(`  Swallow whole with a full glass of water. Do NOT crush.`);
+    lines.push(``);
+
+    // 500mg
+    let caps500 = ceil(dosePerAdmin / 500);
+    let total500 = caps500 * times * days;
+    lines.push(`─── Capsule 500 mg ───`);
+    lines.push(`  Capsules/Dose  : ${caps500}`);
+    lines.push(`  Total Capsules : ${total500}`);
+    lines.push(`  Give ${caps500} capsule(s) ${times} times daily for ${days} days.`);
+    lines.push(`  Swallow whole with a full glass of water. Do NOT crush.`);
+    lines.push(``);
+  }
+
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`IMPORTANT NOTES:`);
+  lines.push(`- Complete the FULL course even if symptoms improve.`);
+  lines.push(`- Store suspension in the refrigerator (shake before use).`);
+  lines.push(`- Discard any unused suspension after 14 days.`);
+  lines.push(`- Report rash, diarrhea, or severe stomach pain immediately.`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+
+// ===================== COTRIMOXAZOLE =====================
+function calcCotrimoxazole() {
+  let weight = gv('cotri-weight');
+  let ageMonths = gv('cotri-age');
+  let dx = gs('cotri-dx');
+  let days = gv('cotri-days');
+  let times = parseInt(gs('cotri-times'));
+  let customMgkg = gv('cotri-mgkg');
+  let el = document.getElementById('cotri-output');
+
+  if (isNaN(weight) || weight <= 0) { el.style.display='block'; el.innerHTML='❌ Weight must be > 0 kg.'; return; }
+  if (isNaN(ageMonths) || ageMonths < 0) { el.style.display='block'; el.innerHTML='❌ Age cannot be negative.'; return; }
+  if (days < 1) { el.style.display='block'; el.innerHTML='❌ Treatment must be ≥ 1 day.'; return; }
+  if (![2,3].includes(times)) { el.style.display='block'; el.innerHTML='❌ Doses/day must be 2 or 3.'; return; }
+
+  let lines = [];
+
+  // Age contraindication
+  if (ageMonths < 2) {
+    lines.push(`⛔ CONTRAINDICATED: Not for infants < 2 months (risk of kernicterus). DO NOT PRESCRIBE.`);
+    el.style.display = 'block'; el.textContent = lines.join('\n'); return;
+  }
+
+  if (ageMonths < 120) {
+    lines.push(`⚠️ Tablets are NOT recommended for patients < 10 years. Suspension will be used.`);
+  }
+
+  // Determine TMP dose
+  let mgkgDay;
+  if (customMgkg && customMgkg > 0) {
+    mgkgDay = customMgkg;
+  } else {
+    if (dx === 'URI') mgkgDay = 8;
+    else if (dx === 'UTI') mgkgDay = 4;
+    else mgkgDay = 8;
+  }
+
+  let totalTmpDaily = round2(weight * mgkgDay);
+  let MAX_TMP_DAILY = 320, MAX_TMP_SINGLE = 160;
+
+  if (totalTmpDaily > MAX_TMP_DAILY) {
+    lines.push(`⚠️ Daily dose reduced to max allowed: ${MAX_TMP_DAILY} mg TMP (was ${totalTmpDaily} mg).`);
+    totalTmpDaily = MAX_TMP_DAILY;
+  }
+
+  let tmpPerDose = round2(totalTmpDaily / times);
+  if (tmpPerDose > MAX_TMP_SINGLE) {
+    lines.push(`⚠️ Single dose reduced to max allowed: ${MAX_TMP_SINGLE} mg TMP (was ${tmpPerDose} mg).`);
+    tmpPerDose = MAX_TMP_SINGLE;
+    totalTmpDaily = tmpPerDose * times;
+    lines.push(`  Adjusted total daily dose to ${totalTmpDaily} mg TMP.`);
+  }
+
+  let ageY = Math.floor(ageMonths/12), ageM2 = ageMonths % 12;
+  let SUSP_TMP_PER_ML = 8;
+  let TAB_TMP_PER_TAB = 80;
+
+  let useSuspension = false, useTablet = false;
+  if (ageMonths < 120) {
+    useSuspension = true;
+  } else {
+    let tabsPerDose = tmpPerDose / TAB_TMP_PER_TAB;
+    if (Math.abs(Math.round(tabsPerDose*10)/10 - tabsPerDose) < 0.05) {
+      useTablet = true;
+    } else {
+      useSuspension = true;
+      lines.push(`⚠️ Tablet dose cannot be accurately divided. Using suspension.`);
+    }
+  }
+
+  lines.push(`════════════════════════════════════════════════════════════`);
+  if (useSuspension) {
+    let mlPerDose = round1(tmpPerDose / SUSP_TMP_PER_ML);
+    let totalMl = mlPerDose * times * days;
+    let qMl = ceil(totalMl / 100) * 100;
+
+    lines.push(`PRESCRIPTION ORDER - COTRIMOXAZOLE (Suspension)`);
+    lines.push(`════════════════════════════════════════════════════════════`);
+    lines.push(`Diagnosis        : ${dx}`);
+    lines.push(`Weight           : ${weight} kg`);
+    lines.push(`Age              : ${ageY}y ${ageM2}m`);
+    lines.push(`TMP Dose/Day     : ${totalTmpDaily} mg`);
+    lines.push(`Concentration    : 40 mg TMP + 200 mg SMX / 5 mL (= 8 mg TMP/mL)`);
+    lines.push(`Dose Volume      : ${mlPerDose} mL`);
+    lines.push(`Frequency        : ${times} times daily`);
+    lines.push(`Duration         : ${days} days`);
+    lines.push(`TOTAL VOLUME     : ${round1(totalMl)} mL`);
+    lines.push(`DISPENSE         : ${qMl} mL bottle(s)`);
+    lines.push(``);
+    lines.push(`ADMINISTRATION:`);
+    lines.push(`  Give ${mlPerDose} mL ${times} times daily for ${days} days.`);
+    lines.push(`  Shake bottle vigorously before each dose.`);
+    lines.push(`  Use the calibrated oral syringe supplied.`);
+  }
+
+  if (useTablet) {
+    let tabsPerDose = Math.round((tmpPerDose / TAB_TMP_PER_TAB)*10)/10;
+    let totalTabs = tabsPerDose * times * days;
+    let qTabs = ceil(totalTabs);
+
+    lines.push(`PRESCRIPTION ORDER - COTRIMOXAZOLE (Tablets)`);
+    lines.push(`════════════════════════════════════════════════════════════`);
+    lines.push(`Diagnosis        : ${dx}`);
+    lines.push(`Weight           : ${weight} kg`);
+    lines.push(`Age              : ${ageY}y ${ageM2}m`);
+    lines.push(`TMP Dose/Day     : ${totalTmpDaily} mg`);
+    lines.push(`Tablet Strength  : 80 mg TMP + 400 mg SMX`);
+    lines.push(`Tablets per Dose : ${tabsPerDose} tablet(s)`);
+    lines.push(`Frequency        : ${times} times daily`);
+    lines.push(`Duration         : ${days} days`);
+    lines.push(`TOTAL TABLETS    : ${totalTabs}`);
+    lines.push(`DISPENSE         : ${qTabs} tablet(s)`);
+    lines.push(``);
+    lines.push(`ADMINISTRATION:`);
+    lines.push(`  Give ${tabsPerDose} tablet(s) ${times} times daily for ${days} days.`);
+    lines.push(`  Tablets may be broken along the score line (max 0.5-tablet increments).`);
+    lines.push(`  Take with a full glass of water.`);
+  }
+
+  lines.push(``);
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`NOTES:`);
+  lines.push(`- Complete the FULL course even if symptoms improve.`);
+  lines.push(`- Avoid in patients with G6PD deficiency or severe renal/hepatic disease.`);
+  lines.push(`- Monitor for rash, fever, or signs of infection progression.`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+
+// ===================== PENICILLIN V =====================
+function calcPenicillinV() {
+  let weight = gv('penV-weight');
+  let ageMonths = gv('penV-age');
+  let mgkg = parseInt(gs('penV-mgkg'));
+  let days = gv('penV-days');
+  let times = parseInt(gs('penV-times'));
+  let el = document.getElementById('penV-output');
+
+  if (isNaN(weight) || weight <= 0) { el.style.display='block'; el.innerHTML='❌ Weight must be > 0 kg.'; return; }
+  if (isNaN(ageMonths) || ageMonths < 0) { el.style.display='block'; el.innerHTML='❌ Age cannot be negative.'; return; }
+  if (days < 3) { el.style.display='block'; el.innerHTML='❌ Minimum treatment is 3 days.'; return; }
+
+  let lines = [];
+
+  if (ageMonths < 120) {
+    lines.push(`⚠️ TABLETS are NOT permitted for patients < 10 years. SUSPENSION will be used.`);
+  } else {
+    lines.push(`✅ Tablets may be used (patient ≥ 10 years).`);
+  }
+
+  let totalDaily = round2(weight * mgkg);
+  let MAX_DAILY = 2000, MAX_SINGLE = 500;
+
+  if (totalDaily > MAX_DAILY) {
+    lines.push(`⚠️ Daily dose reduced to max allowed: ${MAX_DAILY} mg (was ${totalDaily} mg).`);
+    totalDaily = MAX_DAILY;
+  }
+
+  let dosePerAdmin = round2(totalDaily / times);
+  if (dosePerAdmin > MAX_SINGLE) {
+    lines.push(`⚠️ Single dose reduced to max allowed: ${MAX_SINGLE} mg (was ${dosePerAdmin} mg).`);
+    dosePerAdmin = MAX_SINGLE;
+    totalDaily = dosePerAdmin * times;
+    lines.push(`  Adjusted total daily dose to ${totalDaily} mg.`);
+  }
+
+  let ageY = Math.floor(ageMonths/12), ageM2 = ageMonths % 12;
+  let hours = 24 / times;
+
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`PRESCRIPTION ORDER - PENICILLIN V (ORAL)`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`Patient Weight   : ${weight} kg`);
+  lines.push(`Patient Age      : ${ageY}y ${ageM2}m`);
+  lines.push(`Dose             : ${mgkg} mg/kg/day → ${totalDaily} mg/day`);
+  lines.push(`Doses per Day    : ${times} (every ${round1(hours)} hours)`);
+  lines.push(`Duration         : ${days} days`);
+  lines.push(``);
+
+  // Suspension 250mg/5ml
+  {
+    let conc = 50;
+    let mlDose = round1(dosePerAdmin / conc);
+    let totalMl = mlDose * times * days;
+    let bottles = ceil(totalMl / 100);
+    lines.push(`─── Suspension 250 mg/5 mL (50 mg/mL) ───`);
+    lines.push(`  Dose Volume    : ${mlDose} mL`);
+    lines.push(`  Total Volume   : ${round1(totalMl)} mL`);
+    lines.push(`  DISPENSE       : ${bottles} × 100 mL bottle(s)`);
+    lines.push(`  Give ${mlDose} mL ${times} times daily for ${days} days.`);
+    lines.push(`  Shake bottle well before each dose.`);
+    lines.push(``);
+  }
+
+  // Suspension 125mg/5ml
+  {
+    let conc = 25;
+    let mlDose = round1(dosePerAdmin / conc);
+    let totalMl = mlDose * times * days;
+    let bottles = ceil(totalMl / 100);
+    lines.push(`─── Suspension 125 mg/5 mL (25 mg/mL) ───`);
+    lines.push(`  Dose Volume    : ${mlDose} mL`);
+    lines.push(`  Total Volume   : ${round1(totalMl)} mL`);
+    lines.push(`  DISPENSE       : ${bottles} × 100 mL bottle(s)`);
+    lines.push(`  Give ${mlDose} mL ${times} times daily for ${days} days.`);
+    lines.push(`  Shake bottle well before each dose.`);
+    lines.push(``);
+  }
+
+  // Tablets (only if ≥120 months)
+  if (ageMonths >= 120) {
+    // 250mg
+    let tabs250 = ceil(dosePerAdmin / 250);
+    let total250 = tabs250 * times * days;
+    lines.push(`─── Tablet 250 mg ───`);
+    lines.push(`  Tablets/Dose   : ${tabs250}`);
+    lines.push(`  Total Tablets  : ${total250}`);
+    lines.push(`  Give ${tabs250} tablet(s) ${times} times daily for ${days} days.`);
+    lines.push(`  Swallow whole with a full glass of water. Do NOT crush.`);
+    lines.push(``);
+
+    // 500mg
+    let tabs500 = ceil(dosePerAdmin / 500);
+    let total500 = tabs500 * times * days;
+    lines.push(`─── Tablet 500 mg ───`);
+    lines.push(`  Tablets/Dose   : ${tabs500}`);
+    lines.push(`  Total Tablets  : ${total500}`);
+    lines.push(`  Give ${tabs500} tablet(s) ${times} times daily for ${days} days.`);
+    lines.push(`  Swallow whole with a full glass of water. Do NOT crush.`);
+    lines.push(``);
+  }
+
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`IMPORTANT NOTES:`);
+  lines.push(`- Complete the FULL course even if symptoms improve.`);
+  lines.push(`- Store suspension in the refrigerator (shake before use).`);
+  lines.push(`- Discard any unused suspension after 14 days.`);
+  lines.push(`- Report rash, diarrhea, or severe stomach pain immediately.`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+
+// ===================== PENICILLIN G (IM) =====================
+function calcPenicillinG() {
+  let weight = gv('penG-weight');
+  let ageMonths = gv('penG-age');
+  let mgkg = 50; // fixed
+  let days = gv('penG-days');
+  let times = parseInt(gs('penG-times'));
+  let el = document.getElementById('penG-output');
+
+  if (isNaN(weight) || weight <= 0) { el.style.display='block'; el.innerHTML='❌ Weight must be > 0 kg.'; return; }
+  if (isNaN(ageMonths) || ageMonths < 0) { el.style.display='block'; el.innerHTML='❌ Age cannot be negative.'; return; }
+  if (days < 3) { el.style.display='block'; el.innerHTML='❌ Minimum treatment is 3 days.'; return; }
+
+  let lines = [];
+  lines.push(`⚠️ ALWAYS perform skin test for hypersensitivity before administration.`);
+
+  if (ageMonths < 3) {
+    lines.push(`⛔ CONTRAINDICATED: Penicillin G IM forbidden for infants < 3 months.`);
+    el.style.display = 'block'; el.textContent = lines.join('\n'); return;
+  }
+
+  let totalDaily = round2(weight * mgkg);
+  let MAX_DAILY = 2000000, MAX_SINGLE = 1000000;
+
+  if (totalDaily > MAX_DAILY) {
+    lines.push(`⚠️ Daily dose reduced to max allowed: ${MAX_DAILY} IU (was ${totalDaily} IU).`);
+    totalDaily = MAX_DAILY;
+  }
+
+  let dosePerAdmin = round2(totalDaily / times);
+  if (dosePerAdmin > MAX_SINGLE) {
+    lines.push(`⚠️ Single dose reduced to max allowed: ${MAX_SINGLE} IU (was ${dosePerAdmin} IU).`);
+    dosePerAdmin = MAX_SINGLE;
+    totalDaily = dosePerAdmin * times;
+    lines.push(`  Adjusted total daily dose to ${totalDaily} IU.`);
+  }
+
+  let CONC = 600000; // IU per ml
+  let mlPerDose = round2(dosePerAdmin / CONC);
+  let totalMl = mlPerDose * times * days;
+  let ampPerDose = ceil(mlPerDose / 1);
+  let totalAmps = ampPerDose * times * days;
+
+  let ageY = Math.floor(ageMonths/12), ageM2 = ageMonths % 12;
+  let hours = 24 / times;
+
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`PRESCRIPTION ORDER - PENICILLIN G PROCAINE (IM)`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`Patient Weight        : ${weight} kg`);
+  lines.push(`Patient Age           : ${ageY}y ${ageM2}m`);
+  lines.push(`Dose                  : 50 mg/kg/day → ${totalDaily} IU/day`);
+  lines.push(`Doses per Day         : ${times} (every ${round1(hours)} hours)`);
+  lines.push(`Duration              : ${days} days`);
+  lines.push(``);
+  lines.push(`─── FORMULATION: Penicillin G Procaine (IM) ───`);
+  lines.push(`Concentration         : 600,000 IU / 1 mL`);
+  lines.push(`Dose per Injection    : ${dosePerAdmin} IU → ${mlPerDose} mL`);
+  lines.push(`Ampoules per Dose     : ${ampPerDose} × 1 mL ampoule(s)`);
+  lines.push(`TOTAL VOLUME          : ${round1(totalMl)} mL`);
+  lines.push(`DISPENSE              : ${totalAmps} × 1 mL ampoule(s)`);
+  lines.push(``);
+  lines.push(`ADMINISTRATION:`);
+  lines.push(`  Inject ${mlPerDose} mL (${ampPerDose} ampoule(s)) ${times} time(s) daily for ${days} days.`);
+  lines.push(`  Use deep intramuscular (IM) injection into the gluteal muscle.`);
+  lines.push(`  Rotate injection sites to prevent tissue irritation.`);
+  lines.push(``);
+  lines.push(`════════════════════════════════════════════════════════════`);
+  lines.push(`IMPORTANT NOTES:`);
+  lines.push(`- Complete the FULL course even if symptoms improve.`);
+  lines.push(`- Monitor for rash, fever, or signs of anaphylaxis.`);
+  lines.push(`- Do NOT use in patients with known penicillin allergy.`);
+  lines.push(`- Discard any unused portion after opening.`);
+  lines.push(`════════════════════════════════════════════════════════════`);
+
+  el.style.display = 'block';
+  el.textContent = lines.join('\n');
+}
+</script>
+
+</body>
+</html>

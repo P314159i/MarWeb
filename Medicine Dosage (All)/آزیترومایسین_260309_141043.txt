@@ -1,0 +1,203 @@
+import math
+
+def Azithromycin(weight, age, mg_kg_day, TotalDay, Times_perday, diagnosis):
+111111
+
+
+Azithromycin prescription calculator
+
+Parameters:
+- weight	: patient weight in kg
+- age	: patient age in years
+- mg_kg_day	: mg/kg/day (used if diagnosis is 'empty')
+  - TotalDay	: number of days (overridden by diagnosis-specific protocols)
+- Times_perday  : doses per day (suggested: 1)
+- diagnosis	: 'streptococcal pharyngitis', 'vibrio diarrhea', 'shigella diarrhea', 'other infections', or 'empty'
+
+Suggested: Times_perday = 1
+111111
+
+
+
+
+
+#  =====================
+# Age restrictions
+# =====================
+if age< 10:
+    print("WARNING: Tablets/Capsules are generally not recommended under 10 years of age")
+if age< 0.5:
+    print("WARNING: Azithromycin safety not established for infants< 6 months")
+print()
+
+# =====================
+# Diagnosis-specific dosing
+# =====================
+diagnosis = diagnosis.lower().strip() loading_dose = False
+
+  extra_dose_count = 0 # Extra maintenance doses needed for loading day
+
+if diagnosis== "streptococcal pharyngitis":
+# Day 1: 12 mg/kg, Days 2-5: 6 mg/kg single_dose_mg = 6 * weight	# maintenance dose TotalDay = 5
+loading_dose = True
+    extra_dose_count = 1	# Day 1 needs an extra maintenance dose equivalent
+print(f''Diagnosis: Streptococcal Pharyngitis")
+    print(f''Protocol: 12 mg/kg Day 1, then 6 mg/kg Days 2-5 (5 days total)")
+
+elif diagnosis== "vibrio diarrhea":
+# Single dose: 20 mg/kg single_dose_mg = 20 * weight TotalDay = 1
+Times_perday = 1 loading_dose = False
+print(f''Diagnosis: Vibrio Diarrhea") print(f''Protocol: Single dose 20 mg/kg")
+
+elif diagnosis== "shigella diarrhea":
+# Day 1: 12 mg/kg, Days 2-4: 6 mg/kg single_dose_mg = 6 * weight	# maintenance dose TotalDay= 4
+loading_dose = True extra_dose_count = 1 print(f''Diagnosis: Shigella Diarrhea")
+    print(f''Protocol: 12 mg/kg Day 1, then 6 mg/kg Days 2-4 (4 days total)")
+
+elif diagnosis== "other infections":
+# Standard: Day 1: 10 mg/kg, Days 2-5: 5 mg/kg
+# If age< 6 months: 5 mg/kg for all 5 days (no loading)
+
+if age >= 0.5:
+single_dose_mg = 5 * weight # maintenance dose TotalDay = 5
+loading_dose = True extra_dose_count = 1 print(f"Diagnosis: Other Infections")
+print(f"Protocol: 10 mg/kg Day 1, then 5 mg/kg Days 2-5 (5 days
+total)")
+else:
+single_dose_mg = 5 * weight TotalDay = 5
+loading_dose = False
+print(f"Diagnosis: Other Infections (Infant< 6 months)") print(f"Protocol: 5 mg/kg daily for 5 days (no loading dose)")
+
+elif diagnosis== "empty":
+single_dose_mg = (mg_kg_day * weight) / Times_perday loading_dose = False
+print(f''Diagnosis: Custom/Empty")
+print(f''Protocol: {mg_kg_day} mg/kg/day for {TotalDay} days")
+
+else:
+    print(f''Warning: Unknown diagnosis '{diagnosis}', using custom parameters")
+single_dose_mg = (mg_kg_day * weight) / Times_perday
+loading_dose = False
+
+# =====================
+# Maximum dose limits
+# =====================
+max_single_mg = 500		# Standard max single dose max_daily_mg = 500	# Standard max daily dose
+
+# Exception for single-dose regimens (vibrio, STI) if diagnosis == "vibrio diarrhea":
+max_single_mg = 1000
+
+max_daily_mg = 1000
+
+# Cap single dose
+if single_dose_mg > max_single_mg:
+print(f''Note: Single dose capped at {max_single_mg} mg (was
+{single_dose_mg:.0f} mg)") single_dose_mg = max_single_mg
+
+# Calculate total mg needed for entire course if loading_dose:
+# Day 1 = 2x maintenance, Days 2+ = 1 x maintenance
+# Total = 2 + (TotalDay - 1) = TotalDay+ 1 maintenance doses total_mg_needed = single_dose_mg * (TotalDay+ 1)
+else:
+  total_mg_needed = single_dose_mg * Times_perday * TotalDay hours_between = 24 / Times_perday
+print(f''\nMaintenance single dose: {single_dose_mg:.0f} mg11 if loading_dose:
+print(f''Loading dose (Day 1): {single_dose_mg * 2:.0f} mg11
+print(f''Duration: {TotalDay} days11
+print(f''Total medication needed: {total_mg_needed:.0f} mg11 print("-11 * 60)
+
+# =====================
+# Suspension 100mg/5ml (20mg/ml) - Bottles: 15ml, 30ml
+# =====================
+susp100_conc = 100 / 5 # mg per ml
+
+# Volume per maintenance dose
+q_susp100_ml = single_dose_mg / susp100_conc
+
+# Total volume needed
+total_vol_susp100 = total_mg_needed / susp100_conc
+
+# Number of bottles
+n1_susp100 = math.ceil(total_vol_susp100 / 15) n2_susp100 = math.ceil(total_vol_susp100 / 30)
+
+print(f"Suspension 100mg/5mL:")
+  print(f" Maintenance dose: {q_susp100_ml:.1f} ml ({single_dose_mg:.0f} mg)")
+if loading_dose and age>= 0.5:
+    print(f'' Loading dose (Day 1): {q_susp100_ml * 2:.1f} ml ({single_dose_mg * 2:.0f} mg)")
+print(f'' Every {hours_between:.0f} hours for {TotalDay} days") print(f'' Total volume: {total_vol_susp100:.1f} ml")
+print(f'' N (15ml bottle)= {n1_susp100}") print(f'' N (30ml bottle) = {n2_susp100}") print("-"* 60)
+
+# =====================
+# Suspension 200mg/5ml (40mg/ml) - Bottles: 15ml, 30ml
+# =====================
+susp200_conc = 200 / 5 # mg per ml
+
+q_susp200_ml = single_dose_mg / susp200_conc total_vol_susp200 = total_mg_needed / susp200_conc
+
+n1_susp200 = math.ceil(total_vol_susp200 / 15) n2_susp200 = math.ceil(total_vol_susp200 / 30)
+
+print(f''Suspension 200mg/5mL:")
+  print(f'' Maintenance dose: {q_susp200_ml:.1f} ml ({single_dose_mg:.0f} mg)")
+if loading_dose and age>= 0.5:
+    print(f'' Loading dose (Day 1): {q_susp200_ml * 2:.1f} ml ({single_dose_mg * 2:.0f} mg)")
+print(f'' Every {hours_between:.0f} hours for {TotalDay} days") print(f'' Total volume: {total_vol_susp200:.1f} ml")
+print(f'' N (15ml bottle)= {n1_susp200}")
+
+print(f" N (30ml bottle) = {n2_susp200}") print("-"* 60)
+
+# =====================
+# Capsule 250mg
+# =====================
+q_cap250 = single_dose_mg / 250
+
+if q_cap250 >= 1:
+q_cap250_whole = math.floor(q_cap250) n_cap250 = math.ceil(total_mg_needed / 250) print(f''Capsule 250mg:")
+    print(f'' Maintenance dose: {q_cap250_whole} cap(s) ({q_cap250_whole * 250} mg)")
+if loading_dose and age>= 0.5:
+      print(f'' Loading dose (Day 1): {q_cap250_whole * 2} caps ({q_cap250_whole * 500} mg)")
+  print(f'' N = {n_cap250} capsules") else:
+n_cap250 = math.ceil(total_mg_needed / 250) print(f''Capsule 250mg: Dose too low for whole capsule
+({single_dose_mg:.0f} mg<  250 mg)")
+print(f'' Consider suspension. Total caps needed if divided:
+{n_cap250}")
+print("-"* 60)
+
+# =====================
+# Capsule/Tablet 500mg
+# =====================
+q_cap500 = single_dose_mg / 500
+
+if q_cap500 >= 1:
+q_cap500_whole = math.floor(q_cap500) n_cap500 = math.ceil(total_mg_needed / 500) print(f''Capsule/Tablet 500mg:")
+print(f'' Maintenance dose: {q_cap500_whole} cap(s)
+
+({q_cap500_whole * 500} mg)")
+if loading_dose and age>= 0.5:
+      print(f" Loading dose (Day 1): {q_cap500_whole * 2} caps ({q_cap500_whole * 1000} mg)")
+  print(f'' N = {n_cap500} capsules") else:
+n_cap500 = math.ceil(total_mg_needed / 500) print(f''Capsule/Tablet 500mg: Dose too low ({single_dose_mg:.0f}
+mg < 500 mg)")
+    print(f'' Consider 250mg capsules or suspension. Total 500mg caps if divided: {n_cap500}")
+
+
+# =====================
+# Example Usage
+# =====================
+
+print("\n" + "=" * 60)
+print("EXAMPLE 1: Strep Pharyngitis - Child 20kg, age 6") print("="* 60)
+Azithromycin(weight=20, age=6, mg_kg_day=0, TotalDay=0, Times_perday=1,
+diagnosis="streptococcal pharyngitis")
+
+print("\n" + "=" * 60)
+print("EXAMPLE 2: Vibrio Diarrhea - Child 15kg, age 5") print("=" * 60)
+Azithromycin(weight=15, age=5, mg_kg_day=0, TotalDay=0, Times_perday=1,
+diagnosis="vibrio diarrhea")
+
+print("\n" + "=" * 60)
+print("EXAMPLE 3: Other Infections - Infant 5kg, age 0.3 (4 months)") print("="* 60)
+Azithromycin(weight=5, age=0.3, mg_kg_day=0, TotalDay=0, Times_perday=1,
+
+diagnosis="other infections")
+
+print(''\n" + "=" * 60)
+print("EXAMPLE 4: Custom Dosing - Adult 70kg, age 30") print("=" * 60)
+Azithromycin(weight=70, age=30, mg_kg_day=5, TotaIDay=3, Times_perday=1,
+diagnosis="empty")

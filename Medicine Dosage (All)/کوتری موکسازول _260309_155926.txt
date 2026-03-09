@@ -1,0 +1,197 @@
+import math
+
+def prescribe_trimoxazole(diagnosis, weight_kg, age_months, mg_kg_day=None, total_days=7, times_per_day=2):
+111111
+
+
+  Pediatric Cotrimoxazole (Trimethoprim-Sulfamethoxazole) Prescribing Assistant
+Parameters diagnosis : str
+
+"URI"
+
+"UTI"
+
+or "other
+
+infections"
+
+weight_kg : float
+  Patient weight (kg) - **MUST be > 0** age_months : int
+  Patient age in **MONTHS** (critical for infants!) mg_kg_day : float, optional
+    Desired TMP dose (mg/kg/day). If omitted, uses standard dose for diagnosis.
+total_days : int
+  Days of therapy ( 1) times_per_day: int
+Doses per day (must be 2 or 3 for pediatrics)
+Returns str
+    Prescription order+ safety warnings. Returns error messages on invalid input.
+111111
+
+
+
+
+
+#
+# 1. INPUT VALIDATION
+#
+if weight_kg <= 0:
+return "X ERROR: Weight must be > 0 kg."
+
+if age_months < O:
+  return"X ERROR: Age cannot be negative." if total_days < 1:
+  return"X ERROR: Treatment must be ::'.: 1 day." if times_per_day not in (2, 3):
+return"X ERROR: Doses/day must be 2 or 3 for pediatric patients."
+
+#
+# 2. AGE-SPECIFIC CONTRAINDICATIONS & WARNINGS
+#
+warnings=  D
+
+# Kernicterus risk: ABSOLUTELY CONTRAINDICATED< 2 months if age_months < 2:
+    warnings.append(" !	CONTRAINDICATED: Not for infants< 2 months (risk of kernicterus). DO NOT PRESCRIBE.")
+return "\n".join(warnings)
+
+# Tablets forbidden under 10 YEARS (120 months) if age_months < 120:
+    warnings.append(" !	Tablets are NOT recommended for patients< 10 years. Suspension will be used.")
+
+#
+# 3. DETERMINE TMP DOSE (mg/kg/day)
+#
+# Standard doses (TMP component)
+if mg_kg_day is None or mg_kg_day <= O:
+if diagnosis == "URI":
+  mg_kg_day = 8.0	# 8 mg TMP/kg/day elif diagnosis== "UTI":
+  mg_kg_day = 4.0	# 4 mg TMP/kg/day elif diagnosis== "other_infections":
+mg_kg_day = 8.0	# common default
+else:
+return"X ERROR: Invalid diagnosis. Use 'URI', 'UTI', or
+
+10ther_infections1 11
+
+#
+# 4. CALCULATE DOSES & SAFETY CHECKS
+#
+# Total TMP (active component) per day
+total_tmp_daily = round(weight_kg * mg_kg_day, 2)	# mg TMP/day
+
+#---- MAX DAILY DOSE CHECK (TMP) ----
+MAX_TMP_DAILY= 320 # mg (absolute max for children) if total_tmp_daily > MAX_TMP_DAILY:
+warnings.append(f1  !	Daily dose reduced to max allowed:
+{MAX_TMP_DAILY} mg TMP (was {total_tmp_daily} mg).11 total_tmp_daily = MAX_TMP_DAILY
+
+# Dose per administration
+tmp_per_dose = round(total_tmp_daily / times_per_day, 2)
+
+#---- MAX SINGLE DOSE CHECK (TMP) ----
+MAX_TMP_SINGLE= 160	# mg per dose (pediatric safe limit) if tmp_per_dose > MAX_TMP_SINGLE:
+warnings.append(f1  !	Single dose reduced to max allowed:
+{MAX_TMP_SINGLE} mg TMP (was {tmp_per_dose} mg).11 tmp_per_dose = MAX_TMP_SINGLE
+# Re-calculate total daily dose after capping single dose total_tmp_daily = tmp_per_dose * times_per_day
+    warnings.append(f1	Adjusted total daily dose to {total_tmp_daily} mg TMP.11
+
+#
+# 5. FORMULATION CALCULATIONS
+#
+# --- SUSPENSION (standard pediatric formulation) ---
+# 40 mg TMP + 200 mg SMX per 5 ml	8 mg TMP / ml SUSP_TMP_PER_ML = 8.0
+
+# --- TABLET ---
+# 80 mg TMP + 400 mg SMX per tablet TAB_TMP_PER_TAB = 80.0
+
+#
+# 6. DECIDE BEST FORMULATION #
+use_suspension = False
+use_tablet = False
+use_drops = False	# (optional - if needed)
+
+# Patients <10 years SUSPENSION if age_months < 120:
+  use_suspension = True else:
+# For 10 years: try tablet FIRST (if dose splits cleanly) tabs_per_dose = tmp_per_dose / TAB_TMP_PER_TAB # Accept whole or half tablets ONLY (e.g., 1, 1.5, 2)
+if abs(round(tabs_per_dose, 1) - tabs_per_dose) < 0.05: use_tablet = True
+else:
+use_suspension = True
+warnings.append(" !	Tablet dose cannot be accurately divided.
+Using suspension.")
+
+#
+# 7. CALCULATE QUANTITY (Q) & UNITS (N) #
+prescription = D
+
+if use_suspension:
+#-----SUSPENSION  CALCULATION-----
+    ml_per_dose = round(tmp_per_dose / SUSP_TMP_PER_ML, 1) # ml	per dose
+total_ml	= ml_per_dose * times_per_day * total_days
+
+# Standard bottle = 100 ml. Round UP to nearest bottle. q_ml = math.ceil(total_ml / 100) * 100
+
+prescription = [
+
+"========================
+====="
+"PRESCRIPTION ORDER - COTRIMOXAZOLE (Suspension)",
+
+"========================
+====="
+f''Diagnosis		: {diagnosis.upper()}", f''Weight	: {weight_kg} kg",
+f''Age	: {age_months//12}y {age_months%12}m", f''TMP Dose/Day	: {total_tmp_daily} mg",
+f''Concentration : 40 mg TMP + 200 mg SMX / 5 ml	(= 8 mg TMP/
+ml)",
+f''Dose Volume	: {ml_per_dose} ml	(::::: {ml_per_dose*2:.1f} ml=
+1 tsp)",
+f''Frequency		: {times_per_day} times daily", f''Duration	: {total_days} days",
+f''TOTAL VOLUME	: {total_ml:.1f} ml", f''DISPENSE	: {q_ml} ml bottle(s)",
+1111
+
+
+"ADMINISTRATION:",
+f'' Give **{ml_per_dose} ml** ({round(ml_per_dose*2,1)} tsp)
+**{times_per_day} times daily** for {total_days} days.", 11 ? Shake bottle vigorously before each dose.", ''?  Use the calibrated oral syringe supplied.",
+1111
+
+]
+
+elif use_tablet:
+#-----TABLET CALCULATION-----
+    tabs_per_dose = round(tmp_per_dose / TAB_TMP_PER_TAB, 1)	# e.g., 1.5
+
+total_tabs	= tabs_per_dose * times_per_day * total_days
+    q_tabs	= math.ceil(total_tabs)	# Round UP to whole tablet
+
+prescription = [
+
+"========================
+====="
+"PRESCRIPTION ORDER - COTRIMOXAZOLE (Tablets)",
+
+"========================
+====="
+f'1Diagnosis	: {diagnosis.upper()}",
+f'1Weight	: {weight_kg} kg",
+f'1Age	: {age_months//12}y {age_months%12}m",
+f'1TMP Dose/Day	: {total_tmp_daily} mg",
+f'1Tablet Strength: 80 mg TMP + 400 mg SMX",
+f'1Tablets per Dose: {tabs_per_dose} tablet(s) (split as needed)",
+f'1Frequency	: {times_per_day} times daily",
+f'1Duration	: {total_days} days", f'1TOTAL TABLETS	: {total_tabs:.1f}", f'1DISPENSE		: {q_tabs} tablet(s)",
+1111
+
+
+"ADMINISTRATION:",
+     f'1 Give **{tabs_per_dose} tablet(s)** {times_per_day} times daily for {total_days} days.",
+11 ?	Tablets may be broken along the score line (max 0.5-tablet
+increments).",
+"?	Take with a full glass of water.",
+1111
+
+]
+
+#
+# 8. FINAL OUTPUT
+#
+output= "\n".join(warnings + prescription)
+
+# Standard footnotes output += "\n" + "=" * 55 output+= "\n;'	NOTES:\n"
+output+="- Complete the FULL course even if symptoms improve.\n" output+= "- Avoid in patients with G6PD deficiency or severe renal/
+hepatic disease.\n"
+output+= "- Monitor for rash, fever, or signs of infection progression.\n" output += "=" * 55
+
+return output

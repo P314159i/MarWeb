@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Acetaminophen Prescriber</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f8;
+      color: #1a2535;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #1b4f72;
+      letter-spacing: 0.5px;
+    }
+    header p {
+      margin-top: 6px;
+      color: #5d7a96;
+      font-size: 0.92rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.09);
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .field label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #3a5068;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .field input {
+      border: 1.5px solid #c8d6e5;
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-size: 0.97rem;
+      color: #1a2535;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #f7fafd;
+    }
+    .field input:focus { border-color: #2980b9; background: #fff; }
+
+    .field .hint {
+      font-size: 0.75rem;
+      color: #8fa9c0;
+    }
+
+    .btn {
+      margin-top: 22px;
+      width: 100%;
+      padding: 12px;
+      background: #1b4f72;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #154360; }
+
+    .error-box {
+      margin-top: 14px;
+      background: #fdecea;
+      border: 1px solid #f5b7b1;
+      border-radius: 7px;
+      padding: 10px 14px;
+      color: #c0392b;
+      font-size: 0.88rem;
+      display: none;
+    }
+
+    /* Results */
+    #results { margin-top: 28px; width: 100%; max-width: 540px; }
+
+    .dose-summary {
+      background: #eaf4fb;
+      border-left: 4px solid #2980b9;
+      border-radius: 7px;
+      padding: 10px 14px;
+      font-size: 0.91rem;
+      margin-bottom: 16px;
+      color: #1a4a6b;
+    }
+    .dose-summary .capped {
+      color: #c0392b;
+      font-weight: 600;
+    }
+
+    .result-card {
+      border-radius: 9px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .result-card.available {
+      background: #fff;
+      border: 1.5px solid #a9cce3;
+      box-shadow: 0 2px 8px rgba(41,128,185,0.07);
+    }
+    .result-card.unavailable {
+      background: #fdfafa;
+      border: 1.5px dashed #d5d8dc;
+      opacity: 0.72;
+    }
+
+    .drug-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #1b4f72;
+    }
+    .result-card.unavailable .drug-label { color: #7f8c8d; }
+
+    .prescription {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: #1a2535;
+    }
+    .quantity {
+      font-size: 0.89rem;
+      color: #2980b9;
+      font-weight: 500;
+    }
+    .note {
+      font-size: 0.88rem;
+      color: #95a5a6;
+      font-style: italic;
+    }
+
+    footer {
+      margin-top: 36px;
+      font-size: 0.78rem;
+      color: #a0b4c8;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>&#128137; Acetaminophen Prescriber</h1>
+  <p>Weight-based dosing calculator — all formulations</p>
+</header>
+
+<div class="card">
+  <div class="form-grid">
+    <div class="field">
+      <label>Weight</label>
+      <input type="number" id="weight" placeholder="e.g. 20" min="0.1" step="0.1" />
+      <span class="hint">kg</span>
+    </div>
+    <div class="field">
+      <label>Age</label>
+      <input type="number" id="age" placeholder="e.g. 5" min="0" step="0.1" />
+      <span class="hint">years (e.g. 0.5 for 6 months)</span>
+    </div>
+    <div class="field">
+      <label>Dose</label>
+      <input type="number" id="mgkgday" placeholder="e.g. 60" min="1" step="1" />
+      <span class="hint">mg/kg/day (max auto-cap: 90)</span>
+    </div>
+    <div class="field">
+      <label>Duration</label>
+      <input type="number" id="totaldays" placeholder="e.g. 5" min="1" step="1" />
+      <span class="hint">days</span>
+    </div>
+    <div class="field" style="grid-column: span 2;">
+      <label>Frequency</label>
+      <input type="number" id="timesperday" placeholder="e.g. 3" min="1" max="6" step="1" />
+      <span class="hint">times per day</span>
+    </div>
+  </div>
+  <div class="error-box" id="errBox"></div>
+  <button class="btn" onclick="prescribe()">Calculate Prescription</button>
+</div>
+
+<div id="results"></div>
+
+<footer>For clinical use only. Verify all prescriptions against current guidelines.</footer>
+
+<script>
+  function showError(msg) {
+    const b = document.getElementById('errBox');
+    b.textContent = msg;
+    b.style.display = 'block';
+  }
+  function clearError() {
+    document.getElementById('errBox').style.display = 'none';
+  }
+
+  function prescribe() {
+    clearError();
+    document.getElementById('results').innerHTML = '';
+
+    const weight       = parseFloat(document.getElementById('weight').value);
+    const age          = parseFloat(document.getElementById('age').value);
+    const mgKgDay      = parseFloat(document.getElementById('mgkgday').value);
+    const total_days   = parseFloat(document.getElementById('totaldays').value);
+    const times_per_day = parseFloat(document.getElementById('timesperday').value);
+
+    if ([weight, age, mgKgDay, total_days, times_per_day].some(v => isNaN(v) || v <= 0)) {
+      showError('Please fill in all fields with valid positive values.');
+      return;
+    }
+
+    // ── Age thresholds (exact from Python) ──────────────────────────────────
+    const TAB325_MIN_AGE  = 6;
+    const TAB500_MIN_AGE  = 12;
+    const SUPP125_MIN_AGE = 0.25;
+    const SUPP325_MIN_AGE = 2;
+
+    // ── Core dose calculations (exact from Python) ───────────────────────────
+    let daily_dose_mg   = mgKgDay * weight;
+    const max_daily_mg  = 90 * weight;
+    const requested_dd  = daily_dose_mg;
+    if (daily_dose_mg > max_daily_mg) daily_dose_mg = max_daily_mg;
+
+    const max_single_mg  = 15 * weight;
+    const hours_between  = 24 / times_per_day;
+    const hStr           = hours_between.toFixed(1);
+
+    const cards = [];
+
+    // ── 1) Suspension 125 mg / 5 mL ─────────────────────────────────────────
+    if (age >= SUPP125_MIN_AGE) {
+      const daily_vol_ml    = daily_dose_mg * 5 / 125;
+      const per_dose_ml     = daily_vol_ml / times_per_day;
+      let   q_susp125       = Math.celi(per_dose_ml);
+      const max_vol_per_dose = max_single_mg * 5 / 125;
+      if (q_susp125 > max_vol_per_dose) q_susp125 = Math.ceil(max_vol_per_dose);
+      const total_vol_needed = daily_vol_ml * total_days;
+      const n_bottles_120    = Math.ceil(total_vol_needed / 120);
+      const n_bottles_60     = Math.ceil(total_vol_needed / 60);
+      cards.push({ label:'Susp 125 mg/5 mL', ok:true,
+        rx:   `${q_susp125} mL every ${hStr} h for ${total_days} d`,
+        qty:  `N×120 mL = ${n_bottles_120}  or  N×60 mL = ${n_bottles_60}` });
+    } else {
+      cards.push({ label:'Susp 125 mg/5 mL', ok:false,
+        note:`Not recommended for age < ${SUPP125_MIN_AGE} years` });
+    }
+
+    // ── 2) Tablet 325 mg ─────────────────────────────────────────────────────
+    if (age >= TAB325_MIN_AGE) {
+      const daily_tabs_325   = daily_dose_mg / 325;
+      const per_dose_tabs_325 = daily_tabs_325 / times_per_day;
+      let   q_tab325         = Math.ceil(per_dose_tabs_325);
+      const max_tabs_325     = Math.ceil(max_single_mg / 325);
+      if (q_tab325 > max_tabs_325) q_tab325 = max_tabs_325;
+      const total_tabs_325   = Math.ceil(daily_tabs_325 * total_days);
+      cards.push({ label:'Tab 325 mg', ok:true,
+        rx:  `${q_tab325} tab every ${hStr} h for ${total_days} d`,
+        qty: `N = ${total_tabs_325} tablets` });
+    } else {
+      cards.push({ label:'Tab 325 mg', ok:false,
+        note:`Not recommended for age < ${TAB325_MIN_AGE} years` });
+    }
+
+    // ── 3) Tablet 500 mg ─────────────────────────────────────────────────────
+    if (age >= TAB500_MIN_AGE) {
+      const daily_tabs_500    = daily_dose_mg / 500;
+      const per_dose_tabs_500 = daily_tabs_500 / times_per_day;
+      let   q_tab500          = Math.ceil(per_dose_tabs_500);
+      const max_tabs_500      = Math.ceil(max_single_mg / 500);
+      if (q_tab500 > max_tabs_500) q_tab500 = max_tabs_500;
+      const total_tabs_500    = Math.ceil(daily_tabs_500 * total_days);
+      cards.push({ label:'Tab 500 mg', ok:true,
+        rx:  `${q_tab500} tab every ${hStr} h for ${total_days} d`,
+        qty: `N = ${total_tabs_500} tablets` });
+    } else {
+      cards.push({ label:'Tab 500 mg', ok:false,
+        note:`Not recommended for age < ${TAB500_MIN_AGE} years` });
+    }
+
+    // ── 4) Suppository 125 mg ────────────────────────────────────────────────
+    if (age >= SUPP125_MIN_AGE) {
+      const daily_supp125   = daily_dose_mg / 125;
+      const per_dose_supp125 = daily_supp125 / times_per_day;
+      let   q_supp125       = Math.ceil(per_dose_supp125);
+      const max_supp125     = Math.ceil(max_single_mg / 125);
+      if (q_supp125 > max_supp125) q_supp125 = max_supp125;
+      const total_supp125   = Math.ceil(daily_supp125 * total_days);
+      cards.push({ label:'Supp 125 mg', ok:true,
+        rx:  `${q_supp125} supp every ${hStr} h for ${total_days} d`,
+        qty: `N = ${total_supp125} suppositories` });
+    } else {
+      cards.push({ label:'Supp 125 mg', ok:false,
+        note:`Not recommended for age < ${SUPP125_MIN_AGE} years` });
+    }
+
+    // ── 5) Suppository 325 mg ────────────────────────────────────────────────
+    if (age >= SUPP325_MIN_AGE) {
+      const daily_supp325    = daily_dose_mg / 325;
+      const per_dose_supp325 = daily_supp325 / times_per_day;
+      let   q_supp325        = Math.ceil(per_dose_supp325);
+      const max_supp325      = Math.ceil(max_single_mg / 325);
+      if (q_supp325 > max_supp325) q_supp325 = max_supp325;
+      const total_supp325    = Math.ceil(daily_supp325 * total_days);
+      cards.push({ label:'Supp 325 mg', ok:true,
+        rx:  `${q_supp325} supp every ${hStr} h for ${total_days} d`,
+        qty: `N = ${total_supp325} suppositories` });
+    } else {
+      cards.push({ label:'Supp 325 mg', ok:false,
+        note:`Not recommended for age < ${SUPP325_MIN_AGE} years` });
+    }
+
+    // ── 6) Drops 100 mg/mL (bottle = 15 mL) ─────────────────────────────────
+    const daily_drop_ml    = daily_dose_mg / 100;
+    const per_dose_drop_ml = daily_drop_ml / times_per_day;
+    let   q_drop           = Math.ceil(per_dose_drop_ml);
+    const max_drop_ml      = max_single_mg / 100;
+    if (q_drop > max_drop_ml) q_drop = max_drop_ml;      // no extra ceil — matches Python
+    const total_drop_ml    = daily_drop_ml * total_days;
+    const n_bottles_drop   = Math.ceil(total_drop_ml / 15);
+    cards.push({ label:'Drops 100 mg/mL', ok:true,
+      rx:  `${q_drop} mL every ${hStr} h for ${total_days} d`,
+      qty: `N×15 mL = ${n_bottles_drop}` });
+
+    // ── Render ────────────────────────────────────────────────────────────────
+    const capped = requested_dd > max_daily_mg;
+    let html = `<div class="dose-summary">
+      <strong>Effective daily dose:</strong> ${daily_dose_mg.toFixed(1)} mg`;
+    if (capped) html += ` <span class="capped">(auto-capped at 90 mg/kg/day)</span>`;
+    html += `</div>`;
+
+    for (const c of cards) {
+      if (c.ok) {
+        html += `<div class="result-card available">
+          <div class="drug-label">${c.label}</div>
+          <div class="prescription">${c.rx}</div>
+          <div class="quantity">${c.qty}</div>
+        </div>`;
+      } else {
+        html += `<div class="result-card unavailable">
+          <div class="drug-label">${c.label}</div>
+          <div class="note">${c.note}</div>
+        </div>`;
+      }
+    }
+
+    document.getElementById('results').innerHTML = html;
+  }
+</script>
+</body>
+</html>

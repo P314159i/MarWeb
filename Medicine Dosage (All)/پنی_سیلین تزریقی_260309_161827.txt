@@ -1,0 +1,136 @@
+import math
+
+def prescribe_penicillin_g_im(weight_kg, age_months, mg_kg_day, total_days, times_per_day):
+111111
+
+
+Pediatric Penicillin G (IM) Prescribing Assistant Parameters
+weight_kg : float
+  Patient weight (kg) - **MUST be > 0** age_months : int
+  Patient age in **MONTHS** (critical for safety!) mg_kg_day : float
+    Desired dose (mg/kg/day). **Standard: 50 mg/kg/day** for most infections.
+total_days : int
+  Days of therapy ( 3) times_per_day: int
+    Doses per day. **Accepted: 1 or 2** (IM typically given once or twice daily).
+Returns str
+Prescription order+ safety warnings. Returns errors on invalid input.
+111111
+
+
+
+
+
+#
+# 1. INPUT VALIDATION
+#
+if weight_kg <= 0:
+  return"X ERROR: Weight must be > 0 kg." if age_months < 0:
+return"X ERROR: Age cannot be negative."
+if total_days < 3:
+
+  return "X ERROR: Minimum treatment duration is 3 days." if times_per_day not in (1, 2):
+return "X ERROR: Doses/day must be 1 or 2 for IM Penicillin G."
+
+# Validate mg_kg_day (must be 50 mg/kg/day for standard dosing) if mg_kg_day != 50:
+return "X ERROR: mg_kg_day must be 50 mg/kg/day for Penicillin G
+(IM)."
+
+#
+# 2. AGE-SPECIFIC CONTRAINDICATIONS & WARNINGS
+#
+  warnings=[" !	ALWAYS perform skin test for hypersensitivity before administration."]
+
+# Penicillin G IM is NOT recommended for children< 3 MONTHS if age_months < 3:
+    warnings.append("X	CONTRAINDICATED: Penicillin G IM forbidden for infants < 3 months.")
+return "\n".join(warnings)
+
+#
+# 3. CALCULATE DOSES & SAFETY CHECKS
+#
+# Total daily dose (mg)
+total_daily_dose = round(weight_kg * mg_kg_day, 2)
+
+#---- MAX DAILY DOSE CHECK (Pediatric safe limit)----
+MAX_DAILY _DOSE= 2000000 # 2,000,000 IU (2 MU) - absolute max
+for children
+if total_daily_dose > MAX_DAILY _DOSE:
+warnings.append(f" !	Daily dose reduced to max allowed:
+{MAX_DAILY_DOSE} IU (was {total_daily_dose} IU).") total_daily_dose = MAX_DAILY _DOSE
+
+# Dose per administration
+
+dose_per_admin = round(total_daily_dose / times_per_day, 2)
+
+#---- MAX SINGLE DOSE CHECK----
+MAX_SINGLE_DOSE = 1000000  # 1,000,000 IU (1 MU) per dose
+if dose_per_admin > MAX_SINGLE_DOSE: warnings.append(f" !	Single dose reduced to max allowed:
+{MAX_SINGLE_DOSE} IU (was {dose_per_admin} IU).") dose_per_admin = MAX_SINGLE_DOSE
+# Re-calculate total daily dose after capping single dose total_daily_dose = dose_per_admin * times_per_day warnings.append(f"	Adjusted total daily dose to
+{total_daily_dose} IU.")
+
+#
+# 4. DETERMINE INJECTION STRENGTH & QUANTITY
+#
+# Standard IM formulations:
+#	- 600,000 IU / 1 ml	600,000 IU/ml
+#	- 1,200,000 IU / 2 ml	600,000 IU/ml (same concentration)
+CONC = 600000 # IU per ml
+
+# Volume per dose (ml)
+ml_per_dose = round(dose_per_admin / CONC, 2)
+
+# Total volume needed for entire course
+total_ml = ml_per_dose * times_per_day * total_days
+
+# Ampoules are typically 1 ml  (600,000 IU) or 2 ml (1,200,000 IU)
+# We'll use 1 ml ampoules for simplicity
+  ampoules_per_dose = math.ceil(ml_per_dose / 1) # Round UP to whole ampoule
+total_ampoules = ampoules_per_dose * times_per_day * total_days
+
+#
+# 5. GENERATE NEAT PRESCRIPTION ORDER
+#
+
+output= "\n".join(warnings) + "\n" output += "=" * 60 + "\n"
+output+= "PRESCRIPTION ORDER - PENICILLIN G PROCAINE {IM)\n"
+output += "=" * 60 + "\n"
+output+= f"Patient Weight	: {weight_kg} kg\n"
+output+= f'Patient Age		: {age_months//12}y {age_months% 12}m\n" output+= f"Dose	: 50 mg/kg/day	{total_daily_dose} IU/day\n" output += f"Doses per Day	: {times_per _day} (every {24/
+times_per_day:.1f} hours)\n"
+output+= f"Duration	: {total_days} days\n\n"
+
+
+
+output+=
+"
+
+
+\n"
+
+output+= "FORMULATION: Penicillin G Procaine {IM)\n" output+=
+
+"
+output+= f"Concentration	: 600,000 IU / 1 ml \n"
+
+\n"
+
+  output+= f"Dose per Injection: {dose_per_admin} IU	{ml_per_dose} ml\n"
+  output+= f"Ampoules per Dose: {ampoules_per_dose} x 1 ml ampoule(s)\n"
+output+= f"TOTAL VOLUME	: {total_ml:.1f} ml \n"
+output+= f"DISPENSE	: {total_ampoules} x 1 ml ampoule(s)\n" output+= "\nADMINISTRATION:\n"
+  output+= f" Inject **{ml_per_dose} ml** ({ampoules_per_dose} ampoule(s)) **{times_per_day} time(s) daily** for {total_days} days.\n"
+output+= "?	Use deep intramuscular (IM) injection into the gluteal
+muscle.\n"
+output+= "?	Rotate injection sites to prevent tissue irritation.\n" output+=
+"	\n\n"
+
+
+#Final notes
+output += "=" * 60 + "\n"
+output+=  ";'	IMPORTANT NOTES:\n"
+output+="- Complete the FULL course even if symptoms improve.\n"
+
+output+= "- Monitor for rash, fever, or signs of anaphylaxis.\n" output+= "- Do NOT use in patients with known penicillin allergy.\n" output+= "- Discard any unused portion after opening.\n"
+output += "=" * 60
+
+return output

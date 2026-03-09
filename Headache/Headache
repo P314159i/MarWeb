@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Headache Approach Assistant</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 25px auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+        }
+
+        .section h2 {
+            font-size: 1.3rem;
+            color: #16213e;
+            border-bottom: 2px solid #e94560;
+            padding-bottom: 8px;
+            margin-bottom: 18px;
+        }
+
+        .section h3 {
+            font-size: 1.1rem;
+            color: #0f3460;
+            margin: 18px 0 10px;
+        }
+
+        .question-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 24px;
+            margin-bottom: 10px;
+        }
+
+        .question-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: #f8f9fc;
+            border: 1px solid #e0e4ec;
+            transition: background 0.2s;
+        }
+
+        .question-item:hover {
+            background: #eef1f8;
+        }
+
+        .question-item label {
+            cursor: pointer;
+            font-size: 0.92rem;
+            flex: 1;
+        }
+
+        .question-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #e94560;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        select, input[type="number"] {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            margin: 4px 0;
+        }
+
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #e94560;
+            box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.15);
+        }
+
+        .inline-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+
+        .inline-field label {
+            font-weight: 600;
+            font-size: 0.93rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 5px 5px 5px 0;
+        }
+
+        .btn-primary {
+            background: #e94560;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c73a52;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #0a2540;
+            transform: translateY(-1px);
+        }
+
+        .btn-reset {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #545b62;
+        }
+
+        .btn-center {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #redFlagResults, #diagnosisResults, #managementResults {
+            display: none;
+        }
+
+        .result-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .result-danger {
+            background: #ffeef0;
+            border-left: 5px solid #e94560;
+        }
+
+        .result-success {
+            background: #eafbf0;
+            border-left: 5px solid #28a745;
+        }
+
+        .result-info {
+            background: #eef4ff;
+            border-left: 5px solid #0f3460;
+        }
+
+        .result-warning {
+            background: #fff8e6;
+            border-left: 5px solid #ffc107;
+        }
+
+        .result-box h3 {
+            margin-top: 0;
+        }
+
+        .result-box ul {
+            margin: 8px 0 8px 20px;
+        }
+
+        .result-box li {
+            margin-bottom: 4px;
+            font-size: 0.93rem;
+        }
+
+        .flag-tag {
+            display: inline-block;
+            background: #e94560;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            margin: 3px 4px 3px 0;
+        }
+
+        .management-block {
+            background: #f8f9fc;
+            border: 1px solid #dde2ec;
+            border-radius: 8px;
+            padding: 15px 18px;
+            margin: 12px 0;
+        }
+
+        .management-block h4 {
+            color: #0f3460;
+            margin-bottom: 8px;
+        }
+
+        .management-block ul {
+            margin-left: 18px;
+        }
+
+        .management-block li {
+            margin-bottom: 4px;
+            font-size: 0.92rem;
+        }
+
+        .disclaimer {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        .disclaimer h3 {
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .disclaimer p {
+            color: #664d03;
+            font-size: 0.93rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .sub-question {
+            margin-left: 30px;
+            padding: 10px 15px;
+            border-left: 3px solid #ffc107;
+            background: #fffdf5;
+            border-radius: 0 8px 8px 0;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 650px) {
+            .question-group {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 1.4rem;
+            }
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .step {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 2px solid #ccc;
+            color: #999;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .step.active {
+            border-color: #e94560;
+            color: white;
+            background: #e94560;
+        }
+
+        .step.done {
+            border-color: #28a745;
+            color: white;
+            background: #28a745;
+        }
+
+        .step-connector {
+            width: 40px;
+            height: 2px;
+            background: #ccc;
+            align-self: center;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🩺 Headache Approach Assistant</h1>
+    <p>Red Flag Assessment → ICHD-3 Diagnosis → Management &amp; Prophylaxis</p>
+</header>
+
+<div class="container">
+
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+        <div class="step active" id="step1">1</div>
+        <div class="step-connector"></div>
+        <div class="step" id="step2">2</div>
+        <div class="step-connector"></div>
+        <div class="step" id="step3">3</div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 1: RED FLAG ASSESSMENT               -->
+    <!-- ============================================ -->
+    <div id="sectionRedFlags">
+        <div class="section">
+            <h2>🚩 Step 1: Red Flag Assessment</h2>
+
+            <h3>History</h3>
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="rf_age50">
+                    <label for="rf_age50">Age &gt; 50 years</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_pattern">
+                    <label for="rf_pattern">Change in headache pattern/frequency/severity</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_treatment_failure">
+                    <label for="rf_treatment_failure">No response to oral or IV therapy</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_pregnant">
+                    <label for="rf_pregnant">Pregnant</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_thunderclap">
+                    <label for="rf_thunderclap">Severe onset, peaks in 1–2 min, or "worst headache ever"</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_infection">
+                    <label for="rf_infection">Active/recent infection (sinusitis, otitis, pharyngitis)</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_personality">
+                    <label for="rf_personality">Change in personality/behavior</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_consciousness">
+                    <label for="rf_consciousness">Decreased consciousness or loss of consciousness</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_seizure">
+                    <label for="rf_seizure">Concomitant seizure</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_exertional">
+                    <label for="rf_exertional">Onset after exercise/intercourse</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_immuno">
+                    <label for="rf_immuno">Immunocompromised (lupus, RA, DM, HIV, CKD, steroids)</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_vision">
+                    <label for="rf_vision">Vision disturbance (blurred/transient loss)</label>
+                </div>
+            </div>
+
+            <!-- Sub-questions for vision -->
+            <div class="sub-question hidden" id="sub_vision">
+                <div class="question-item" style="background:#fff;">
+                    <input type="checkbox" id="rf_vision_age50">
+                    <label for="rf_vision_age50">Age &gt; 50 with vision changes (suspect GCA)</label>
+                </div>
+                <div class="question-item" style="background:#fff;">
+                    <input type="checkbox" id="rf_glaucoma">
+                    <label for="rf_glaucoma">Red eye + dilated pupil (suspect acute angle-closure glaucoma)</label>
+                </div>
+            </div>
+
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="rf_postpartum">
+                    <label for="rf_postpartum">Recent childbirth (postpartum)</label>
+                </div>
+            </div>
+
+            <!-- Sub-questions for postpartum -->
+            <div class="sub-question hidden" id="sub_postpartum">
+                <div class="inline-field">
+                    <label>Delivery type:</label>
+                    <select id="rf_delivery_type">
+                        <option value="">-- Select --</option>
+                        <option value="section">C-section</option>
+                        <option value="nvd">NVD</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3>Risk Factors</h3>
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="rf_ocp">
+                    <label for="rf_ocp">OCP use</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_anticoag">
+                    <label for="rf_anticoag">Anticoagulant/antiplatelet use</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_drugs">
+                    <label for="rf_drugs">Drug abuse (cocaine, amphetamines)</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_co">
+                    <label for="rf_co">Household members with similar headache</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_obese">
+                    <label for="rf_obese">Obese (BMI &gt; 30)</label>
+                </div>
+            </div>
+
+            <h3>Physical Examination</h3>
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="rf_focal">
+                    <label for="rf_focal">Decreased power/sensation (focal deficit)</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_temp">
+                    <label for="rf_temp">Temp &gt; 38°C or &lt; 36°C</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_toxic">
+                    <label for="rf_toxic">Fever &gt; 38°C + toxic appearance</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_gcs">
+                    <label for="rf_gcs">GCS decreased</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_neuro">
+                    <label for="rf_neuro">Abnormal neuro exam (Babinski, pupils, pronator drift)</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_papilledema">
+                    <label for="rf_papilledema">Papilledema on fundoscopy</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="rf_meningeal">
+                    <label for="rf_meningeal">Meningeal signs (Kernig/Brudzinski)</label>
+                </div>
+            </div>
+
+            <div class="btn-center">
+                <button class="btn btn-primary" onclick="evaluateRedFlags()">Evaluate Red Flags →</button>
+            </div>
+        </div>
+
+        <!-- Red Flag Results -->
+        <div id="redFlagResults"></div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 2: ICHD-3 DIAGNOSIS                  -->
+    <!-- ============================================ -->
+    <div id="sectionDiagnosis" class="hidden">
+        <div class="section">
+            <h2>🔍 Step 2: Primary Headache Diagnosis (ICHD-3 Criteria)</h2>
+
+            <div class="inline-field">
+                <label>Previously diagnosed with migraine/tension/cluster and on meds?</label>
+                <select id="prior_dx">
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                </select>
+            </div>
+
+            <div id="priorDxNote" class="result-box result-info hidden">
+                <p><strong>Note:</strong> Consider adjusting dosage or re-evaluating current therapy (e.g., triptans for migraine, amitriptyline for tension).</p>
+            </div>
+
+            <!-- Migraine Criteria -->
+            <h3>Migraine Features (need ≥ 2)</h3>
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="mig_unilateral">
+                    <label for="mig_unilateral">Unilateral</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="mig_pulsating">
+                    <label for="mig_pulsating">Pulsating</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="mig_moderate_severe">
+                    <label for="mig_moderate_severe">Moderate to severe intensity</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="mig_worsens_activity">
+                    <label for="mig_worsens_activity">Worsens with routine physical activity</label>
+                </div>
+            </div>
+
+            <h3>Migraine Accompaniments (need ≥ 1)</h3>
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="mig_nausea">
+                    <label for="mig_nausea">Nausea/vomiting</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="mig_photo">
+                    <label for="mig_photo">Photophobia</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="mig_phono">
+                    <label for="mig_phono">Phonophobia</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="mig_osmo">
+                    <label for="mig_osmo">Osmophobia</label>
+                </div>
+            </div>
+
+            <div class="question-item" style="margin:12px 0;">
+                <input type="checkbox" id="mig_attacks">
+                <label for="mig_attacks">≥ 5 lifetime attacks, each 4–72 hours untreated</label>
+            </div>
+
+            <hr style="margin:20px 0; border:none; border-top:1px solid #e0e4ec;">
+
+            <!-- Tension Criteria -->
+            <h3>Tension-Type Features (need ≥ 2)</h3>
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="ten_bilateral">
+                    <label for="ten_bilateral">Bilateral</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="ten_pressing">
+                    <label for="ten_pressing">Pressing/tightening (non-pulsating)</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="ten_mild_mod">
+                    <label for="ten_mild_mod">Mild to moderate intensity</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="ten_not_worse">
+                    <label for="ten_not_worse">Not worsened by routine physical activity</label>
+                </div>
+            </div>
+
+            <div class="question-item" style="margin:8px 0;">
+                <input type="checkbox" id="ten_accomp">
+                <label for="ten_accomp">No nausea/vomiting, and ≤ 1 of photophobia/phonophobia</label>
+            </div>
+            <div class="question-item" style="margin:8px 0;">
+                <input type="checkbox" id="ten_episodes">
+                <label for="ten_episodes">≥ 10 episodes (&lt; 1/month avg), 30 min – 7 days each</label>
+            </div>
+
+            <hr style="margin:20px 0; border:none; border-top:1px solid #e0e4ec;">
+
+            <!-- Cluster Criteria -->
+            <h3>Cluster Headache – Autonomic/Horner Features</h3>
+            <div class="question-group">
+                <div class="question-item">
+                    <input type="checkbox" id="cl_eye">
+                    <label for="cl_eye">Ipsilateral red eye / lacrimation</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="cl_nasal">
+                    <label for="cl_nasal">Ipsilateral nasal congestion / rhinorrhea</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="cl_horner">
+                    <label for="cl_horner">Ipsilateral ptosis / miosis / anhidrosis</label>
+                </div>
+            </div>
+
+            <div class="question-group" style="margin-top:10px;">
+                <div class="question-item">
+                    <input type="checkbox" id="cl_agitation">
+                    <label for="cl_agitation">Restless / agitated during attack</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="cl_timing">
+                    <label for="cl_timing">Severe unilateral orbital/temporal, 15–180 min, 1–8/day</label>
+                </div>
+                <div class="question-item">
+                    <input type="checkbox" id="cl_alcohol">
+                    <label for="cl_alcohol">Triggered/worsens with alcohol</label>
+                </div>
+            </div>
+
+            <div class="btn-center">
+                <button class="btn btn-primary" onclick="evaluateDiagnosis()">Diagnose →</button>
+                <button class="btn btn-reset" onclick="goBackToStep1()">← Back</button>
+            </div>
+        </div>
+
+        <div id="diagnosisResults"></div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 3: MANAGEMENT                        -->
+    <!-- ============================================ -->
+    <div id="sectionManagement" class="hidden">
+        <div id="managementResults"></div>
+        <div class="btn-center" style="margin-bottom:20px;">
+            <button class="btn btn-reset" onclick="goBackToStep2()">← Back to Diagnosis</button>
+            <button class="btn btn-reset" onclick="resetAll()">🔄 Start Over</button>
+        </div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+        <h3>⚠️ Disclaimer</h3>
+        <p>This tool is <strong>only a clinical decision-support assistant</strong> and does <strong>not</strong> replace clinical judgment or consultation with a qualified physician. Always verify recommendations against current guidelines and individual patient factors. The developers assume no liability for clinical decisions made based on this tool.</p>
+    </div>
+
+</div>
+
+<script>
+    // =============================================
+    // Toggle sub-questions visibility
+    // =============================================
+    document.getElementById('rf_vision').addEventListener('change', function () {
+        document.getElementById('sub_vision').classList.toggle('hidden', !this.checked);
+        if (!this.checked) {
+            document.getElementById('rf_vision_age50').checked = false;
+            document.getElementById('rf_glaucoma').checked = false;
+        }
+    });
+
+    document.getElementById('rf_postpartum').addEventListener('change', function () {
+        document.getElementById('sub_postpartum').classList.toggle('hidden', !this.checked);
+        if (!this.checked) {
+            document.getElementById('rf_delivery_type').value = '';
+        }
+    });
+
+    document.getElementById('prior_dx').addEventListener('change', function () {
+        document.getElementById('priorDxNote').classList.toggle('hidden', this.value !== 'yes');
+    });
+
+    // =============================================
+    // Step navigation helpers
+    // =============================================
+    function setStep(n) {
+        for (let i = 1; i <= 3; i++) {
+            const el = document.getElementById('step' + i);
+            el.classList.remove('active', 'done');
+            if (i < n) el.classList.add('done');
+            if (i === n) el.classList.add('active');
+        }
+    }
+
+    function goBackToStep1() {
+        document.getElementById('sectionDiagnosis').classList.add('hidden');
+        document.getElementById('sectionRedFlags').classList.remove('hidden');
+        document.getElementById('redFlagResults').style.display = 'none';
+        setStep(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goBackToStep2() {
+        document.getElementById('sectionManagement').classList.add('hidden');
+        document.getElementById('sectionDiagnosis').classList.remove('hidden');
+        document.getElementById('diagnosisResults').style.display = 'none';
+        setStep(2);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetAll() {
+        // Uncheck all checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        document.querySelectorAll('select').forEach(sel => sel.value = sel.options[0].value);
+        document.querySelectorAll('.sub-question').forEach(el => el.classList.add('hidden'));
+        document.getElementById('priorDxNote').classList.add('hidden');
+
+        document.getElementById('sectionManagement').classList.add('hidden');
+        document.getElementById('sectionDiagnosis').classList.add('hidden');
+        document.getElementById('sectionRedFlags').classList.remove('hidden');
+
+        document.getElementById('redFlagResults').style.display = 'none';
+        document.getElementById('diagnosisResults').style.display = 'none';
+        document.getElementById('managementResults').style.display = 'none';
+
+        setStep(1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =============================================
+    // STEP 1: RED FLAG EVALUATION
+    // =============================================
+    function evaluateRedFlags() {
+        const flags = [];
+        const plans = [];
+
+        function chk(id) { return document.getElementById(id).checked; }
+
+        if (chk('rf_age50')) {
+            flags.push('Age > 50');
+            plans.push('DDx: ICH, mass, GCA. Plan: Neuro exam/imaging (CT/MRI) + ESR/CRP for GCA.');
+        }
+        if (chk('rf_pattern')) {
+            flags.push('Pattern change');
+            plans.push('DDx: Tumor, SDH, progression of underlying pathology. Plan: MRI brain.');
+        }
+        if (chk('rf_treatment_failure')) {
+            flags.push('Treatment failure');
+            plans.push('DDx: Refractory secondary headache, medication overuse. Plan: MRI + neuro consult.');
+        }
+        if (chk('rf_pregnant')) {
+            flags.push('Pregnancy');
+            plans.push('DDx: Pre-eclampsia, CVST. Plan: Brain MRI for CVST, evaluate pre-eclampsia.');
+        }
+        if (chk('rf_thunderclap')) {
+            flags.push('Thunderclap headache');
+            plans.push('DDx: SAH, abscess, meningitis, ICH, CVST, encephalitis. Plan: Urgent non-contrast brain CT.');
+        }
+        if (chk('rf_infection')) {
+            flags.push('Infection');
+            plans.push('DDx: Abscess, meningitis. Plan: Brain CT.');
+        }
+        if (chk('rf_personality')) {
+            flags.push('Personality change');
+            plans.push('DDx: Encephalitis, meningitis. Plan: Brain CT.');
+        }
+        if (chk('rf_consciousness')) {
+            flags.push('Consciousness change');
+            plans.push('DDx: Encephalitis, meningitis. Plan: Brain CT.');
+        }
+        if (chk('rf_seizure')) {
+            flags.push('Seizure');
+            plans.push('DDx: Pre-eclampsia, PRES. Plan: Brain CT.');
+        }
+        if (chk('rf_exertional')) {
+            flags.push('Exertional');
+            plans.push('DDx: Ruptured aneurysm, RCVS. Plan: Brain CT/MRI.');
+        }
+        if (chk('rf_immuno')) {
+            flags.push('Immunocompromised');
+            plans.push('DDx: Abscess, meningitis, fungal infection, toxoplasmosis. Plan: Urgent brain CT.');
+        }
+        if (chk('rf_vision')) {
+            if (chk('rf_vision_age50')) {
+                flags.push('Vision changes + Age > 50 (GCA)');
+                plans.push('DDx: GCA. Plan: ESR/CRP; if ESR > 50, start high-dose steroids STAT.');
+            }
+            if (chk('rf_glaucoma')) {
+                flags.push('Red eye + dilated pupil');
+                plans.push('DDx: Acute angle-closure glaucoma. Plan: Urgent ophthalmology referral.');
+            }
+        }
+        if (chk('rf_postpartum')) {
+            const delivery = document.getElementById('rf_delivery_type').value;
+            if (delivery === 'section') {
+                flags.push('Postpartum (C-section)');
+                plans.push('DDx: Pseudotumor cerebri. Plan: Brain MRI/MRV, neurology consult.');
+            } else if (delivery === 'nvd') {
+                flags.push('Postpartum (NVD)');
+                plans.push('DDx: Spontaneous intracranial hypotension. Plan: Brain MRI, blood patch.');
+            }
+        }
+        if (chk('rf_ocp')) {
+            flags.push('OCP use');
+            plans.push('DDx: CVST, pseudotumor cerebri. Plan: Brain MRI/MRV.');
+        }
+        if (chk('rf_anticoag')) {
+            flags.push('Anticoagulant/antiplatelet use');
+            plans.push('DDx: ICH. Plan: Non-contrast brain CT.');
+        }
+        if (chk('rf_drugs')) {
+            flags.push('Drug abuse');
+            plans.push('DDx: ICH, RCVS, stroke. Plan: Brain CT/MRI.');
+        }
+        if (chk('rf_co')) {
+            flags.push('CO exposure');
+            plans.push('DDx: CO poisoning. Plan: CO level, hyperbaric oxygen if severe.');
+        }
+        if (chk('rf_obese')) {
+            flags.push('Obesity');
+            plans.push('DDx: Pseudotumor cerebri. Plan: Brain MRI/MRV.');
+        }
+        if (chk('rf_focal')) {
+            flags.push('Focal deficit');
+            plans.push('DDx: Stroke, ICH. Plan: Urgent brain CT/MRI.');
+        }
+        if (chk('rf_temp')) {
+            plans.push('Consider infection/sepsis. Full evaluation recommended.');
+        }
+        if (chk('rf_toxic')) {
+            flags.push('Toxic febrile');
+            plans.push('DDx: Meningitis, abscess, encephalitis. Plan: Brain MRI, LP if safe.');
+        }
+        if (chk('rf_gcs')) {
+            flags.push('Low GCS');
+            plans.push('DDx: SAH, ICH, infection. Plan: Urgent brain CT.');
+        }
+        if (chk('rf_neuro')) {
+            flags.push('Abnormal neuro signs');
+            plans.push('DDx: Mass, stroke, ICH. Plan: Urgent brain CT/MRI.');
+        }
+        if (chk('rf_papilledema')) {
+            flags.push('Papilledema');
+            plans.push('DDx: Increased ICP. Plan: Urgent neuroimaging, LP.');
+        }
+        if (chk('rf_meningeal')) {
+            flags.push('Meningeal signs');
+            plans.push('DDx: Meningitis. Plan: CT then LP.');
+        }
+
+        // Build results HTML
+        const resultsDiv = document.getElementById('redFlagResults');
+        let html = '';
+
+        if (flags.length > 0) {
+            html += '<div class="result-box result-danger">';
+            html += '<h3>🚨 RED FLAGS IDENTIFIED (' + flags.length + ')</h3>';
+            html += '<p>' + flags.map(f => '<span class="flag-tag">' + f + '</span>').join(' ') + '</p>';
+            html += '<ul>' + plans.map(p => '<li>' + p + '</li>').join('') + '</ul>';
+            html += '<p style="margin-top:12px;font-weight:700;">⚠️ URGENT IMAGING AND NEUROLOGY CONSULT REQUIRED.</p>';
+            html += '</div>';
+            html += '<div class="btn-center"><button class="btn btn-reset" onclick="resetAll()">🔄 Start Over</button></div>';
+        } else {
+            html += '<div class="result-box result-success">';
+            html += '<h3>✅ No Red Flags Identified</h3>';
+            html += '<p>Safe to proceed to primary headache evaluation (migraine / tension / cluster).</p>';
+            html += '</div>';
+            html += '<div class="btn-center"><button class="btn btn-secondary" onclick="proceedToDiagnosis()">Proceed to Diagnosis →</button></div>';
+        }
+
+        resultsDiv.innerHTML = html;
+        resultsDiv.style.display = 'block';
+        resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function proceedToDiagnosis() {
+        document.getElementById('sectionRedFlags').classList.add('hidden');
+        document.getElementById('sectionDiagnosis').classList.remove('hidden');
+        setStep(2);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =============================================
+    // STEP 2: ICHD-3 DIAGNOSIS
+    // =============================================
+    function evaluateDiagnosis() {
+        function chk(id) { return document.getElementById(id).checked; }
+
+        // Migraine
+        let migFeatures = 0;
+        if (chk('mig_unilateral')) migFeatures++;
+        if (chk('mig_pulsating')) migFeatures++;
+        if (chk('mig_moderate_severe')) migFeatures++;
+        if (chk('mig_worsens_activity')) migFeatures++;
+
+        let migAccomp = 0;
+        if (chk('mig_nausea')) migAccomp++;
+        if (chk('mig_photo')) migAccomp++;
+        if (chk('mig_phono')) migAccomp++;
+        if (chk('mig_osmo')) migAccomp++;
+
+        const migAttacks = chk('mig_attacks');
+        const isMigraine = migAttacks && migFeatures >= 2 && migAccomp >= 1;
+
+        // Tension
+        let tenFeatures = 0;
+        if (chk('ten_bilateral')) tenFeatures++;
+        if (chk('ten_pressing')) tenFeatures++;
+        if (chk('ten_mild_mod')) tenFeatures++;
+        if (chk('ten_not_worse')) tenFeatures++;
+
+        const tenAccomp = chk('ten_accomp');
+        const tenEpisodes = chk('ten_episodes');
+        const isTension = tenEpisodes && tenFeatures >= 2 && tenAccomp;
+
+        // Cluster
+        let clAutonomic = 0;
+        if (chk('cl_eye')) clAutonomic++;
+        if (chk('cl_nasal')) clAutonomic++;
+        if (chk('cl_horner')) clAutonomic++;
+
+        const clAgitation = chk('cl_agitation');
+        const clTiming = chk('cl_timing');
+        const clAlcohol = chk('cl_alcohol');
+        const isCluster = clTiming && clAutonomic >= 1 && (clAgitation || clAlcohol);
+
+        // Mixed
+        const isMixed = isMigraine && isTension;
+
+        // Determine type
+        let headacheType = 'undetermined';
+        if (isMixed) headacheType = 'mixed_tension_migraine';
+        else if (isCluster) headacheType = 'cluster';
+        else if (isMigraine) headacheType = 'migraine';
+        else if (isTension) headacheType = 'tension';
+
+        // Build result
+        const resultsDiv = document.getElementById('diagnosisResults');
+        let html = '';
+
+        const labels = {
+            migraine: '🔴 Probable Migraine (ICHD-3)',
+            tension: '🟡 Probable Tension-Type Headache (ICHD-3)',
+            cluster: '🟠 Probable Cluster Headache (ICHD-3)',
+            mixed_tension_migraine: '🟣 Mixed Tension-Migraine Pattern',
+            undetermined: '⚪ Undetermined – Consider Neurology Referral'
+        };
+
+        const colorClass = headacheType === 'undetermined' ? 'result-warning' : 'result-info';
+
+        html += '<div class="result-box ' + colorClass + '">';
+        html += '<h3>' + labels[headacheType] + '</h3>';
+
+        if (headacheType === 'migraine') {
+            html += '<p>Criteria met: ≥ 5 attacks, 4–72 h, ≥ 2 headache features, ≥ 1 accompaniment.</p>';
+        } else if (headacheType === 'tension') {
+            html += '<p>Criteria met: ≥ 10 episodes, 30 min–7 days, ≥ 2 features, limited accompaniment.</p>';
+        } else if (headacheType === 'cluster') {
+            html += '<p>Criteria met: Severe unilateral 15–180 min with ≥ 1 autonomic sign + agitation/alcohol trigger.</p>';
+        } else if (headacheType === 'mixed_tension_migraine') {
+            html += '<p>Both migraine and tension criteria met. Chronic daily headache pattern likely.</p>';
+        } else {
+            html += '<p>Criteria not fully met for migraine, tension, or cluster. Consider further evaluation or neurology referral.</p>';
+            html += '<p><strong>Pediatric note:</strong> Consider sinusitis or viral headache if age &lt; 5 years.</p>';
+        }
+
+        html += '</div>';
+
+        if (headacheType !== 'undetermined') {
+            html += '<div class="btn-center"><button class="btn btn-primary" onclick="proceedToManagement(\'' + headacheType + '\')">View Management →</button></div>';
+        }
+
+        resultsDiv.innerHTML = html;
+        resultsDiv.style.display = 'block';
+        resultsDiv.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function proceedToManagement(type) {
+        document.getElementById('sectionDiagnosis').classList.add('hidden');
+        document.getElementById('sectionManagement').classList.remove('hidden');
+        setStep(3);
+        buildManagement(type);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // =============================================
+    // STEP 3: MANAGEMENT
+    // =============================================
+    function buildManagement(type) {
+        const div = document.getElementById('managementResults');
+        let html = '';
+
+        if (type === 'migraine') {
+            html = buildMigraineManagement();
+        } else if (type === 'tension') {
+            html = buildTensionManagement();
+        } else if (type === 'cluster') {
+            html = buildClusterManagement();
+        } else if (type === 'mixed_tension_migraine') {
+            html = buildMixedManagement();
+        }
+
+        div.innerHTML = html;
+        div.style.display = 'block';
+    }
+
+    // ---------- MIGRAINE ----------
+    function buildMigraineManagement() {
+        let h = '<div class="section"><h2>💊 Migraine Management (AAN Guidelines)</h2>';
+
+        h += '<div class="management-block"><h4>Acute Treatment – Mild to Moderate (Home/Clinic PO)</h4><ul>';
+        h += '<li>Treat EARLY (at first symptoms), high initial dose</li>';
+        h += '<li><strong>1st line:</strong> NSAID (ibuprofen 400–800 mg) + PPI <em>OR</em> acetaminophen 1000 mg STAT</li>';
+        h += '<li><strong>Anti-emetic PRN:</strong> Metoclopramide 10 mg <em>OR</em> promethazine 25 mg PO</li>';
+        h += '<li>Hydrate well, rest in dark/quiet room</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Acute Treatment – Moderate to Severe (Home/Clinic PO)</h4><ul>';
+        h += '<li>Treat EARLY, high initial dose</li>';
+        h += '<li><strong>1st line:</strong> NSAID + PPI</li>';
+        h += '<li><strong>Triptan:</strong> Sumatriptan 50–100 mg (max 200 mg/day) <em>OR</em> rizatriptan 10 mg (max 30 mg/day). Repeat q2h if needed.</li>';
+        h += '<li><strong>Anti-emetic:</strong> Metoclopramide 10 mg <em>OR</em> promethazine 25 mg PO PRN</li>';
+        h += '<li>Hydrate, dark room</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Acute Treatment – ER IV Protocol</h4><ul>';
+        h += '<li><strong>1.</strong> Hydration: NS 500–1000 mL IV</li>';
+        h += '<li><strong>2.</strong> Ketorolac 30 mg IV / 60 mg IM <em>OR</em> acetaminophen 1 g IV STAT</li>';
+        h += '<li><strong>3.</strong> Sumatriptan 6 mg SC <em>OR</em> DHE 1 mg IV/IM (monitor BP)</li>';
+        h += '<li><strong>4.</strong> Nausea/Vomiting: Metoclopramide 10 mg IV <em>OR</em> promethazine 25 mg IV/IM. <strong>AVOID ondansetron in migraine.</strong></li>';
+        h += '<li><strong>5.</strong> Akathisia prophylaxis: Diphenhydramine 25 mg IV (q2h PRN ×2)</li>';
+        h += '<li><strong>6.</strong> Assess prophylaxis need</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Triggers to Avoid</h4><ul>';
+        h += '<li>Stress, alcohol, skipping meals, menstruation, weather changes, bright lights, fasting</li>';
+        h += '<li>Sleep in dark/quiet room</li>';
+        h += '<li>Limit acute meds &lt; 2–3×/week to avoid medication-overuse headache (MOH)</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Prophylaxis (if &gt; 4 attacks/month or &gt; 12 h / disturbing attacks)</h4>';
+        h += '<p><strong>Duration:</strong> 6+ months, follow-up every 2 months.</p>';
+        h += '<p><strong>Non-pregnant, 1st line:</strong></p><ul>';
+        h += '<li>Propranolol 40 mg BID (titrate to 160–240 mg/day; avoid if HR &lt; 60)</li>';
+        h += '<li>Nortriptyline 25 mg QHS (titrate to 50–75 mg; week 1: ½ tab)</li>';
+        h += '</ul>';
+        h += '<p><strong>2nd line:</strong> Topiramate 25 mg BID (titrate slowly), Venlafaxine 37.5 mg BID</p>';
+        h += '<p>Avoid valproate (teratogen). Expect 4+ weeks for effect.</p>';
+        h += '<p><strong>Pregnancy-safe, 1st line:</strong></p><ul>';
+        h += '<li>Propranolol 20 mg BID (titrate to 120 mg/day; avoid if HR &lt; 60)</li>';
+        h += '<li>Amitriptyline 10–25 mg QHS (titrate slowly)</li>';
+        h += '<li>Follow-up at 1.5 months; taper after 6 months if good response</li>';
+        h += '</ul></div>';
+
+        h += '</div>';
+        return h;
+    }
+
+    // ---------- TENSION ----------
+    function buildTensionManagement() {
+        let h = '<div class="section"><h2>💊 Tension-Type Headache Management</h2>';
+
+        h += '<div class="management-block"><h4>Non-Pharmacologic (1st Line)</h4><ul>';
+        h += '<li>Stress management (CBT, mindfulness)</li>';
+        h += '<li>Regular sleep hygiene, hydration</li>';
+        h += '<li>Physical therapy, neck/shoulder stretches</li>';
+        h += '<li>Limit caffeine, avoid triggers</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Acute Treatment</h4><ul>';
+        h += '<li>Ibuprofen 400–600 mg <em>OR</em> acetaminophen 1000 mg PRN</li>';
+        h += '<li>Avoid opioids, limit acute use &lt; 2×/week</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Prophylaxis (if &gt; 15 days/month)</h4>';
+        h += '<p><strong>1st line:</strong></p><ul>';
+        h += '<li>Amitriptyline 10–25 mg QHS (titrate; week 1: ½ tab)</li>';
+        h += '<li>Nortriptyline 25 mg QHS (titrate; week 1: ½ tab, max 75 mg)</li>';
+        h += '</ul>';
+        h += '<p><strong>SSRIs (if anxiety/depression):</strong></p><ul>';
+        h += '<li>Sertraline 50 mg AM (week 1: 25 mg, then 50 mg ×2 months)</li>';
+        h += '<li>Citalopram 20 mg QHS (week 1: 10 mg, max 40 mg if no response)</li>';
+        h += '</ul>';
+        h += '<p><strong>SNRIs (2nd line):</strong></p><ul>';
+        h += '<li>Venlafaxine 37.5 mg daily after lunch → week 2: 75 mg → maintenance: 150 mg daily</li>';
+        h += '<li>Duloxetine 30 mg daily (titrate to 60 mg)</li>';
+        h += '</ul>';
+        h += '<p><strong>Pregnancy-safe:</strong></p><ul>';
+        h += '<li>Maprotiline 50 mg QHS (week 1: ½ tab, then 1 tab; if no response: 75 mg QHS)</li>';
+        h += '<li>Non-pharmacologic approaches preferred</li>';
+        h += '</ul>';
+        h += '<p><strong>Duration:</strong> Minimum 3–6 months, follow-up every 2 months.</p>';
+        h += '</div>';
+
+        h += '<div class="management-block"><h4>Follow-Up</h4>';
+        h += '<p><strong>If improved:</strong> Continue current Rx ×3 months, then taper over 2–4 weeks:</p><ul>';
+        h += '<li>Amitriptyline/nortriptyline/maprotiline: Reduce 10–25 mg/week</li>';
+        h += '<li>SSRIs: ½ dose ×2 weeks, then stop</li>';
+        h += '<li>Monitor for rebound</li>';
+        h += '</ul>';
+        h += '<p><strong>If not improved:</strong></p><ul>';
+        h += '<li>Increase dose within limits (amitriptyline → 50 mg, maprotiline → 75 mg, sertraline → 100 mg)</li>';
+        h += '<li>Switch class: TCA → SSRI/SNRI, SSRI → SNRI or TCA. Add CBT/PT.</li>';
+        h += '<li>Refer to neurology if refractory</li>';
+        h += '</ul></div>';
+
+        h += '</div>';
+        return h;
+    }
+
+    // ---------- CLUSTER ----------
+    function buildClusterManagement() {
+        let h = '<div class="section"><h2>💊 Cluster Headache Acute Management</h2>';
+
+        h += '<div class="management-block"><h4>1. Oxygen Therapy</h4><ul>';
+        h += '<li>100% O₂ at 10–15 L/min via non-rebreather mask</li>';
+        h += '<li>Duration: 15–20 minutes at attack onset (abortive in 70–80%)</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>2. Pharmacotherapy</h4><ul>';
+        h += '<li><strong>1st line:</strong> Sumatriptan 6 mg SUBCUTANEOUS (ipsilateral to pain)</li>';
+        h += '<li><strong>Alternative:</strong> Sumatriptan 20 mg INTRANASAL spray (ipsilateral) – if SC contraindicated</li>';
+        h += '<li><strong>3rd line:</strong> Lidocaine 4% intranasal spray/drops (painful side)</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>3. Consultation & Prophylaxis</h4><ul>';
+        h += '<li>Urgent neurology referral + MR Angiography (MRA)</li>';
+        h += '<li>Consider verapamil prophylaxis (240–960 mg/day, titrated)</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Pediatric Note</h4><ul>';
+        h += '<li>O₂ preferred; adjust sumatriptan dose by weight with neuro guidance</li>';
+        h += '</ul></div>';
+
+        h += '</div>';
+        return h;
+    }
+
+    // ---------- MIXED ----------
+    function buildMixedManagement() {
+        let h = '<div class="section"><h2>💊 Mixed Tension-Migraine Management</h2>';
+
+        h += '<div class="management-block"><h4>Non-Pharmacologic (Essential)</h4><ul>';
+        h += '<li>Stress reduction (CBT, mindfulness, biofeedback)</li>';
+        h += '<li>Regular sleep schedule (7–8 h/night)</li>';
+        h += '<li>Hydration (&gt; 2 L/day), consistent meals</li>';
+        h += '<li>Limit caffeine (&lt; 200 mg/day), avoid triggers</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Acute Treatment (limit &lt; 2–3×/week)</h4><ul>';
+        h += '<li><strong>Mild-moderate:</strong> Ibuprofen 400–600 mg + metoclopramide 10 mg PO</li>';
+        h += '<li><strong>Severe:</strong> Sumatriptan 50–100 mg <em>OR</em> rizatriptan 10 mg + anti-emetic</li>';
+        h += '</ul></div>';
+
+        h += '<div class="management-block"><h4>Prophylaxis – SNRIs (1st Line for Mixed Pattern)</h4>';
+        h += '<p><strong>Venlafaxine:</strong></p><ul>';
+        h += '<li>Week 1: 37.5 mg daily after lunch</li>';
+        h += '<li>Week 2: 75 mg daily</li>';
+        h += '<li>Maintenance: 150 mg daily (max 225 mg)</li>';
+        h += '</ul>';
+        h += '<p><strong>Duloxetine:</strong></p><ul>';
+        h += '<li>Start: 30 mg QHS</li>';
+        h += '<li>Titrate: 60 mg daily after 2 weeks</li>';
+        h += '</ul>';
+        h += '<p><strong>Pregnancy-safe alternatives:</strong></p><ul>';
+        h += '<li>Maprotiline 50 mg QHS (titrate to 75 mg if needed)</li>';
+        h += '<li>Non-pharmacologic + acetaminophen PRN</li>';
+        h += '</ul>';
+        h += '<p><strong>Duration:</strong> Minimum 6 months. Follow-up every 2 months, taper slowly over 4 weeks.</p>';
+        h += '<p><strong>Monitor:</strong> BP (venlafaxine), suicidality (SNRIs).</p>';
+        h += '</div>';
+
+        h += '</div>';
+        return h;
+    }
+</script>
+
+</body>
+</html>

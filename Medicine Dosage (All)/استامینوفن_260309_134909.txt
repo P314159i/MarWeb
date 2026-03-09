@@ -1,0 +1,172 @@
+import math
+
+def prescribe_acetaminophen(weight, age, mg_per_kg_per_day, total_days, times_per_day):
+111111
+
+
+Acetaminophen prescription calculator
+
+Parameters:
+- weight	: patient weight in kg
+- age	: patient age in years (can be float)
+  - mg_per_kg_per_day	: desired total daily dose in mg/kg/day (suggested: 10-15)
+
+- tot al_days
+- times_per_day
+
+: how many days to prescribe
+: how many times per day (suggested: 4-6)
+
+
+
+Suggested values:
+- mg_per_kg_per_day = 10-15 mg/kg/day
+- times_per_day = 4-6 times per day (every 4-6 hours)
+111111
+
+
+
+
+
+#  =====================
+# Age restrictions (years)
+# =====================
+TAB325_MIN_AGE = 6		# chewable/regular 325 mg tabs TAB500_MIN_AGE = 12			# regular 500 mg tabs SUPP125_MIN_AGE = 0.25	# suppository 125 mg (:::::3 months) SUPP325_MIN_AGE = 2				# suppository 325 mg DROP_MIN_AGE = 0	# drops can be used from birth
+
+# =====================
+# Maximum dose limits
+# =====================
+MAX_DAILY_MG_PER_KG = 75 # mg/kg/day (conservative, can go to
+90)
+MAX_DAILY_MG_ADULT = 4000 # mg/day absolute max for adults MAX_SINGLE_MG_PER_KG = 15 # mg/kg per dose
+
+# =====================
+# Calculate daily dose
+# =====================
+daily_dose_mg = mg_per_kg_per_day * weight
+
+# Cap at max daily dose
+  max_daily_mg = min(MAX_DAILY _MG_PER_KG * weight, MAX_DAILY_MG_ADULT)
+if daily_dose_mg > max_daily_mg:
+print(f''Note: Daily dose capped at {max_daily_mg:.Of} mg (was
+{daily_dose_mg:.Of} mg)") daily_dose_mg = max_daily_mg
+
+# Calculate single dose
+single_dose_mg = daily_dose_mg / times_per_day
+
+# Cap single dose
+max_single_mg = MAX_SINGLE_MG_PER_KG * weight if single_dose_mg > max_single_mg:
+  single_dose_mg = max_single_mg hours_between = 24 / times_per_day
+# Print header print("=" * 60)
+print(f''Patient: {weight} kg, {age} years old") print(f''Daily dose: {daily_dose_mg:.Of} mg") print(f''Single dose: {single_dose_mg:.Of} mg")
+print(f''Dosing interval: every {hours_between:.1f} hours") print("=" * 60)
+
+total_doses = times_per_day * totaLdays
+
+# =====================
+# 1) Drops 80mg/ml (for infants)
+
+# =====================
+if age< 2:
+drop_concentration = 80 # mg per ml
+q_drops_ml = single_dose_mg / drop_concentration total_drops_ml = q_drops_ml * total_doses
+
+# Common bottle sizes: 15ml, 30ml n_bottle_15 = math.ceil(total_drops_ml / 15) n_bottle_30 = math.ceil(total_drops_ml / 30)
+
+print(f''Drops 80mg/ml:")
+print(f'' Dose: {q_drops_ml:.2f} ml ({single_dose_mg:.0f} mg)") print(f'' Every {hours_between:.1f} hours for {total_days} days") print(f'' Total volume: {total_drops_ml:.1f} ml")
+print(f'' N (15ml bottle) = {n_bottle_15}") print(f'' N (30ml bottle) = {n_bottle_30}")
+print("-" * 60)
+
+# =====================
+# 2) Suspension 160mg/5ml (32mg/ml)
+# =====================
+susp_concentration = 1 60 / 5 # mg per ml	= 32 mg/ml q_susp_ml = (single_dose_mg * 5) / 160
+total_susp_ml = q_susp_ml * total_doses
+
+# Common bottle sizes: 60ml, 120ml, 240ml n_bottle_60 = math.ceil(total_susp_ml / 60) n_bottle_120 = math.ceil(total_susp_ml / 120) n_bottle_240 = math.ceil(total_susp_ml / 240)
+
+print(f''Suspension 160mg/5ml:")
+print(f'' Dose: {q_susp_ml:.1 f} ml ({single_dose_mg:.0f} mg)") print(f'' Every {hours_between:.1f} hours for {total_days} days") print(f'' Total volume: {total_susp_ml:.1f} ml")
+print(f'' N (60ml bottle) = {n_bottle_60}") print(f'' N (120ml bottle) = {n_bottle_120}")
+
+print(f" N (240ml bottle) = {n_bottle_240}") print("-"* 60)
+
+# =====================
+# 3) Tablet 325 mg
+# =====================
+if age>= TAB325_MIN_AGE: q_tab325 = single_dose_mg / 325 if q_tab325 >= 1:
+q_tab325_whole = math.floor(q_tab325) n_tab325 = q_tab325_whole * total_doses print(f"Tablet 325mg:")
+print(f" Dose: {q_tab325_whole} tab(s) ({q_tab325_whole * 325}
+
+mg)")
+
+
+print(f" Every {hours_between:.1f} hours for {total_days} days") print(f" N = {n_tab325} tablets")
+
+else:
+      print(f"Tablet 325mg: Dose too low ({single_dose_mg:.0f} mg< 325 mg)")
+else:
+    print(f''Tablet 325mg: Not recommended under {TAB325_MIN_AGE} years")
+print("-"* 60)
+
+# =====================
+# 4) Tablet 500 mg
+# =====================
+if age>= TAB500_MIN_AGE: q_tab500 = single_dose_mg / 500 if q_tab500 >= 1:
+q_tab500_whole = math.floor(q_tab500) n_tab500 = q_tab500_whole * total_doses print(f''Tablet 500mg:")
+print(f'' Dose: {q_tab500_whole} tab(s) ({q_tab500_whole * 500}
+mg)")
+print(f'' Every {hours_between:.1f} hours for {total_days} days")
+
+  print(f" N = {n_tab500} tablets") else:
+      print(f"Tablet 500mg: Dose too low ({single_dose_mg:.0f} mg< 500 mg)")
+else:
+    print(f''Tablet 500mg: Not recommended under {TAB500_MIN_AGE} years")
+print("-"* 60)
+
+# =====================
+# 5) Suppository 125 mg
+# =====================
+if age>= SUPP125_MIN_AGE: q_supp125 = single_dose_mg / 125 if q_supp125 >= 1:
+q_supp125_whole = math.floor(q_supp125) n_supp125 = q_supp125_whole * total_doses print(f''Suppository 125mg:")
+      print(f'' Dose: {q_supp125_whole} supp(s) ({q_supp125_whole * 125} mg)")
+print(f'' Every {hours_between:.1f} hours for {total_days} days") print(f'' N = {n_supp125} suppositories")
+else:
+print(f''Suppository 125mg: Dose too low ({single_dose_mg:.0f} mg
+< 125 mg)")
+else:
+print(f''Suppository 125mg: Not recommended under
+{SUPP125_M IN_AGE} years")
+print("-"* 60)
+
+# =====================
+# 6) Suppository 325 mg
+# =====================
+if age>= SUPP325_MIN_AGE: q_supp325 = single_dose_mg / 325 if q_supp325 >= 1:
+
+q_supp325_whole = math.floor(q_supp325) n_supp325 = q_supp325_whole * total_doses print(f"Suppository 325mg:")
+      print(f" Dose: {q_supp325_whole} supp(s) ({q_supp325_whole * 325} mg)")
+print(f" Every {hours_between:.1f} hours for {total_days} days") print(f" N = {n_supp325} suppositories")
+else:
+print(f"Suppository 325mg: Dose too low ({single_dose_mg:.0f} mg
+< 325 mg)")
+else:
+print(f''Suppository 325mg: Not recommended under
+{SUPP325_M IN_AGE} years")
+
+
+# =====================
+# Example usage
+# =====================
+print("\n" + "=" * 60)
+print("EXAMPLE 1: Infant 5kg, age 0.5, 15mg/kg/day, 3 days, 4x/day") print("=" * 60)
+prescribe_acetaminophen(weight=5, age=0.5, mg_per_kg_per _day=1 5, total_days=3, times_per_day=4)
+
+print("\n" + "=" * 60)
+print("EXAMPLE 2: Child 20kg, age 8, 15mg/kg/day, 5 days, 4x/day") print("=" * 60)
+prescribe_acetaminophen(weight=20, age=8, mg_per_kg_per_day=15, total_days=5, times_per_day=4)
+
+print("\n" + "=" * 60)
+print("EXAMPLE 3: Adult 70kg, age 30, 15mg/kg/day, 7 days, 4x/day") print("="* 60)
+prescribe_acetaminophen(weight=70, age=30, mg_per_kg_per_day=15, total_days=7, times_per_day=4)

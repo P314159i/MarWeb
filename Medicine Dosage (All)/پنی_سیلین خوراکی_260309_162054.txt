@@ -1,0 +1,170 @@
+import math
+
+def prescribe_penicillin_v(weight_kg, age_months, mg_kg_day, total_days, times_per_day):
+111111
+
+
+Pediatric Penicillin V (Oral) Prescribing Assistant Parameters
+weight_kg : float
+  Patient weight (kg) - **MUST be > 0** age_months : int
+  Patient age in **MONTHS** (critical for age restrictions!) mg_kg_day : float
+  Desired dose (mg/kg/day). **Suggested: 25, 50 mg/kg/day**. total_days : int
+  Days of therapy ( 3) times_per _day : int
+Doses per day. **Accepted: 2, 3, or 4**.
+Returns str
+Prescription order+ safety warnings. Returns errors on invalid input.
+111111
+
+
+
+
+
+#
+# 1. INPUT VALIDATION
+#
+if weight_kg <= O:
+  return"X ERROR: Weight must be > 0 kg." if age_months < 0:
+  return"X ERROR: Age cannot be negative." if total_days < 3:
+return"X ERROR: Minimum treatment duration is 3 days."
+if times_per_day not in (2, 3, 4):
+
+return"X ERROR: Doses/day must be 2, 3, or 4 for Penicillin V."
+
+# Validate mg_kg_day (must be 25 or 50 mg/kg/day) suggested_doses = [25, 50]
+if mg_kg_day not in suggested_doses:
+    return f''X ERROR: mg_kg_day must be ONE of {suggested_doses} mg/kg/day."
+
+#
+# 2. AGE-SPECIFIC RESTRICTIONS
+#
+warnings=  D
+
+  # Tablets are FORBIDDEN under 10 YEARS (120 months)--? use suspension ONLY
+if age_months < 120:
+    warnings.append(" !	TABLETS are NOT permitted for patients< 1O years. SUSPENSION will be used.")
+else:
+warnings.append("	Tablets may be used (patient:::: 10 years).")
+
+#
+# 3. CALCULATE DOSES & SAFETY CHECKS
+#
+# Total daily dose (mg)
+total_daily_dose = round(weight_kg * mg_kg_day, 2)
+
+#---- MAX DAILY DOSE CHECK----
+MAX_DAILY_DOSE= 2000 # mg (absolute max for children) if total_daily_dose > MAX_DAILY _DOSE:
+warnings.append(f'' !	Daily dose reduced to max allowed:
+{MAX_DAILY_DOSE} mg (was {total_daily_dose} mg).") total_daily_dose = MAX_DAILY _DOSE
+
+# Dose per administration
+dose_per_admin = round(total_daily_dose / times_per_day, 2)
+
+#---- MAX SINGLE DOSE CHECK (Pediatric safe limit)---­
+MAX_SINGLE_DOSE = 500 # mg per dose if dose_per_admin > MAX_SINGLE_DOSE:
+warnings.append(f" !	Single dose reduced to max allowed:
+{MAX_SINGLE_DOSE} mg (was {dose_per_admin} mg).") dose_per_admin = MAX_SINGLE_DOSE
+# Re-calculate total daily dose after capping single dose total_daily_dose = dose_per_admin * times_per_day warnings.append(f"	Adjusted total daily dose to
+{total_daily_dose} mg.")
+
+#
+# 4. FORMULATION CALCULATIONS
+
+#
+#----SUSPENSION 250 mg/
+5 ml
+(= 50 mg/ml)---­SUSP_250_CONC = 50.0
+#---- SUSPENSION 125 mg/
+5 ml
+(= 25 mg/ml)---­SUSP_125_CONC = 25.0#---- TABLET STRENGTHS---­ TAB_250 = 250
+TAB_500 = 500
+
+#
+# 5. DETERMINE APPROPRIATE FORMULATIONS #
+prescriptions  = D
+
+#
+# A. SUSPENSION 250 mg/5 ml #
+ml_per_dose_250 = round(dose_per_admin / SUSP_250_CONC, 1) total_ml_250 = ml_per_dose_250 * times_per_day * total_days
+  bottles_250 = math.ceil(total_ml_250 / 100) # Standard bottle= 100 ml
+
+prescriptions.append({
+"form": "Suspension 250 mg/5 ml", "dose_ml": ml_per_dose_250,
+"total ml": total ml 250
+"dispense": f''{bottles_250} x 100 ml bottle(s)", "strength": "250 mg per 5 ml (50 mg/ml)"
+})
+
+#
+# B. SUSPENSION 125 mg/5 ml
+#
+ml_per_dose_125 = round(dose_per_admin / SUSP_125_CONC, 1) total_ml_125 = ml_per_dose_125 * times_per_day * total_days bottles_125 = math.ceil(total_ml_125 / 100)
+
+prescriptions.append({
+"form": "Suspension 125 mg/5 ml", "dose_ml": ml_per_dose_125,
+"total ml": total ml 125
+"dispense": f''{bottles_125} x 100 ml bottle(s)", "strength": "125 mg per 5 ml (25 mg/ml)"
+})
+
+#
+# C. TABLETS (ONLY if age 10 years)
+#
+if age_months >= 120:
+# ---- 250 mg Tablets----
+tabs_per_dose_250 = math.ceil(dose_per_admin / TAB_250) total_tabs_250 = tabs_per_dose_250 * times_per_day * total_days prescriptions.append({
+"form": "Tablet 250 mg", "dose_tabs": tabs_per_dose_250, "total_tabs": total_tabs_250,
+"dispense": f''{total_tabs_250} tablet(s)", "strength": "250 mg"
+
+})
+
+# ---- 500 mg Tablets----
+tabs_per_dose_500 = math.ceil(dose_per_admin / TAB_500) total_tabs_500 = tabs_per_dose_500 * times_per_day * total_days prescriptions.append({
+"form": "Tablet 500 mg", "dose_tabs": tabs_per_dose_500, "total_tabs": total_tabs_500,
+"dispense": f''{total_tabs_500} tablet(s)", "strength": "500 mg"
+})
+
+#
+# 6. GENERATE NEAT PRESCRIPTION ORDER
+#
+output= "\n".join(warnings) + "\n" output += "=" * 60 + "\n"
+output+= "PRESCRIPTION ORDER - PENICILLIN V (ORAL)\n"
+output += "=" * 60 + "\n"
+output+= f''Patient Weight	: {weight_kg} kg\n"
+output+= f''Patient Age		: {age_months//12}y {age_months%12}m\n" output+= f''Dose	: {mg_kg_day} mg/kg/day
+{total_daily_dose} mg/day\n"
+  output += f''Doses per Day	: {times_per _day} (every {24/ times_per_day:.1f} hours)\n"
+output+=  f''Duration	: {total_days} days\n\n"
+
+
+
+# Print each feasible formulation for p in prescriptions:
+output+=
+"
+
+
+
+
+\n"
+
+output+= f''FORMULATION: {p['form']} I Strength: {p['strength']}\n" output+=
+"	\n"
+
+if"dose_ml" in p: # It's a suspension
+output+= f''Dose Volume	: {p['dose_ml']} ml	(::::
+{p['dose_ml']*2:.1f} ml	= 1 tsp )\n"
+output+= f''Total Volume		: {p['total_ml']:.1f} ml \n" output += f''DISPENSE	: {p['dispense']}\n" output+= "\nADMINISTRATION:\n"
+      output+= f'' Give **{p['dose_ml']} ml** ({round(p['dose_ml']*2,1)} tsp) **{times_per_day} times daily** for {total_days} days.\n"
+output+=" ?	Shake bottle well before each dose.\n"
+else: # It's a tablet
+output += f''Tablets per Dose : {p['dose_tabs']}\n" output += f''Total Tablets	: {p['total_tabs']}\n" output+= f''DISPENSE	 : {p['dispense']}\n" output+= "\nADMINISTRATION:\n"
+      output+= f'' Give **{p['dose_tabs']} tablet(s)** {times_per_day} times daily for {total_days} days.\n"
+output+= "?	Swallow whole with a full glass of water. Do NOT
+crush.\n"
+output+=
+"	\n\n"
+
+
+#Final notes
+output += "=" * 60 + "\n"
+output+=  11	IMPORTANT NOTES:\n"
+output+="- Complete the FULL course even if symptoms improve.\n" output+= "- Store suspension in the refrigerator (shake before use).\n" output+= "- Discard any unused suspension after 14 days.\n" output+= "- Report rash, diarrhea, or severe stomach pain immediately.
+\n"
+output += "=" * 60 return output
