@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iodoquinol — Pediatric Calculator</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+min-height:100vh;
+padding:20px;
+color:#e0e0e0;
+}
+
+.back{ color:#a0d2db; text-decoration:none; font-size:14px; }
+
+h1{ color:#fff; margin:25px 0 23px; font-size:2.2em; }
+
+.category-tag{
+display:inline-block;
+background:rgba(255,204,0,0.15);
+color:#ffcc00;
+padding:10px 17px;
+border-radius:20px;
+font-size:0.95em;
+margin-bottom:20px;
+}
+
+.disclaimer{
+background:rgba(255,18,58,0.33);
+color:rgba(255,220,220);
+padding:15px 31px;
+border-radius:10px;
+max-width:800px;
+width:100%;
+margin-bottom:30px;
+text-align:center;
+font-size:13px;
+line-height:1.6;
+}
+
+.suggestions{
+background:rgba(255,255,255,0.07);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+padding:18px;
+margin-bottom:25px;
+font-size:14px;
+line-height:1.8;
+}
+
+.suggestions strong{ color:#ffcc00; }
+
+.form-section{
+background:rgba(255,255,255,0.07);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+padding:25px;
+max-width:600px;
+margin-bottom:25px;
+}
+
+label{ display:block; margin-bottom:5px; font-size:14px; color:#ccc; }
+
+input,select{
+width:100%;
+padding:10px 12px;
+border-radius:8px;
+border:1px solid rgba(255,255,255,0.2);
+background:rgba(255,255,255,0.05);
+color:#fff;
+font-size:15px;
+margin-bottom:15px;
+}
+
+button{
+background:linear-gradient(135deg,#00b09b,#96c93d);
+color:#000;
+font-weight:700;
+padding:12px 30px;
+border:none;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+width:100%;
+}
+
+#output{
+background:rgba(0,0,0,0.4);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+padding:25px;
+margin-top:25px;
+white-space:pre-wrap;
+font-family:'Courier New',monospace;
+font-size:13px;
+line-height:1.7;
+display:none;
+}
+
+.warn{ color:#ffcc00; }
+.error{ color:#ff4444; }
+.cap{ color:#ff8800; }
+.section-hdr{ color:#a0d2db; font-weight:bold; }
+</style>
+</head>
+
+<body>
+
+<a class="back" href="index.html">← Back to all medicines</a>
+
+<h1>💊 Iodoquinol</h1>
+
+<span class="category-tag">Antiprotozoal — Amebicide</span>
+
+<div class="suggestions">
+<strong>📋 SUGGESTED OPTIONS:</strong><br>
+• Dose: <strong>30 or 40 mg/kg/day</strong><br>
+• Times/day: <strong>3</strong> (standard)<br>
+• Duration: ≥ 3 days
+</div>
+
+<div class="form-section">
+
+<label>Weight (kg)</label>
+<input type="number" id="weight" step="0.1" min="0.1">
+
+<label>Age (months)</label>
+<input type="number" id="age" step="1" min="0">
+
+<label>Dose (mg/kg/day) — 30 or 40</label>
+<select id="mgkgday">
+<option value="30">30 mg/kg/day</option>
+<option value="40" selected>40 mg/kg/day</option>
+</select>
+
+<label>Total days (minimum 3)</label>
+<input type="number" id="totaldays" step="1" min="3" value="20">
+
+<label>Times per day — must be 3</label>
+<input type="number" id="timesperday" value="3" readonly>
+
+<button onclick="calculate()">Calculate Prescription</button>
+
+</div>
+
+<div id="output"></div>
+
+<footer>
+
+<div class="disclaimer">
+⚠️ <strong>MEDICAL DISCLAIMER:</strong> Educational/reference only. Verify with a qualified physician.
+</div>
+
+</footer>
+
+<script>
+function calculate() {
+    const out = document.getElementById('output');
+    out.style.display = 'block';
+
+    let w = parseFloat(document.getElementById('weight').value);
+    let age_m = parseInt(document.getElementById('age').value);
+    let mk = parseFloat(document.getElementById('mgkgday').value);
+    let td = parseInt(document.getElementById('totaldays').value);
+    let tp = 3;
+
+    let lines = [];
+
+    if (isNaN(w)||w<=0) { out.innerHTML='<span class="error">❌ Weight > 0.</span>'; return; }
+    if (isNaN(age_m)||age_m<0) { out.innerHTML='<span class="error">❌ Age ≥ 0.</span>'; return; }
+    if (td < 3) { out.innerHTML='<span class="error">❌ Minimum 3 days.</span>'; return; }
+    if (![30,40].includes(mk)) { out.innerHTML='<span class="error">❌ Dose must be 30 or 40.</span>'; return; }
+
+    if (age_m < 120) {
+        out.innerHTML = '<span class="warn">⚠️ TABLETS NOT permitted for patients < 10 years. Iodoquinol is not recommended due to lack of data.</span>';
+        return;
+    }
+    if (age_m < 24) {
+        out.innerHTML = '<span class="warn">⚠️ Iodoquinol not recommended for children < 2 years.</span>';
+        return;
+    }
+
+    lines.push('<span class="warn">✅ Tablets may be used (patient ≥ 10 years).</span>');
+
+    let daily = w * mk;
+    const maxD = 2000, maxS = 650, TAB = 210;
+
+    if (daily > maxD) { lines.push('<span class="cap">🔒 Daily capped: ' + daily.toFixed(1) + ' → ' + maxD + ' mg.</span>'); daily = maxD; }
+
+    let single = daily / tp;
+    if (single > maxS) {
+        lines.push('<span class="cap">🔒 Single capped: ' + single.toFixed(1) + ' → ' + maxS + ' mg.</span>');
+        single = maxS;
+        daily = single * tp;
+        lines.push('<span class="cap">  Adjusted daily to ' + daily.toFixed(1) + ' mg.</span>');
+    }
+
+    let ih = 24 / tp;
+    let ay = age_m / 12;
+    let tabs_dose = Math.ceil(single / TAB);
+    let total_tabs = tabs_dose * tp * td;
+
+    lines.push('');
+    lines.push('<span class="section-hdr">════════════════════════════════════════════════════════════</span>');
+    lines.push('<span class="section-hdr">  PRESCRIPTION ORDER — IODOQUINOL (ORAL)</span>');
+    lines.push('<span class="section-hdr">════════════════════════════════════════════════════════════</span>');
+    lines.push('  Weight         : ' + w + ' kg');
+    lines.push('  Age            : ' + Math.floor(ay) + 'y ' + (age_m % 12) + 'm');
+    lines.push('  Dose           : ' + mk + ' mg/kg/day — ' + daily.toFixed(1) + ' mg/day');
+    lines.push('  Doses/day      : ' + tp + ' (every ' + ih.toFixed(1) + 'h)');
+    lines.push('  Duration       : ' + td + ' days');
+    lines.push('');
+    lines.push('<span class="section-hdr">  FORMULATION: Tablet 210 mg</span>');
+    lines.push('  Tablets/dose   : ' + tabs_dose);
+    lines.push('  Total tablets  : ' + total_tabs);
+    lines.push('  DISPENSE       : ' + total_tabs + ' tablet(s)');
+    lines.push('');
+    lines.push('  ADMINISTRATION:');
+    lines.push('  Give ' + tabs_dose + ' tablet(s) ' + tp + ' times daily for ' + td + ' days.');
+    lines.push('  Swallow whole with a full glass of water. Do NOT crush.');
+    lines.push('');
+    lines.push('<span class="section-hdr">════════════════════════════════════════════════════════════</span>');
+    lines.push('  📌 Complete FULL course. Monitor for intolerance (rash, GI upset).');
+    lines.push('  Not recommended for children < 2 years.');
+    lines.push('<span class="section-hdr">════════════════════════════════════════════════════════════</span>');
+
+    out.innerHTML = lines.join('\n');
+}
+</script>
+
+</body>
+</html>

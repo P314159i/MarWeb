@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amoxicillin — Pediatric Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+        .back { color: #a0d2db; text-decoration: none; font-size: 14px; }
+        .back:hover { text-decoration: underline; }
+        h1 { color: #fff; margin: 25px 0 23px; font-size: 2.2em; }
+        .category-tag {
+            display: inline-block; background: rgba(255,204,0,0.15);
+            color: #ffcc00; padding: 10px 17px; border-radius: 20px;
+            font-size: 0.95em; margin-bottom: 20px;
+        }
+		.disclaimer {
+            background: rgba(255, 18, 58, 0.33);
+            color: rgba(255, 220, 220);
+            padding: 15px 31px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .suggestions {
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 18px; margin-bottom: 25px; font-size: 14px;
+            line-height: 1.8;
+        }
+        .suggestions strong { color: #ffcc00; }
+        .form-section {
+            background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 25px; max-width: 600px; margin-bottom: 25px;
+        }
+        label { display: block; margin-bottom: 5px; font-size: 14px; color: #ccc; }
+        input, select {
+            width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05); color: #fff; font-size: 15px; margin-bottom: 15px;
+        }
+        input:focus, select:focus { outline: none; border-color: #a0d2db; }
+        button {
+            background: linear-gradient(135deg, #00b09b, #96c93d); color: #000;
+            font-weight: 700; padding: 12px 30px; border: none; border-radius: 10px;
+            font-size: 16px; cursor: pointer; width: 100%;
+        }
+        button:hover { opacity: 0.9; }
+        #output {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 25px; margin-top: 25px;
+            white-space: pre-wrap; font-family: 'Courier New', monospace;
+            font-size: 13px; line-height: 1.7; display: none;
+        }
+        .warn { color: #ffcc00; }
+        .error { color: #ff4444; }
+        .cap { color: #ff8800; }
+        .ok { color: #00e676; }
+        .section-hdr { color: #a0d2db; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← Back to all medicines</a>
+<h1>💊 Amoxicillin</h1>
+<span class="category-tag">Antibiotic — Penicillin</span>
+
+
+<div class="suggestions">
+    <strong>📋 SUGGESTED OPTIONS (doctor chooses):</strong><br>
+    • mg/kg/day: <strong>20–40 mg/kg/day</strong> (mild–moderate) OR <strong>80–90 mg/kg/day</strong> (moderate–severe)<br>
+    • Times/day: <strong>2 or 3</strong><br>
+    • If age ≤ 3 months: prefer 2 times/day (q12h) and avoid high daily doses
+</div>
+
+<div class="form-section">
+    <label>Weight (kg)</label>
+    <input type="number" id="weight" step="0.1" min="0.1" placeholder="e.g. 15">
+
+    <label>Age (months)</label>
+    <input type="number" id="age" step="1" min="0" placeholder="e.g. 36">
+
+    <label>Dose (mg/kg/day)</label>
+    <input type="number" id="mgkgday" step="0.1" min="0.1" placeholder="e.g. 40">
+
+    <label>Total days of therapy</label>
+    <input type="number" id="totaldays" step="1" min="1" placeholder="e.g. 7">
+
+    <label>Times per day</label>
+    <select id="timesperday">
+        <option value="2">2 (every 12 hours)</option>
+        <option value="3" selected>3 (every 8 hours)</option>
+    </select>
+
+    <button onclick="calculate()">Calculate Prescription</button>
+</div>
+
+<div id="output"></div>
+
+<script>
+function calculate() {
+    const out = document.getElementById('output');
+    out.style.display = 'block';
+    out.innerHTML = '';
+
+    let weight_kg = parseFloat(document.getElementById('weight').value);
+    let age_months = parseInt(document.getElementById('age').value);
+    let mg_kg_day = parseFloat(document.getElementById('mgkgday').value);
+    let TotalDay = parseInt(document.getElementById('totaldays').value);
+    let Times_perday = parseInt(document.getElementById('timesperday').value);
+
+    // Safety caps
+    const max_dose_daily_mg = 4000.0;
+    const max_single_dose_mg = 1000.0;
+
+    let lines = [];
+
+    // Validation
+    if (isNaN(weight_kg) || weight_kg <= 0) { out.innerHTML = '<span class="error">❌ ERROR: Weight must be > 0 kg.</span>'; return; }
+    if (isNaN(age_months) || age_months < 0) { out.innerHTML = '<span class="error">❌ ERROR: Age cannot be negative.</span>'; return; }
+    if (isNaN(mg_kg_day) || mg_kg_day <= 0) { out.innerHTML = '<span class="error">❌ ERROR: mg/kg/day must be > 0.</span>'; return; }
+    if (isNaN(TotalDay) || TotalDay < 1) { out.innerHTML = '<span class="error">❌ ERROR: Total days must be ≥ 1.</span>'; return; }
+    if (![2, 3].includes(Times_perday)) { out.innerHTML = '<span class="error">❌ ERROR: Times/day must be 2 or 3.</span>'; return; }
+
+    let age_years = age_months / 12.0;
+
+    // Warnings
+    if (age_years < 10) {
+        lines.push('<span class="warn">⚠️ WARNING: Tablets/capsules not preferred under 10 years — use suspension if possible.</span>');
+    }
+    if (age_months <= 3 && Times_perday !== 2) {
+        lines.push('<span class="warn">⚠️ WARNING: Age ≤ 3 months — forcing Times/day = 2 (q12h).</span>');
+        Times_perday = 2;
+    }
+    if (age_months <= 3 && mg_kg_day > 30) {
+        lines.push('<span class="warn">⚠️ WARNING: Age ≤ 3 months and mg/kg/day=' + mg_kg_day + ' is high; consider ≤ 30 mg/kg/day divided q12h.</span>');
+    }
+
+    // Dose calculation
+    let total_daily_mg = weight_kg * mg_kg_day;
+
+    if (total_daily_mg > max_dose_daily_mg) {
+        lines.push('<span class="cap">🔒 DOSE CAP: Daily dose capped from ' + total_daily_mg.toFixed(1) + ' to ' + max_dose_daily_mg.toFixed(1) + ' mg/day.</span>');
+        total_daily_mg = max_dose_daily_mg;
+    }
+
+    let single_mg = total_daily_mg / Times_perday;
+
+    if (single_mg > max_single_dose_mg) {
+        lines.push('<span class="cap">🔒 DOSE CAP: Single dose capped from ' + single_mg.toFixed(1) + ' to ' + max_single_dose_mg.toFixed(1) + ' mg.</span>');
+        single_mg = max_single_dose_mg;
+        total_daily_mg = single_mg * Times_perday;
+    }
+
+    let interval_h = 24 / Times_perday;
+
+    // Header
+    lines.push('');
+    lines.push('<span class="section-hdr">════════════════════════════════════════════════════════════</span>');
+    lines.push('<span class="section-hdr">  PRESCRIPTION ORDER — AMOXICILLIN (ORAL)</span>');
+    lines.push('<span class="section-hdr">════════════════════════════════════════════════════════════</span>');
+    lines.push('  Weight           : ' + weight_kg + ' kg');
+    lines.push('  Age              : ' + age_months + ' month(s) (~' + age_years.toFixed(1) + ' years)');
+    lines.push('  Selected dose    : ' + mg_kg_day + ' mg/kg/day');
+    lines.push('  Daily dose       : ' + total_daily_mg.toFixed(1) + ' mg/day (after caps)');
+    lines.push('  Single dose      : ' + single_mg.toFixed(1) + ' mg/dose (after caps)');
+    lines.push('  Frequency        : ' + Times_perday + ' time(s)/day (every ' + interval_h.toFixed(1) + ' hours)');
+    lines.push('  Duration         : ' + TotalDay + ' day(s)');
+    lines.push('');
+
+    // Suspensions
+    const suspensions = [
+        { name: "Faramox 400 mg/5 mL", mg5: 400, bottle: 70 },
+        { name: "Faramox 200 mg/5 mL", mg5: 200, bottle: 70 },
+        { name: "Amoxicillin 250 mg/5 mL", mg5: 250, bottle: 100 },
+        { name: "Amoxicillin 125 mg/5 mL", mg5: 125, bottle: 100 },
+    ];
+
+    for (let s of suspensions) {
+        let mg_per_ml = s.mg5 / 5.0;
+        let ml_per_dose = single_mg / mg_per_ml;
+        let q_ml = (Math.round(ml_per_dose * 10) / 10);
+        let total_ml = ml_per_dose * Times_perday * TotalDay;
+        let n_bottles = Math.ceil(total_ml / s.bottle);
+
+        lines.push('<span class="section-hdr">--- Suspension: ' + s.name + ' (Bottle ' + s.bottle + ' mL) ---</span>');
+        lines.push('  Q (per dose)     : ' + q_ml + ' mL');
+        lines.push('  Schedule         : q' + interval_h.toFixed(1) + 'h for ' + TotalDay + ' day(s)');
+        lines.push('  N (dispense)     : ' + n_bottles + ' bottle(s)');
+        lines.push('  Directions       : Shake well. Measure with oral syringe.');
+        lines.push('');
+    }
+
+    // Tablets
+    const tab_strengths = [250, 500];
+    for (let strength of tab_strengths) {
+        let q_units = Math.ceil(single_mg / strength);
+        if (q_units * strength > max_single_dose_mg) {
+            q_units = Math.floor(max_single_dose_mg / strength);
+        }
+        if (q_units <= 0) continue;
+        let given_mg = q_units * strength;
+        let n_units = q_units * Times_perday * TotalDay;
+
+        lines.push('<span class="section-hdr">--- Tablet/Capsule: ' + strength + ' mg ---</span>');
+        lines.push('  Q (per dose)     : ' + q_units + ' unit(s) (= ' + given_mg + ' mg given)');
+        lines.push('  Schedule         : q' + interval_h.toFixed(1) + 'h for ' + TotalDay + ' day(s)');
+        lines.push('  N (dispense)     : ' + n_units + ' unit(s)');
+        lines.push('  Directions       : Swallow with water.');
+        lines.push('');
+    }
+
+    out.innerHTML = lines.join('\n');
+}
+</script>
+
+
+<footer>
+
+<div class="disclaimer">
+    ⚠️ <strong>MEDICAL DISCLAIMER:</strong> This calculator is for educational/reference purposes only.
+    All prescriptions must be verified by a qualified physician. Always cross-check with official drug references.
+</div>
+</footer>
+
+</body>
+</html>

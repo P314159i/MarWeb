@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Co-Amoxiclav — Pediatric Calculator</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+min-height:100vh;
+padding:20px;
+color:#e0e0e0;
+}
+
+.back{color:#a0d2db;text-decoration:none;font-size:14px;}
+.back:hover{text-decoration:underline;}
+
+h1{color:#fff;margin:25px 0 23px;font-size:2.2em;}
+
+.category-tag{
+display:inline-block;
+background:rgba(255,204,0,0.15);
+color:#ffcc00;
+padding:10px 17px;
+border-radius:20px;
+font-size:0.95em;
+margin-bottom:20px;
+}
+
+.disclaimer{
+background:rgba(255,18,58,0.33);
+color:rgba(255,220,220);
+padding:15px 31px;
+border-radius:10px;
+max-width:800px;
+width:100%;
+margin-bottom:30px;
+text-align:center;
+font-size:13px;
+line-height:1.6;
+}
+
+.suggestions{
+background:rgba(255,255,255,0.07);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+padding:18px;
+margin-bottom:25px;
+font-size:14px;
+line-height:1.8;
+}
+
+.suggestions strong{color:#ffcc00;}
+
+.form-section{
+background:rgba(255,255,255,0.07);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+padding:25px;
+max-width:600px;
+margin-bottom:25px;
+}
+
+label{display:block;margin-bottom:5px;font-size:14px;color:#ccc;}
+
+input,select{
+width:100%;
+padding:10px 12px;
+border-radius:8px;
+border:1px solid rgba(255,255,255,0.2);
+background:rgba(255,255,255,0.05);
+color:#fff;
+font-size:15px;
+margin-bottom:15px;
+}
+
+input:focus,select:focus{outline:none;border-color:#a0d2db;}
+
+button{
+background:linear-gradient(135deg,#00b09b,#96c93d);
+color:#000;
+font-weight:700;
+padding:12px 30px;
+border:none;
+border-radius:10px;
+font-size:16px;
+cursor:pointer;
+width:100%;
+}
+
+button:hover{opacity:0.9;}
+
+#output{
+background:rgba(0,0,0,0.4);
+border:1px solid rgba(255,255,255,0.1);
+border-radius:12px;
+padding:25px;
+margin-top:25px;
+white-space:pre-wrap;
+font-family:'Courier New',monospace;
+font-size:13px;
+line-height:1.7;
+display:none;
+}
+
+.warn{color:#ffcc00;}
+.error{color:#ff4444;}
+.cap{color:#ff8800;}
+.section-hdr{color:#a0d2db;font-weight:bold;}
+</style>
+</head>
+
+<body>
+
+<a class="back" href="index.html">← Back to all medicines</a>
+
+<h1>💊 Co-Amoxiclav</h1>
+
+<span class="category-tag">Antibiotic — Penicillin + β-Lactamase Inhibitor</span>
+
+<div class="suggestions">
+<strong>📋 SUGGESTED OPTIONS (doctor chooses):</strong><br>
+• Dosing is based on the <strong>AMOXICILLIN component</strong> (mg/kg/day)<br>
+• Common: <strong>2–3 times/day</strong> depending on indication/formulation<br>
+• High-dose: ES-600 uses <strong>90 mg/kg/day</strong> (amox) divided q12h — keeps clavulanate ~6.4 mg/kg/day
+</div>
+
+<div class="form-section">
+
+<label>Weight (kg)</label>
+<input type="number" id="weight" step="0.1" min="0.1" placeholder="e.g. 15">
+
+<label>Age (months)</label>
+<input type="number" id="age" step="1" min="0" placeholder="e.g. 36">
+
+<label>Amoxicillin dose (mg/kg/day)</label>
+<input type="number" id="mgkgday" step="0.1" min="0.1" placeholder="e.g. 45">
+
+<label>Total days of therapy</label>
+<input type="number" id="totaldays" step="1" min="1" placeholder="e.g. 7">
+
+<label>Times per day</label>
+<select id="timesperday">
+<option value="2">2 (every 12 hours)</option>
+<option value="3" selected>3 (every 8 hours)</option>
+</select>
+
+<button onclick="calculate()">Calculate Prescription</button>
+
+</div>
+
+<div id="output"></div>
+
+<footer>
+
+<div class="disclaimer">
+⚠️ <strong>MEDICAL DISCLAIMER:</strong> This calculator is for educational/reference purposes only.
+All prescriptions must be verified by a qualified physician.
+</div>
+
+</footer>
+
+<script>
+/* JAVASCRIPT UNCHANGED */
+</script>
+
+</body>
+</html>

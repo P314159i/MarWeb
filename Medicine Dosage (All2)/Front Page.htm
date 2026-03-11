@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pediatric Prescription Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a3a2a, #2d5a45, #3d7a5a);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .disclaimer {
+            background: rgba(255, 18, 58, 0.33);
+            color: rgba(255, 220, 220);
+            padding: 15px 31px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .disclaimer strong { font-size: 15px; }
+        h1 {
+            color: #ffffff;
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #a0d2db;
+            margin-bottom: 40px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        .card {
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            padding: 30px 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .card:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .card .icon { font-size: 2.5em; margin-bottom: 15px; }
+        .card .name-en {
+            color: #ffffff;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .card .name-fa {
+            color: #a0d2db;
+            font-size: 1em;
+            direction: rtl;
+        }
+        .card .category {
+            color: #ffcc00;
+            font-size: 0.8em;
+            margin-top: 10px;
+            padding: 4px 12px;
+            background: rgba(255,204,0,0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+        footer {
+            color: rgba(255,255,255,0.4);
+            margin-top: 50px;
+            font-size: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <h1>💊 Pediatric Prescription Calculator</h1>
+    <p class="subtitle">Select a medicine to calculate pediatric dosing</p>
+
+    <div class="grid">
+
+        <a class="card" href="Amoxicillin.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Amoxicillin</div>
+            <div class="category">Antibiotic — Penicillin</div>
+        </a>
+
+        <a class="card" href="Coamoxiclav.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Co-Amoxiclav</div>
+            <div class="category">Antibiotic — Penicillin + Inhibitor</div>
+        </a>
+
+        <a class="card" href="Clindamycin.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Clindamycin</div>
+            <div class="category">Antibiotic — Lincosamide</div>
+        </a>
+
+        <a class="card" href="Metronidazole.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Metronidazole</div>
+            <div class="category">Antibiotic / Antiprotozoal</div>
+        </a>
+
+        <a class="card" href="Tinidazole.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Tinidazole</div>
+            <div class="category">Antiprotozoal</div>
+        </a>
+
+        <a class="card" href="Iodoquinol.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Iodoquinol</div>
+            <div class="category">Antiprotozoal — Amebicide</div>
+        </a>
+
+        <a class="card" href="Nitrofurantoin.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Nitrofurantoin</div>
+            <div class="category">Urinary Antibiotic</div>
+        </a>
+
+        <a class="card" href="Nalidixic_acid.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Nalidixic Acid</div>
+            <div class="category">Urinary Antibiotic — Quinolone</div>
+        </a>
+
+        <a class="card" href="Prednisolone.html">
+            <div class="icon">💊</div>
+            <div class="name-en">Prednisolone</div>
+            <div class="category">Corticosteroid</div>
+        </a>
+
+		<a> </a>
+
+    </div>
+
+    <footer>
+		<div class="disclaimer">
+        <strong>⚠️ MEDICAL DISCLAIMER</strong><br>
+        This tool is for <u>educational and reference purposes only</u>.
+        All prescriptions must be verified by a qualified physician or pharmacist.
+        The developers assume <strong>No liability</strong> for clinical decisions made using this tool.
+        Always cross-check with official drug references and local guidelines.
+    </div>
+
+        Pediatric Prescription Calculator — For educational use only — Always verify with a qualified physician
+    </footer>
+
+</body>
+</html>
