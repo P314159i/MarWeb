@@ -1,0 +1,2387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTI Clinical Decision Support System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0f14;
+            --bg-elevated: #111920;
+            --card: #161f29;
+            --card-hover: #1c2733;
+            --border: #2a3744;
+            --fg: #e8edf3;
+            --fg-muted: #8899aa;
+            --accent: #00d4aa;
+            --accent-dim: rgba(0, 212, 170, 0.15);
+            --warning: #ffb347;
+            --danger: #ff6b6b;
+            --success: #4ade80;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .gradient-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(0, 150, 200, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse 50% 30% at 50% 50%, rgba(0, 100, 150, 0.04) 0%, transparent 50%);
+        }
+
+        .grid-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 170, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 170, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.5;
+        }
+
+        .page {
+            display: none;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-nav {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-nav::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), transparent);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .card-nav:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-nav:hover::before {
+            transform: scaleX(1);
+        }
+
+        .section-number {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-dim);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--fg);
+        }
+
+        .form-hint {
+            font-size: 0.875rem;
+            color: var(--fg-muted);
+            margin-top: 0.25rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            color: var(--fg);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .form-input::placeholder {
+            color: var(--fg-muted);
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .radio-item, .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-item:hover, .checkbox-item:hover {
+            border-color: var(--accent);
+            background: var(--card);
+        }
+
+        .radio-item input, .checkbox-item input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            background: #00eebb;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--fg);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-back {
+            padding: 0.75rem 1.5rem;
+        }
+
+        .result-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-box.diagnosis {
+            border-left: 4px solid var(--accent);
+        }
+
+        .result-box.warning {
+            border-left: 4px solid var(--warning);
+            background: rgba(255, 179, 71, 0.1);
+        }
+
+        .result-box.treatment {
+            border-left: 4px solid var(--success);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 2rem 0;
+        }
+
+        .sub-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sub-section-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--fg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+
+        @media (max-width: 768px) {
+            .card-nav {
+                padding: 1.5rem;
+            }
+            .page {
+                padding: 1rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .note-box {
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .note-box::before {
+            content: 'Note: ';
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .collapsible {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible.open {
+            max-height: 2000px;
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-mesh"></div>
+    <div class="grid-pattern"></div>
+
+    <!-- Landing Page -->
+    <div id="landing" class="page active">
+        <div class="max-w-5xl mx-auto">
+            <header class="text-center mb-16 pt-8">
+                <div class="inline-flex items-center gap-2 mb-6">
+                    <div class="pulse-dot"></div>
+                    <span class="tag">IDSA-Based Clinical Tool</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                    UTI Clinical Decision<br>Support System
+                </h1>
+                <p class="text-xl text-[var(--fg-muted)] max-w-2xl mx-auto">
+                    Comprehensive diagnostic and management assistance for urinary tract infections. Select a module to begin.
+                </p>
+            </header>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="card-nav" onclick="showPage('uti1')" role="button" tabindex="0" aria-label="Open UTI Diagnosis module">
+                    <div class="section-number">1</div>
+                    <h3 class="text-xl font-semibold mb-2">UTI Diagnosis</h3>
+                    <p class="text-[var(--fg-muted)]">Patient classification, symptom evaluation, and diagnostic criteria for UTI determination.</p>
+                </div>
+
+                <div class="card-nav" onclick="showPage('uti2')" role="button" tabindex="0" aria-label="Open Management Plan module">
+                    <div class="section-number">2</div>
+                    <h3 class="text-xl font-semibold mb-2">Management Plan</h3>
+                    <p class="text-[var(--fg-muted)]">Treatment recommendations based on patient status, UTI type, and risk factors.</p>
+                </div>
+
+                <div class="card-nav" onclick="showPage('uti3')" role="button" tabindex="0" aria-label="Open UA/UC Interpretation module">
+                    <div class="section-number">3</div>
+                    <h3 class="text-xl font-semibold mb-2">UA/UC Interpretation</h3>
+                    <p class="text-[var(--fg-muted)]">Urinalysis and urine culture result interpretation with clinical correlation.</p>
+                </div>
+
+                <div class="card-nav" onclick="showPage('uti4')" role="button" tabindex="0" aria-label="Open Empirical Antibiotic Therapy module">
+                    <div class="section-number">4</div>
+                    <h3 class="text-xl font-semibold mb-2">Empirical Antibiotic Therapy</h3>
+                    <p class="text-[var(--fg-muted)]">Antibiotic selection guidance based on patient factors and local resistance patterns.</p>
+                </div>
+
+                <div class="card-nav" onclick="showPage('uti5')" role="button" tabindex="0" aria-label="Open Follow-up module">
+                    <div class="section-number">5</div>
+                    <h3 class="text-xl font-semibold mb-2">Follow-up</h3>
+                    <p class="text-[var(--fg-muted)]">Post-treatment monitoring, test of cure protocols, and recurrence management.</p>
+                </div>
+            </div>
+
+            <footer class="text-center mt-16 pb-8 text-[var(--fg-muted)] text-sm">
+                <p>Clinical Decision Support Tool — For Healthcare Professional Use Only</p>
+                <p class="mt-2">Based on IDSA Guidelines — Always correlate with clinical judgment</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- UTI 1: Diagnosis -->
+    <div id="uti1" class="page">
+        <div class="max-w-4xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Module 1</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">UTI Diagnostic Classification</h1>
+                <p class="text-[var(--fg-muted)]">IDSA-Based Patient Assessment Tool</p>
+            </header>
+
+            <form id="uti1Form" onsubmit="return runUTI1Diagnosis(event)">
+                <!-- Patient Status -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        Patient Status
+                    </h4>
+                    <div class="form-group">
+                        <label class="form-label">Select patient status</label>
+                        <div class="radio-group" id="uti1Status">
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="female" required>
+                                <span>Female</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="male">
+                                <span>Male</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="pregnant">
+                                <span>Pregnant</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="catheter_related">
+                                <span>Catheter-Related</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Patient Age</label>
+                        <input type="number" class="form-input" id="uti1Age" min="0" max="120" placeholder="Enter age in years" required>
+                    </div>
+                </div>
+
+                <!-- Symptoms -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                        Typical UTI Symptoms
+                    </h4>
+                    <p class="note-box">Smelly urine ALONE is NOT specific for UTI. Dark urine (without blood) ALONE is NOT specific for UTI. Both can be affected by diet and hydration.</p>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="typ_freq" id="uti1_freq">
+                            <span>Frequency (urinating often)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="typ_dysuria" id="uti1_dysuria">
+                            <span>Dysuria (painful/burning urination)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="typ_urgency" id="uti1_urgency">
+                            <span>Urgency (sudden strong urge to urinate)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="typ_suprapubic" id="uti1_suprapubic">
+                            <span>Suprapubic pain or tenderness</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Atypical Symptoms -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Atypical / Other Symptoms</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="atyp_incontinence" id="uti1_incontinence">
+                            <span>Incontinence (loss of control)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="atyp_chronic_dysuria" id="uti1_chronic_dysuria">
+                            <span>Chronic dysuria (lasting more than 2 weeks)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="atyp_low_fever" id="uti1_low_fever">
+                            <span>Low-grade fever (less than 38.5 C)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="atyp_flank" id="uti1_flank">
+                            <span>Flank pain (side/back pain near ribs)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Catheter-Specific Symptoms -->
+                <div class="sub-section hidden" id="uti1CatheterSection">
+                    <h4 class="sub-section-title">Catheter-Related UTI Specific Symptoms</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="cath_suprapubic_tenderness" id="uti1_cath_suprapubic">
+                            <span>Suprapubic tenderness</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="cath_cva_tenderness" id="uti1_cath_cva">
+                            <span>Costovertebral angle (CVA) tenderness</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="cath_obstruction" id="uti1_cath_obstruction">
+                            <span>Catheter obstruction/blockage</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="cath_systemic" id="uti1_cath_systemic">
+                            <span>Systemic symptoms (fever more than 38 C, chills, altered mental status)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- History & Risk Factors -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Recurrent UTI History</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="rec_2in6" id="uti1_rec2in6">
+                            <span>2 UTI episodes in the last 6 months</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="rec_3in12" id="uti1_rec3in12">
+                            <span>3 UTI episodes in the last 12 months</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="rec_pyelonephr" id="uti1_recPyelo">
+                            <span>2 episodes of pyelonephritis (ever)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Comorbidities -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Comorbidities / Structural Issues</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pmh_diabetes" id="uti1_diabetes">
+                            <span>Diabetes Mellitus</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pmh_immunocomp" id="uti1_immunocomp">
+                            <span>Immunocompromised (HIV, steroids, chemotherapy, transplant)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pmh_poor_diab" id="uti1_poorDiab">
+                            <span>Poorly controlled diabetes (HbA1c poorly controlled / frequent hyperglycemia)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pmh_kidney_stone" id="uti1_kidneyStone">
+                            <span>Kidney stone disease</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pmh_menopause" id="uti1_menopause">
+                            <span>Menopause (if female)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pmh_neurogenic" id="uti1_neurogenic">
+                            <span>Neurogenic bladder</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pmh_urinary_probs" id="uti1_urinaryProbs">
+                            <span>History of urinary problems (obstruction, reflux, voiding dysfunction)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Recent Antibiotics -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Recent Antibiotic Use</h4>
+                    <div class="form-group">
+                        <label class="form-label">Have you used ANY antibiotics for THIS current urinary episode?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recent_ab_current" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recent_ab_current" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MDR Risk Factors -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Multi-Drug Resistant (MDR) Risk Factors (last 3 months)</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="mdr_prior_isolate" id="uti1_mdrPrior">
+                            <span>Prior MDR organism on urine culture</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="mdr_hospital" id="uti1_mdrHospital">
+                            <span>Hospital admission</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="mdr_nursing_home" id="uti1_mdrNursing">
+                            <span>Nursing home residence / care</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="mdr_recent_abx" id="uti1_mdrAbx">
+                            <span>Recent antibiotics (TMP-SMX, fluoroquinolones, 3rd/4th-gen cephalosporins)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="mdr_instrument" id="uti1_mdrInstrument">
+                            <span>Recent instrumentation (foley, suprapubic catheter, DJ stent, PCN, neurogenic bladder)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Differential Diagnosis Screening -->
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Screen for Common UTI Mimics</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="vag_discharge" id="uti1_vagDischarge">
+                            <span>Vaginal discharge present</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="vag_itching" id="uti1_vagItching">
+                            <span>Vaginal or vulvar itching</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="vag_dyspareunia" id="uti1_dyspareunia">
+                            <span>Dyspareunia (pain during intercourse)</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="ureth_discharge" id="uti1_urethDischarge">
+                            <span>Urethral discharge</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="ureth_new_partner" id="uti1_newPartner">
+                            <span>New or recent change in sexual partner</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="pyel_fever" id="uti1_pyelFever">
+                            <span>Fever (more than 38 C) present</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- BPH Symptoms (Male only) -->
+                <div class="sub-section hidden" id="uti1BPHSection">
+                    <h4 class="sub-section-title">BPH Symptoms (Male)</h4>
+                    <div class="form-group">
+                        <label class="form-label">BPH symptoms (hesitancy, weak stream, dribbling, feeling of incomplete emptying)?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="bph_symptoms" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="bph_symptoms" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        Run Diagnostic Analysis
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('uti1Form')">
+                        Reset Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="uti1Results" class="hidden mt-8"></div>
+        </div>
+    </div>
+
+    <!-- UTI 2: Management Plan -->
+    <div id="uti2" class="page">
+        <div class="max-w-4xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Module 2</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">UTI Management Planner</h1>
+                <p class="text-[var(--fg-muted)]">IDSA-Based Treatment Recommendations</p>
+            </header>
+
+            <form id="uti2Form" onsubmit="return runUTI2Management(event)">
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Patient Status</h4>
+                    <div class="form-group">
+                        <label class="form-label">Select patient status</label>
+                        <div class="radio-group" id="uti2Status">
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="female" required>
+                                <span>Female</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="male">
+                                <span>Male</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="pregnant">
+                                <span>Pregnant</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="catheter_related">
+                                <span>Catheter-Related</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Symptoms</h4>
+                    <div class="form-group">
+                        <label class="form-label">Does the patient have compatible UTI symptoms (dysuria, frequency, urgency, suprapubic pain, flank pain, etc.)?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="symptomatic" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="symptomatic" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti2FemaleType">
+                    <h4 class="sub-section-title">UTI Type (Female Only)</h4>
+                    <div class="form-group">
+                        <label class="form-label">UTI type</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="uti_type" value="simple">
+                                <span>Simple (Uncomplicated)</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="uti_type" value="complicated">
+                                <span>Complicated</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Risk Factors</h4>
+                    <div class="form-group">
+                        <label class="form-label">Recurrent UTI? (2 episodes in 6 months OR 3 in 12 months OR 2 pyelonephritis episodes)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recurrent_UTI" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recurrent_UTI" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">MDR risk factors present? (recent AB, hospital stay, nursing home, prior MDR isolate, kidney stone, instrumentation)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="mdr_rf" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="mdr_rf" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Recent antibiotics for THIS current urinary episode? (within last 1-2 weeks)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recent_ab_episode" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recent_ab_episode" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti2Menopause">
+                    <h4 class="sub-section-title">Menopause Status</h4>
+                    <div class="form-group">
+                        <label class="form-label">Post-menopausal? (if female)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="menopausal" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="menopausal" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti2CatheterSymptoms">
+                    <h4 class="sub-section-title">Catheter-Specific Symptoms</h4>
+                    <div class="form-group">
+                        <label class="form-label">Catheter-related symptoms present? (suprapubic tenderness, CVA tenderness, obstruction, fever)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="cath_symptoms" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="cath_symptoms" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        Generate Management Plan
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('uti2Form')">
+                        Reset Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="uti2Results" class="hidden mt-8"></div>
+        </div>
+    </div>
+
+    <!-- UTI 3: UA/UC Interpretation -->
+    <div id="uti3" class="page">
+        <div class="max-w-4xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Module 3</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">UA/UC Interpretation</h1>
+                <p class="text-[var(--fg-muted)]">Urinalysis and Urine Culture Result Analysis</p>
+            </header>
+
+            <form id="uti3Form" onsubmit="return runUTI3Interpretation(event)">
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Patient Status and Clinical Context</h4>
+                    <div class="form-group">
+                        <label class="form-label">Select patient status</label>
+                        <div class="radio-group" id="uti3Status">
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="female" required>
+                                <span>Female</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="male">
+                                <span>Male</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="pregnant">
+                                <span>Pregnant</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="catheter_related">
+                                <span>Catheter-Related</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Symptoms</h4>
+                    <div class="form-group">
+                        <label class="form-label">Typical UTI symptoms present? (dysuria, frequency, urgency, suprapubic pain)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="typ_symptoms" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="typ_symptoms" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti3CatheterSymptoms">
+                    <h4 class="sub-section-title">Catheter-Specific Symptoms</h4>
+                    <div class="form-group">
+                        <label class="form-label">Catheter-related local symptoms? (suprapubic tenderness, CVA tenderness, obstruction)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="cath_local_symptoms" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="cath_local_symptoms" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Systemic symptoms? (fever, chills, altered mental status)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="systemic_symptoms" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="systemic_symptoms" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Recent Events (affect interpretation)</h4>
+                    <div class="form-group">
+                        <label class="form-label">Recent urinary invasive procedure? (surgery, catheterization, instrumentation)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recent_invasive_proc" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recent_invasive_proc" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Recent antibiotics for this urinary episode? (within last 1-2 weeks)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recent_antibiotics" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recent_antibiotics" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Special Host Factors (for Asymptomatic Bacteriuria exceptions)</h4>
+                    <div class="form-group">
+                        <label class="form-label">Recent kidney transplant (within last 6 months)?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recent_kidney_transplant" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recent_kidney_transplant" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Planned urologic procedure in near future? (that requires sterile urine; NOT routine cystoscopy/sondage)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="planned_urologic_proc" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="planned_urologic_proc" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Urinalysis (U/A) Results</h4>
+                    <p class="note-box">WBC and bacteria in UA are NOT diagnostic for UTI; only UC bacteria + symptoms confirm it.</p>
+                    <div class="form-group">
+                        <label class="form-label">WBC count per high-power field</label>
+                        <input type="number" class="form-input" id="uti3_wbc" min="0" placeholder="Enter count (>10 is significant)" required>
+                        <p class="form-hint">More than 10 is considered significant</p>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nitrite positive?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="ua_nitrite" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="ua_nitrite" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">WBC casts present?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="ua_wbc_cast" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="ua_wbc_cast" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">RBC count per high-power field</label>
+                        <input type="number" class="form-input" id="uti3_rbc" min="0" placeholder="Enter count (>3 is notable)" required>
+                        <p class="form-hint">More than 3 is notable</p>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Urine Culture (U/C) Results</h4>
+                    <div class="form-group">
+                        <label class="form-label">Bacterial colony count (CFU/mL)</label>
+                        <input type="number" class="form-input" id="uti3_cfu" min="0" placeholder="Enter count (e.g., 100, 1000, 100000)" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Predominant organism (if known)</label>
+                        <input type="text" class="form-input" id="uti3_organism" placeholder="e.g., E. coli, Lactobacillus">
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        Interpret Results
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('uti3Form')">
+                        Reset Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="uti3Results" class="hidden mt-8"></div>
+        </div>
+    </div>
+
+    <!-- UTI 4: Empirical Antibiotic Therapy -->
+    <div id="uti4" class="page">
+        <div class="max-w-4xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Module 4</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">Empirical Antibiotic Therapy</h1>
+                <p class="text-[var(--fg-muted)]">Antibiotic Selection Based on Clinical Context</p>
+            </header>
+
+            <form id="uti4Form" onsubmit="return runUTI4Therapy(event)">
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Patient Status</h4>
+                    <div class="form-group">
+                        <label class="form-label">Select patient status</label>
+                        <div class="radio-group" id="uti4Status">
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="female" required>
+                                <span>Female</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="male">
+                                <span>Male</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="pregnant">
+                                <span>Pregnant</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="catheter_related">
+                                <span>Catheter-Related</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti4FemaleType">
+                    <h4 class="sub-section-title">UTI Type (Female Only)</h4>
+                    <div class="form-group">
+                        <label class="form-label">UTI type</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="uti_type" value="simple">
+                                <span>Simple (Uncomplicated)</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="uti_type" value="complicated">
+                                <span>Complicated</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Risk Factors</h4>
+                    <div class="form-group">
+                        <label class="form-label">MDR risk factors present?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="mdr_rf" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="mdr_rf" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Recent antibiotic use (within last 1-2 weeks)?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recent_ab" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recent_ab" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Severe or systemic symptoms?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="severe_symptoms" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="severe_symptoms" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti4CatheterSymptoms">
+                    <h4 class="sub-section-title">Catheter-Specific</h4>
+                    <div class="form-group">
+                        <label class="form-label">High MDR risk or recent hospitalization?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="cath_high_mdr" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="cath_high_mdr" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti4PregnancyTrimester">
+                    <h4 class="sub-section-title">Pregnancy Details</h4>
+                    <div class="form-group">
+                        <label class="form-label">Current trimester</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="trimester" value="first">
+                                <span>First Trimester</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="trimester" value="second">
+                                <span>Second Trimester</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="trimester" value="third">
+                                <span>Third Trimester</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        Get Antibiotic Recommendations
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('uti4Form')">
+                        Reset Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="uti4Results" class="hidden mt-8"></div>
+        </div>
+    </div>
+
+    <!-- UTI 5: Follow-up -->
+    <div id="uti5" class="page">
+        <div class="max-w-4xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Module 5</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">UTI Follow-up</h1>
+                <p class="text-[var(--fg-muted)]">Post-Treatment Monitoring and Response Assessment</p>
+            </header>
+
+            <form id="uti5Form" onsubmit="return runUTI5Followup(event)">
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Patient Status</h4>
+                    <div class="form-group">
+                        <label class="form-label">Select patient status</label>
+                        <div class="radio-group" id="uti5Status">
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="female" required>
+                                <span>Female</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="male">
+                                <span>Male</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="pregnant">
+                                <span>Pregnant</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="status" value="catheter_related">
+                                <span>Catheter-Related</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Clinical Response to Treatment</h4>
+                    <div class="form-group">
+                        <label class="form-label">Select the clinical scenario</label>
+                        <div class="radio-group" id="uti5Response">
+                            <label class="radio-item">
+                                <input type="radio" name="response" value="1" required>
+                                <span>Symptoms resolved within 48-72 hours (patient is now well)</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="response" value="2">
+                                <span>No improvement after 48-72 hours (still symptomatic)</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="response" value="3">
+                                <span>Symptoms returned 1-2 weeks after finishing antibiotics (recurrence/relapse)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti5PregnantTOC">
+                    <h4 class="sub-section-title">Pregnant Patient Options</h4>
+                    <div class="form-group">
+                        <label class="checkbox-item" style="cursor:pointer;">
+                            <input type="checkbox" id="uti5_toc">
+                            <span>Performing routine Test of Cure (TOC) 1 week after last dose (patient may be symptom-free)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti5RecurrentSection">
+                    <h4 class="sub-section-title">Recurrent UTI History</h4>
+                    <div class="form-group">
+                        <label class="form-label">Does patient have recurrent UTIs? (2 in 6 months or 3 in 12 months)</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="recurrent_uti" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="recurrent_uti" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section hidden" id="uti5PregnantRecurrentSection">
+                    <h4 class="sub-section-title">Recurrent UTI in Current Pregnancy</h4>
+                    <div class="form-group">
+                        <label class="form-label">Has patient had 2 or more UTIs in current pregnancy?</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="preg_rec_uti" value="yes">
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="preg_rec_uti" value="no">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Current trimester</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="trimester" value="first">
+                                <span>First Trimester</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="trimester" value="second">
+                                <span>Second Trimester</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="trimester" value="third">
+                                <span>Third Trimester</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4 flex-wrap">
+                    <button type="submit" class="btn btn-primary">
+                        Generate Follow-up Plan
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm('uti5Form')">
+                        Reset Form
+                    </button>
+                </div>
+            </form>
+
+            <div id="uti5Results" class="hidden mt-8"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // PAGE NAVIGATION
+        // ============================================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(function(page) {
+                page.classList.remove('active');
+            });
+            var targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================
+        // FORM HELPERS
+        // ============================================
+        function getRadioValue(name) {
+            var radios = document.querySelectorAll('input[name="' + name + '"]');
+            for (var i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    return radios[i].value;
+                }
+            }
+            return null;
+        }
+
+        function getCheckboxValue(id) {
+            var el = document.getElementById(id);
+            return el ? el.checked : false;
+        }
+
+        function getInputValue(id) {
+            var el = document.getElementById(id);
+            return el ? el.value : '';
+        }
+
+        function getInputValueInt(id) {
+            var el = document.getElementById(id);
+            return el ? parseInt(el.value) || 0 : 0;
+        }
+
+        function resetForm(formId) {
+            document.getElementById(formId).reset();
+            var resultsEl = document.getElementById(formId.replace('Form', 'Results'));
+            if (resultsEl) {
+                resultsEl.classList.add('hidden');
+                resultsEl.innerHTML = '';
+            }
+        }
+
+        function showResults(resultsId, html) {
+            var el = document.getElementById(resultsId);
+            el.innerHTML = html;
+            el.classList.remove('hidden');
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ============================================
+        // CONDITIONAL FIELD DISPLAY
+        // ============================================
+        function setupConditionalFields() {
+            // UTI1 Status change handler
+            document.querySelectorAll('#uti1Status input[name="status"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var val = this.value;
+                    document.getElementById('uti1CatheterSection').classList.toggle('hidden', val !== 'catheter_related');
+                    document.getElementById('uti1BPHSection').classList.toggle('hidden', val !== 'male');
+                });
+            });
+
+            // UTI2 Status change handler
+            document.querySelectorAll('#uti2Status input[name="status"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var val = this.value;
+                    document.getElementById('uti2FemaleType').classList.toggle('hidden', val !== 'female');
+                    document.getElementById('uti2Menopause').classList.toggle('hidden', val !== 'female');
+                    document.getElementById('uti2CatheterSymptoms').classList.toggle('hidden', val !== 'catheter_related');
+                });
+            });
+
+            // UTI3 Status change handler
+            document.querySelectorAll('#uti3Status input[name="status"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var val = this.value;
+                    document.getElementById('uti3CatheterSymptoms').classList.toggle('hidden', val !== 'catheter_related');
+                });
+            });
+
+            // UTI4 Status change handler
+            document.querySelectorAll('#uti4Status input[name="status"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var val = this.value;
+                    document.getElementById('uti4FemaleType').classList.toggle('hidden', val !== 'female');
+                    document.getElementById('uti4CatheterSymptoms').classList.toggle('hidden', val !== 'catheter_related');
+                    document.getElementById('uti4PregnancyTrimester').classList.toggle('hidden', val !== 'pregnant');
+                });
+            });
+
+            // UTI5 Status change handler
+            document.querySelectorAll('#uti5Status input[name="status"]').forEach(function(radio) {
+                radio.addEventListener('change', function() {
+                    var val = this.value;
+                    document.getElementById('uti5PregnantTOC').classList.toggle('hidden', val !== 'pregnant');
+                    document.getElementById('uti5RecurrentSection').classList.toggle('hidden', (val === 'pregnant'));
+                    document.getElementById('uti5PregnantRecurrentSection').classList.toggle('hidden', val !== 'pregnant');
+                });
+            });
+        }
+
+        // ============================================
+        // UTI 1: DIAGNOSIS
+        // ============================================
+        function runUTI1Diagnosis(e) {
+            e.preventDefault();
+
+            var status = getRadioValue('status');
+            var age = getInputValueInt('uti1Age');
+
+            // Typical symptoms
+            var typ_freq = getCheckboxValue('uti1_freq');
+            var typ_dysuria = getCheckboxValue('uti1_dysuria');
+            var typ_urgency = getCheckboxValue('uti1_urgency');
+            var typ_suprapubic = getCheckboxValue('uti1_suprapubic');
+            var typicalCount = (typ_freq ? 1 : 0) + (typ_dysuria ? 1 : 0) + (typ_urgency ? 1 : 0) + (typ_suprapubic ? 1 : 0);
+
+            // Atypical symptoms
+            var atyp_incontinence = getCheckboxValue('uti1_incontinence');
+            var atyp_chronic_dysuria = getCheckboxValue('uti1_chronic_dysuria');
+            var atyp_low_fever = getCheckboxValue('uti1_low_fever');
+            var atyp_flank = getCheckboxValue('uti1_flank');
+
+            // Catheter symptoms
+            var cath_suprapubic_tenderness = getCheckboxValue('uti1_cath_suprapubic');
+            var cath_cva_tenderness = getCheckboxValue('uti1_cath_cva');
+            var cath_obstruction = getCheckboxValue('uti1_cath_obstruction');
+            var cath_systemic = getCheckboxValue('uti1_cath_systemic');
+
+            // Recurrent UTI
+            var rec_2in6 = getCheckboxValue('uti1_rec2in6');
+            var rec_3in12 = getCheckboxValue('uti1_rec3in12');
+            var rec_pyelonephr = getCheckboxValue('uti1_recPyelo');
+            var recurrent_UTI = rec_2in6 || rec_3in12 || rec_pyelonephr;
+
+            // Comorbidities
+            var pmh_diabetes = getCheckboxValue('uti1_diabetes');
+            var pmh_immunocomp = getCheckboxValue('uti1_immunocomp');
+            var pmh_poor_diab = getCheckboxValue('uti1_poorDiab');
+            var pmh_kidney_stone = getCheckboxValue('uti1_kidneyStone');
+            var pmh_menopause = getCheckboxValue('uti1_menopause');
+            var pmh_neurogenic = getCheckboxValue('uti1_neurogenic');
+            var pmh_urinary_probs = getCheckboxValue('uti1_urinaryProbs');
+
+            // Recent antibiotics
+            var recent_ab_current = getRadioValue('recent_ab_current') === 'yes';
+
+            // MDR risk factors
+            var mdr_prior_isolate = getCheckboxValue('uti1_mdrPrior');
+            var mdr_hospital = getCheckboxValue('uti1_mdrHospital');
+            var mdr_nursing_home = getCheckboxValue('uti1_mdrNursing');
+            var mdr_recent_abx = getCheckboxValue('uti1_mdrAbx');
+            var mdr_instrument = getCheckboxValue('uti1_mdrInstrument');
+            var mdr_rf = mdr_prior_isolate || mdr_hospital || mdr_nursing_home || mdr_recent_abx || mdr_instrument ||
+                         pmh_diabetes || pmh_immunocomp || pmh_poor_diab || pmh_kidney_stone || pmh_neurogenic;
+
+            // Differential screening
+            var vag_discharge = getCheckboxValue('uti1_vagDischarge');
+            var vag_itching = getCheckboxValue('uti1_vagItching');
+            var vag_dyspareunia = getCheckboxValue('uti1_dyspareunia');
+            var ureth_discharge = getCheckboxValue('uti1_urethDischarge');
+            var ureth_new_partner = getCheckboxValue('uti1_newPartner');
+            var pyel_fever = getCheckboxValue('uti1_pyelFever');
+
+            // BPH (male)
+            var bph_symptoms = getRadioValue('bph_symptoms') === 'yes';
+
+            // ========== DIAGNOSTIC CLASSIFICATION ==========
+            var is_pyelonephritis = (pyel_fever || atyp_low_fever) && atyp_flank;
+            var is_cauti = false;
+            var is_simple_cystitis = false;
+            var is_complicated_cystitis = false;
+
+            var classification = '';
+            var reasons = [];
+            var labRecommendations = '';
+            var differentials = [];
+
+            // CAUTI check
+            if (status === 'catheter_related') {
+                if (cath_systemic || cath_suprapubic_tenderness || cath_cva_tenderness || cath_obstruction) {
+                    is_cauti = true;
+                    is_complicated_cystitis = true;
+                    classification = 'SUSPECTED CATHETER-ASSOCIATED UTI (CAUTI) - Complicated';
+                } else {
+                    classification = 'ASYMPTOMATIC BACTERIURIA (Catheter present but NO compatible symptoms)';
+                    differentials.push('Do NOT treat; remove/replace catheter only if infected or obstructed.');
+                }
+            }
+
+            // Pyelonephritis check
+            if (is_pyelonephritis) {
+                classification = 'SUSPECTED PYELONEPHRITIS (Upper-tract UTI - always complicated)';
+                is_complicated_cystitis = true;
+            }
+
+            // Simple vs Complicated Cystitis
+            if (!is_pyelonephritis && !is_cauti && status !== 'catheter_related') {
+                if (status === 'female' && age < 65 && !recurrent_UTI && !mdr_rf && !recent_ab_current &&
+                    !pmh_diabetes && !pmh_immunocomp && !pmh_kidney_stone && !pmh_neurogenic && typicalCount >= 2) {
+                    is_simple_cystitis = true;
+                    classification = 'UNCOMPLICATED CYSTITIS (Simple lower UTI)';
+                } else {
+                    is_complicated_cystitis = true;
+                    classification = 'COMPLICATED CYSTITIS (Lower UTI with 1+ risk factor)';
+
+                    // Build reasons
+                    if (status === 'male' || status === 'pregnant') {
+                        reasons.push('patient status (' + status + ')');
+                    }
+                    if (age >= 65) {
+                        reasons.push('age >= 65');
+                    }
+                    if (recurrent_UTI) {
+                        reasons.push('recurrent UTI history');
+                    }
+                    if (mdr_rf) {
+                        reasons.push('MDR risk factors');
+                    }
+                    if (recent_ab_current) {
+                        reasons.push('recent antibiotic use for this episode');
+                    }
+                    if (pmh_diabetes || pmh_immunocomp || pmh_kidney_stone || pmh_neurogenic) {
+                        reasons.push('comorbidities / structural issues');
+                    }
+                    if (typicalCount < 2 && typicalCount > 0) {
+                        reasons.push('atypical symptom pattern');
+                    }
+                }
+            }
+
+            // Lab recommendations
+            if (is_simple_cystitis) {
+                labRecommendations = 'U/A: Recommended (to confirm pyuria). U/C: NOT required routinely (reserve for treatment failure, severe illness, or atypical features).';
+            } else if (is_complicated_cystitis || is_pyelonephritis || is_cauti) {
+                var cultureReasons = [];
+                if (status === 'male' || status === 'pregnant' || status === 'catheter_related') {
+                    cultureReasons.push('patient group (male/pregnant/catheter)');
+                }
+                if (recurrent_UTI) {
+                    cultureReasons.push('recurrent UTI history');
+                }
+                if (mdr_rf) {
+                    cultureReasons.push('MDR risk factors');
+                }
+                if (recent_ab_current) {
+                    cultureReasons.push('recent antibiotic use');
+                }
+                if (pmh_diabetes || pmh_immunocomp || pmh_kidney_stone || pmh_neurogenic) {
+                    cultureReasons.push('comorbidities / structural disease');
+                }
+                if (is_pyelonephritis) {
+                    cultureReasons.push('suspected pyelonephritis');
+                }
+                labRecommendations = 'U/A: REQUIRED. U/C: REQUIRED before starting antibiotics because of: ' + cultureReasons.join('; ') + '.';
+            }
+
+            // Differentials
+            if (vag_discharge || vag_itching || vag_dyspareunia) {
+                differentials.push('VAGINITIS suspected (discharge, itching, dyspareunia) - Perform pelvic exam + KOH/whiff tests.');
+            }
+            if (ureth_discharge || ureth_new_partner) {
+                differentials.push('URETHRITIS / STI suspected (discharge, new partner) - Examine for gonorrhea/chlamydia; test NAAT.');
+            }
+            if (status === 'male' && bph_symptoms) {
+                differentials.push('BPH or PROSTATITIS suspected (hesitancy, weak stream) - Check post-void residual, prostate exam.');
+            }
+            if (atyp_chronic_dysuria && typicalCount < 2) {
+                differentials.push('Consider non-infectious causes: Interstitial cystitis, overactive bladder, chronic prostatitis.');
+            }
+            if (!is_pyelonephritis && atyp_flank) {
+                differentials.push('Flank pain present without clear fever - rule out kidney stone (imaging if indicated).');
+            }
+
+            // Build results HTML
+            var html = '<div class="result-box diagnosis"><h3 class="text-xl font-semibold mb-4">DIAGNOSTIC CLASSIFICATION</h3>';
+            html += '<p class="text-lg mb-2"><span class="text-[var(--accent)]">' + classification + '</span></p>';
+            if (reasons.length > 0) {
+                html += '<p class="text-[var(--fg-muted)] mt-2">Reasons for complicated: ' + reasons.join('; ') + '</p>';
+            }
+            html += '</div>';
+
+            html += '<div class="result-box"><h4 class="font-semibold mb-3">Laboratory Work-up Recommendations</h4>';
+            html += '<p>' + labRecommendations + '</p>';
+            html += '</div>';
+
+            if (differentials.length > 0) {
+                html += '<div class="result-box warning"><h4 class="font-semibold mb-3">Important Differentials to Rule Out</h4><ul class="list-disc pl-5 space-y-2">';
+                for (var i = 0; i < differentials.length; i++) {
+                    html += '<li>' + differentials[i] + '</li>';
+                }
+                html += '</ul></div>';
+            }
+
+            html += '<div class="result-box"><h4 class="font-semibold mb-3">Summary</h4>';
+            html += '<p><strong>Patient:</strong> ' + status + ', ' + age + ' years old</p>';
+            html += '<p><strong>Typical UTI symptoms counted:</strong> ' + typicalCount + ' / 4</p>';
+            html += '<p><strong>Recurrent UTI:</strong> ' + (recurrent_UTI ? 'Yes' : 'No') + '</p>';
+            html += '<p><strong>MDR Risk Factors:</strong> ' + (mdr_rf ? 'Present' : 'Absent') + '</p>';
+            html += '<p><strong>Recent antibiotics for this episode:</strong> ' + (recent_ab_current ? 'Yes' : 'No') + '</p>';
+            html += '</div>';
+
+            showResults('uti1Results', html);
+            return false;
+        }
+
+        // ============================================
+        // UTI 2: MANAGEMENT PLAN
+        // ============================================
+        function runUTI2Management(e) {
+            e.preventDefault();
+
+            var status = getRadioValue('status');
+            var symptomatic = getRadioValue('symptomatic') === 'yes';
+            var uti_type = status === 'female' ? getRadioValue('uti_type') : 'complicated';
+            var recurrent_UTI = getRadioValue('recurrent_UTI') === 'yes';
+            var mdr_rf = getRadioValue('mdr_rf') === 'yes';
+            var recent_ab_episode = getRadioValue('recent_ab_episode') === 'yes';
+            var menopausal = getRadioValue('menopausal') === 'yes';
+            var cath_symptoms = getRadioValue('cath_symptoms') === 'yes';
+
+            var html = '';
+
+            // ========== MALE ==========
+            if (status === 'male') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">MALE PATIENT - ALWAYS CONSIDER COMPLICATED / PROSTATITIS</h4>';
+                html += '<ul class="list-disc pl-5 space-y-2">';
+                html += '<li>Required work-up: Urinalysis (U/A) + Urine Culture (U/C).</li>';
+                html += '<li>Imaging: Not needed for simple cystitis, but consider if recurrent, stones, or obstruction.</li>';
+                html += '<li>Empirical antibiotic therapy (7 days) while awaiting culture:';
+                html += '<ul class="list-disc pl-5 mt-2">';
+                html += '<li>First line: Nitrofurantoin 100 mg orally BID, OR TMP-SMX 160/800 mg orally BID (if local E. coli resistance less than 20% and no sulfa allergy).</li>';
+                html += '<li>If high MDR risk or recent FQ use: Fosfomycin 3 g single dose, OR Cephalexin 500 mg orally QID.</li>';
+                html += '</ul></li>';
+                html += '<li>Important: Always evaluate for acute/chronic bacterial prostatitis. If prostatitis suspected, treat longer (4-6 weeks) after culture results.</li>';
+                html += '</ul></div>';
+
+                if (recurrent_UTI) {
+                    html += '<div class="result-box"><h4 class="font-semibold mb-3">Recurrent UTI in Male</h4>';
+                    html += '<ul class="list-disc pl-5 space-y-2">';
+                    html += '<li>Repeat U/A + U/C.</li>';
+                    html += '<li>Check for prostatitis, bladder outlet obstruction, or kidney stones (imaging if indicated).</li>';
+                    html += '</ul></div>';
+                }
+            }
+
+            // ========== FEMALE - SIMPLE ==========
+            if (status === 'female' && uti_type === 'simple') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">FEMALE - UNCOMPLICATED CYSTITIS</h4>';
+                html += '<ul class="list-disc pl-5 space-y-2">';
+                html += '<li>Symptoms present - Treat empirically; NO routine U/A or U/C needed. (If you do a culture, treat based on symptoms regardless of result.)</li>';
+                html += '<li>First-line empirical regimens (choose ONE; 3-7 days total):';
+                html += '<ol class="list-decimal pl-5 mt-2">';
+                html += '<li>Nitrofurantoin 100 mg orally twice daily for 5 days, OR</li>';
+                html += '<li>TMP-SMX 160/800 mg orally twice daily for 3 days (only if local resistance less than 20% and no allergy), OR</li>';
+                html += '<li>Fosfomycin 3 g orally single dose (useful for recent AB use or MDR risk).</li>';
+                html += '</ol></li>';
+                html += '<li>No sonography needed in simple cystitis.</li>';
+                html += '<li>If symptoms persist or recur within 2 weeks, obtain U/C.</li>';
+                html += '</ul></div>';
+
+                if (recent_ab_episode) {
+                    html += '<div class="result-box warning"><h4 class="font-semibold mb-3">Recent Antibiotics Warning</h4>';
+                    html += '<p>Recent antibiotics for this episode - Resistance likely. Obtain U/C before next dose if possible; empirical choice: Fosfomycin or Nitrofurantoin (if not used recently).</p></div>';
+                }
+            }
+
+            // ========== FEMALE - COMPLICATED ==========
+            if (status === 'female' && uti_type === 'complicated') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">FEMALE - COMPLICATED CYSTITIS</h4>';
+                html += '<ul class="list-disc pl-5 space-y-2">';
+                html += '<li>Required: Urinalysis (U/A) to confirm pyuria + Urine Culture (U/C) before therapy (if possible).</li>';
+                html += '<li>Imaging (renal/bladder ultrasound): Indicated if pyelonephritis, obstruction, stones, or recurrent infections.</li>';
+                html += '<li>Empirical therapy (7 days) while awaiting culture:</li>';
+                html += '</ul>';
+
+                if (mdr_rf) {
+                    html += '<div class="sub-section mt-3"><p class="font-semibold">MDR risk present:</p>';
+                    html += '<ul class="list-disc pl-5 mt-2">';
+                    html += '<li>First choice: Nitrofurantoin 100 mg BID OR Fosfomycin 3 g single dose (if local susceptibility expected).</li>';
+                    html += '<li>If severe/systemic or no improvement: Use TMP-SMX or Cephalosporin (3rd gen) per local antibiogram.</li>';
+                    html += '<li>Avoid empirical fluoroquinolones if local resistance is high or if alternatives exist.</li>';
+                    html += '</ul></div>';
+                } else {
+                    html += '<div class="sub-section mt-3"><p class="font-semibold">No specific MDR risk:</p>';
+                    html += '<ul class="list-disc pl-5 mt-2">';
+                    html += '<li>TMP-SMX 160/800 mg BID for 7 days, OR</li>';
+                    html += '<li>Nitrofurantoin 100 mg BID for 7 days, OR</li>';
+                    html += '<li>Fosfomycin 3 g single dose.</li>';
+                    html += '</ul></div>';
+                }
+
+                html += '<p>If allergic to all above or no response after 48-72 h - tailor therapy to culture results.</p></div>';
+            }
+
+            // ========== PREGNANT ==========
+            if (status === 'pregnant') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">PREGNANT PATIENT - Treat ALL symptomatic UTIs; also treat asymptomatic bacteriuria.</h4>';
+                html += '<ul class="list-disc pl-5 space-y-2">';
+                html += '<li>Mandatory: U/A + U/C (to confirm eradication later).</li>';
+                html += '<li>Empirical therapy (7 days) - safe options in pregnancy:';
+                html += '<ul class="list-disc pl-5 mt-2">';
+                html += '<li>First line: Nitrofurantoin 100 mg orally twice daily (avoid at term if G6PD deficiency; generally safe in 2nd/3rd trimester).</li>';
+                html += '<li>Alternative: Cephalexin 500 mg orally four times daily, OR Fosfomycin 3 g single dose (safe, but limited data; acceptable).</li>';
+                html += '</ul></li>';
+                html += '<li>AVOID: TMP-SMX in the 1st and 3rd trimesters (folate antagonism), and ALL fluoroquinolones.</li>';
+                html += '<li>Follow-up: Repeat U/C 1-2 weeks after therapy to ensure eradication (critical to prevent pyelonephritis).</li>';
+                html += '</ul></div>';
+
+                if (mdr_rf) {
+                    html += '<div class="result-box warning"><p>MDR risk present: Choose Nitrofurantoin or Fosfomycin empirically; adjust by culture ASAP.</p></div>';
+                }
+            }
+
+            // ========== CATHETER-RELATED ==========
+            if (status === 'catheter_related') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">CATHETER-ASSOCIATED UTI (CAUTI)</h4>';
+
+                if (!cath_symptoms) {
+                    html += '<p class="text-[var(--warning)] font-semibold">Patient has a catheter but NO compatible symptoms - Likely asymptomatic bacteriuria.</p>';
+                    html += '<p>Do NOT treat. Remove or replace catheter only if obstructed/infected.</p>';
+                } else {
+                    html += '<ul class="list-disc pl-5 space-y-2">';
+                    html += '<li>Treat ONLY because patient is symptomatic (fever, suprapubic/CVA tenderness, etc.).</li>';
+                    html += '<li>Step 1: Replace or remove the catheter; obtain urine for U/A + U/C from the new catheter (not the bag).</li>';
+                    html += '<li>Empirical antibiotics (7 days) while awaiting culture:';
+                    html += '<ul class="list-disc pl-5 mt-2">';
+                    html += '<li>If no severe sepsis: Cephalexin 500 mg QID OR Fosfomycin 3 g single dose.</li>';
+                    html += '<li>If high MDR risk or recent hospitalization: Use broad-spectrum per local policy (e.g., Ceftriaxone), then de-escalate.</li>';
+                    html += '</ul></li>';
+                    html += '<li>Duration: Usually 7 days (shorter if Fosfomycin single dose proven effective).</li>';
+                    html += '<li>Do NOT treat asymptomatic bacteriuria in catheterized patients.</li>';
+                    html += '</ul>';
+                }
+                html += '</div>';
+            }
+
+            // ========== RECURRENT UTI (FEMALE) ==========
+            if (status === 'female' && recurrent_UTI) {
+                html += '<div class="result-box"><h4 class="font-semibold mb-3">RECURRENT UTI MANAGEMENT (Female)</h4>';
+                html += '<p class="font-semibold">1) Post-coital prophylaxis:</p>';
+                html += '<ul class="list-disc pl-5 mb-3"><li>Nitrofurantoin 50-100 mg OR TMP-SMX single dose taken after each sexual intercourse.</li></ul>';
+                html += '<p class="font-semibold">2) Self-start therapy:</p>';
+                html += '<ul class="list-disc pl-5 mb-3"><li>Keep a supply of Nitrofurantoin (or TMP-SMX) at home. At first symptom, start a 3-day course; if no response in 48 h, obtain U/C.</li></ul>';
+                html += '<p class="font-semibold">3) Continuous prophylaxis (for 6 months):</p>';
+                html += '<ul class="list-disc pl-5 mb-3"><li>Nitrofurantoin 50-100 mg nightly, OR TMP-SMX half-tablet nightly, OR Cephalexin 250 mg nightly.</li></ul>';
+                html += '<p class="font-semibold">4) Vaccine (if available):</p>';
+                html += '<ul class="list-disc pl-5 mb-3"><li>Oral E. coli vaccine (e.g., OM-89 / Uro-Vaxom) - 3 months course may reduce recurrence.</li></ul>';
+                html += '<p class="font-semibold">5) Behavioral:</p>';
+                html += '<ul class="list-disc pl-5"><li>Hydration, avoid spermicides/diaphragms, treat post-menopausal atrophy.</li></ul>';
+                html += '</div>';
+            }
+
+            // ========== MENOPAUSE ==========
+            if (status === 'female' && menopausal) {
+                html += '<div class="result-box"><h4 class="font-semibold mb-3">MENOPAUSE-RELATED VAGINAL ATROPHY (Contributes to UTIs)</h4>';
+                html += '<p class="font-semibold">Vaginal estrogen (restores mucosal barrier):</p>';
+                html += '<ul class="list-disc pl-5 mb-3">';
+                html += '<li>Week 1: Apply every night for 2 weeks, OR Then 2 nights per week for a total of 3 months.</li>';
+                html += '<li>(Examples: Estradiol 10 mcg vaginal tablet, or estriol cream - per local formulation.)</li>';
+                html += '</ul>';
+                html += '<p class="font-semibold">Non-hormonal:</p>';
+                html += '<ul class="list-disc pl-5"><li>Water-based lubricants, vaginal moisturizers.</li></ul>';
+                html += '<p>Treat concurrent UTI if present, then maintain estrogen to prevent recurrence.</p></div>';
+            }
+
+            // ========== WARNINGS ==========
+            html += '<div class="result-box warning"><h4 class="font-semibold mb-3">IMPORTANT WARNINGS FOR UA / UC INTERPRETATION</h4>';
+            html += '<ul class="list-disc pl-5 space-y-2">';
+            html += '<li>WBC and bacteria on UA alone are NOT definitive for UTI diagnosis - clinical correlation is essential.</li>';
+            html += '<li>Recent urinary instrumentation (catheter, surgery, cystoscopy): UA may show pyuria/bacteria without true infection. Interpret with caution; treat only if symptomatic.</li>';
+            html += '<li>Recent antibiotics (within 1-2 weeks): Urine culture may be negative despite active infection (suppressed). If high suspicion, repeat culture after stopping ABs or rely on clinical response.</li>';
+            html += '<li>Asymptomatic bacteriuria: Do NOT treat except in pregnancy or specific urologic procedures.</li>';
+            html += '</ul></div>';
+
+            showResults('uti2Results', html);
+            return false;
+        }
+
+        // ============================================
+        // UTI 3: UA/UC INTERPRETATION
+        // ============================================
+        function runUTI3Interpretation(e) {
+            e.preventDefault();
+
+            var status = getRadioValue('status');
+            var typ_symptoms = getRadioValue('typ_symptoms') === 'yes';
+            var cath_local_symptoms = getRadioValue('cath_local_symptoms') === 'yes';
+            var systemic_symptoms = getRadioValue('systemic_symptoms') === 'yes';
+            var recent_invasive_proc = getRadioValue('recent_invasive_proc') === 'yes';
+            var recent_antibiotics = getRadioValue('recent_antibiotics') === 'yes';
+            var recent_kidney_transplant = getRadioValue('recent_kidney_transplant') === 'yes';
+            var planned_urologic_proc = getRadioValue('planned_urologic_proc') === 'yes';
+
+            var ua_wbc = getInputValueInt('uti3_wbc');
+            var ua_nitrite = getRadioValue('ua_nitrite') === 'yes';
+            var ua_wbc_cast = getRadioValue('ua_wbc_cast') === 'yes';
+            var ua_rbc = getInputValueInt('uti3_rbc');
+
+            var uc_bacteria_count = getInputValueInt('uti3_cfu');
+            var uc_organism = getInputValue('uti3_organism').toLowerCase();
+
+            var html = '';
+
+            // ========== CRITICAL WARNINGS ==========
+            if (recent_invasive_proc || recent_antibiotics) {
+                html += '<div class="result-box warning"><h4 class="font-semibold mb-3">CRITICAL WARNINGS</h4>';
+                if (recent_invasive_proc) {
+                    html += '<p>WARNING: Recent urinary invasive procedure (surgery, catheter, etc.) - U/A is NOT interpretable.</p>';
+                }
+                if (recent_antibiotics) {
+                    html += '<p>WARNING: Recent antibiotic use - U/C may be falsely negative despite active infection.</p>';
+                }
+                html += '</div>';
+            }
+
+            // ========== U/A INTERPRETATION ==========
+            html += '<div class="result-box"><h4 class="font-semibold mb-3">U/A Interpretation (supportive, not diagnostic)</h4>';
+            if (!recent_invasive_proc) {
+                if (ua_wbc > 10) {
+                    html += '<p>WBC > 10 - U/A is positive (supportive of inflammation).</p>';
+                }
+                if (ua_nitrite) {
+                    html += '<p>Nitrite positive - U/A is 85% specific; bacteria likely Enterobacteriaceae.</p>';
+                }
+                if (ua_wbc_cast) {
+                    html += '<p>WBC casts present - Highly suggestive of pyelonephritis (upper-tract infection).</p>';
+                }
+                if (ua_rbc > 3) {
+                    html += '<p>RBC > 3 - Assess for UTI, kidney stone, trauma, or other pathology.</p>';
+                }
+                if (!(ua_wbc > 10) && !ua_nitrite && !ua_wbc_cast && !(ua_rbc > 3)) {
+                    html += '<p>U/A is essentially negative or non-specific.</p>';
+                }
+            } else {
+                html += '<p>U/A is NOT interpretable due to recent invasive procedure (inflammation/contamination expected).</p>';
+            }
+            html += '</div>';
+
+            // ========== U/C INTERPRETATION ==========
+            html += '<div class="result-box"><h4 class="font-semibold mb-3">U/C Interpretation (definitive for bacteriuria)</h4>';
+
+            var uc_significant = false;
+            var threshold = '';
+
+            if (status === 'pregnant') {
+                if (uc_bacteria_count >= 100) {
+                    uc_significant = true;
+                    threshold = '>= 100 CFU/mL is significant in pregnancy';
+                    if (uc_organism.indexOf('lactobacillus') !== -1) {
+                        html += '<p class="note-box">For Lactobacillus, the cutoff is higher (>= 100,000 CFU/mL) to consider true bacteriuria vs. contamination.</p>';
+                    }
+                } else {
+                    threshold = '< 100 CFU/mL is below threshold for pregnancy';
+                }
+            } else {
+                if (uc_bacteria_count >= 1000) {
+                    uc_significant = true;
+                    threshold = '>= 1000 CFU/mL is significant';
+                } else {
+                    threshold = '< 1000 CFU/mL is below diagnostic threshold';
+                }
+            }
+
+            if (uc_significant) {
+                html += '<p class="text-[var(--success)]">U/C is POSITIVE (' + threshold + ').</p>';
+            } else {
+                html += '<p>U/C is negative or inconclusive (colony count below diagnostic threshold).</p>';
+            }
+            html += '</div>';
+
+            // ========== CLINICAL DIAGNOSIS ==========
+            html += '<div class="result-box diagnosis"><h4 class="font-semibold mb-3">Clinical Diagnosis and Action</h4>';
+
+            var hasSymptoms = typ_symptoms || (status === 'catheter_related' && cath_local_symptoms);
+
+            if (hasSymptoms) {
+                html += '<p class="font-semibold">Patient has compatible symptoms - Evaluate as SYMPTOMATIC UTI.</p>';
+
+                if (uc_significant) {
+                    html += '<p class="text-[var(--success)]">U/C supports infection - TREAT based on antibiogram (or empirical if severe, then adjust).</p>';
+                    if (status === 'catheter_related') {
+                        html += '<p>(CAUTI confirmed - ensure catheter was replaced before sampling; treat symptomatic CAUTI.)</p>';
+                    }
+                } else {
+                    html += '<p class="text-[var(--warning)]">U/C is negative or low count despite symptoms.</p>';
+                    html += '<p>Consider: early infection, fastidious organism, recent antibiotics (false-negative UC), or non-infectious cause.</p>';
+                    html += '<p>If high clinical suspicion, repeat U/C or start empirical therapy while awaiting results.</p>';
+                }
+            } else {
+                html += '<p>Patient is asymptomatic (no typical UTI symptoms).</p>';
+
+                if (uc_bacteria_count >= 100000) {
+                    html += '<p>Asymptomatic Bacteriuria (AB) detected (>= 100,000 CFU/mL).</p>';
+                    html += '<p>General rule: DO NOT TREAT asymptomatic bacteriuria.</p>';
+                    html += '<p>EXCEPTIONS that REQUIRE TREATMENT based on antibiogram:</p>';
+
+                    var exceptions = [];
+                    if (status === 'pregnant') {
+                        exceptions.push('PREGNANT (always treat AB)');
+                    }
+                    if (recent_kidney_transplant) {
+                        exceptions.push('Recent kidney transplant (<= 6 months)');
+                    }
+                    if (planned_urologic_proc) {
+                        exceptions.push('Planned urologic procedure requiring sterile urine (not routine cystoscopy/sondage)');
+                    }
+
+                    if (exceptions.length > 0) {
+                        html += '<p class="text-[var(--success)]">This patient meets exception(s): ' + exceptions.join('; ') + '</p>';
+                        html += '<p>TREAT asymptomatic bacteriuria.</p>';
+                    } else {
+                        html += '<p class="text-[var(--danger)]">No exception applies - DO NOT TREAT.</p>';
+                    }
+                } else {
+                    html += '<p>No significant bacteriuria (>= 100,000 CFU/mL) - No action needed for AB.</p>';
+                }
+            }
+
+            // Catheter special case
+            if (status === 'catheter_related' && !cath_local_symptoms && systemic_symptoms) {
+                html += '<div class="divider"></div>';
+                html += '<p class="text-[var(--warning)]">Catheter present, NO local catheter symptoms, BUT systemic symptoms (fever, etc.).</p>';
+                if (uc_significant) {
+                    html += '<p>First, assess other possible infection sources (pneumonia, line infection, etc.) and perform sepsis workup if indicated.</p>';
+                    html += '<p>If no other source found, systemic symptoms may be due to UTI - Consider treating as CAUTI.</p>';
+                } else {
+                    html += '<p>U/C is negative/low - Systemic symptoms likely from another source; do not attribute to UTI without further evidence.</p>';
+                }
+            }
+
+            html += '</div>';
+
+            // ========== SUMMARY ==========
+            html += '<div class="result-box"><h4 class="font-semibold mb-3">Summary for Clinician</h4>';
+            html += '<p><strong>Status:</strong> ' + status + '</p>';
+            html += '<p><strong>Symptoms:</strong> ' + (hasSymptoms ? 'Present' : 'Absent') + '</p>';
+            html += '<p><strong>U/C significant:</strong> ' + (uc_significant ? 'Yes' : 'No') + ' (count: ' + uc_bacteria_count + ' CFU/mL)</p>';
+            if (status === 'pregnant') {
+                html += '<p class="text-[var(--accent)]">Remember: In pregnancy, even low counts (>= 100 CFU/mL) are significant; treat AB.</p>';
+            }
+            html += '<p class="text-[var(--fg-muted)]">Always correlate with clinical picture - UC is the gold standard for bacteriuria, but symptoms define treatment need.</p>';
+            html += '</div>';
+
+            showResults('uti3Results', html);
+            return false;
+        }
+
+        // ============================================
+        // UTI 4: EMPIRICAL ANTIBIOTIC THERAPY
+        // ============================================
+        function runUTI4Therapy(e) {
+            e.preventDefault();
+
+            var status = getRadioValue('status');
+            var uti_type = status === 'female' ? getRadioValue('uti_type') : 'complicated';
+            var mdr_rf = getRadioValue('mdr_rf') === 'yes';
+            var recent_ab = getRadioValue('recent_ab') === 'yes';
+            var severe_symptoms = getRadioValue('severe_symptoms') === 'yes';
+            var cath_high_mdr = getRadioValue('cath_high_mdr') === 'yes';
+            var trimester = getRadioValue('trimester');
+
+            var html = '';
+
+            // ========== MALE ==========
+            if (status === 'male') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">MALE - Empirical Antibiotic Therapy (7 days)</h4>';
+                html += '<p>Always consider prostatitis; may need longer treatment.</p>';
+                html += '<p class="font-semibold mt-3">First-line options:</p>';
+                html += '<ul class="list-disc pl-5">';
+                html += '<li>Nitrofurantoin 100 mg orally BID for 7 days</li>';
+                html += '<li>TMP-SMX 160/800 mg orally BID for 7 days (if local E. coli resistance less than 20% and no sulfa allergy)</li>';
+                html += '</ul>';
+                if (mdr_rf || recent_ab) {
+                    html += '<p class="font-semibold mt-3">If MDR risk or recent antibiotic use:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Fosfomycin 3 g single dose</li>';
+                    html += '<li>Cephalexin 500 mg orally QID for 7 days</li>';
+                    html += '</ul>';
+                }
+                html += '</div>';
+            }
+
+            // ========== FEMALE - SIMPLE ==========
+            if (status === 'female' && uti_type === 'simple') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">FEMALE - Uncomplicated Cystitis (3-7 days)</h4>';
+                html += '<p class="font-semibold">First-line regimens (choose ONE):</p>';
+                html += '<ol class="list-decimal pl-5">';
+                html += '<li>Nitrofurantoin 100 mg orally BID for 5 days</li>';
+                html += '<li>TMP-SMX 160/800 mg orally BID for 3 days (only if local resistance less than 20% and no allergy)</li>';
+                html += '<li>Fosfomycin 3 g orally single dose</li>';
+                html += '</ol>';
+                if (recent_ab) {
+                    html += '<p class="text-[var(--warning)] mt-3">Recent antibiotic use - prefer Fosfomycin or Nitrofurantoin (if not used recently).</p>';
+                }
+                html += '</div>';
+            }
+
+            // ========== FEMALE - COMPLICATED ==========
+            if (status === 'female' && uti_type === 'complicated') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">FEMALE - Complicated Cystitis (7 days)</h4>';
+                if (!mdr_rf && !recent_ab) {
+                    html += '<p class="font-semibold">No MDR risk:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>TMP-SMX 160/800 mg BID for 7 days</li>';
+                    html += '<li>Nitrofurantoin 100 mg BID for 7 days</li>';
+                    html += '<li>Fosfomycin 3 g single dose</li>';
+                    html += '</ul>';
+                } else {
+                    html += '<p class="font-semibold">MDR risk or recent antibiotic use:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Nitrofurantoin 100 mg BID for 7 days</li>';
+                    html += '<li>Fosfomycin 3 g single dose</li>';
+                    html += '</ul>';
+                    if (severe_symptoms) {
+                        html += '<p class="mt-3">If severe/systemic: Use TMP-SMX or Cephalosporin (3rd gen) per local antibiogram.</p>';
+                    }
+                }
+                html += '</div>';
+            }
+
+            // ========== PREGNANT ==========
+            if (status === 'pregnant') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">PREGNANT - Safe Antibiotic Options (7 days)</h4>';
+
+                if (trimester === 'first') {
+                    html += '<p class="text-[var(--warning)]">FIRST TRIMESTER - Avoid TMP-SMX and avoid oral fluconazole if treating candidiasis.</p>';
+                    html += '<p class="font-semibold mt-3">Safe options:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Nitrofurantoin 100 mg BID for 7 days (avoid at term)</li>';
+                    html += '<li>Cephalexin 500 mg QID for 7 days</li>';
+                    html += '<li>Fosfomycin 3 g single dose</li>';
+                    html += '</ul>';
+                } else if (trimester === 'second') {
+                    html += '<p>Second trimester - More options available.</p>';
+                    html += '<p class="font-semibold mt-3">Safe options:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Nitrofurantoin 100 mg BID for 7 days</li>';
+                    html += '<li>Cephalexin 500 mg QID for 7 days</li>';
+                    html += '<li>TMP-SMX 160/800 mg BID for 7 days (acceptable in 2nd trimester)</li>';
+                    html += '<li>Fosfomycin 3 g single dose</li>';
+                    html += '</ul>';
+                } else if (trimester === 'third') {
+                    html += '<p class="text-[var(--warning)]">THIRD TRIMESTER - Avoid TMP-SMX (kernicterus risk) and Nitrofurantoin near term (neonatal hemolysis risk).</p>';
+                    html += '<p class="font-semibold mt-3">Safe options:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Cephalexin 500 mg QID for 7 days</li>';
+                    html += '<li>Fosfomycin 3 g single dose</li>';
+                    html += '</ul>';
+                }
+
+                html += '<p class="mt-3 text-[var(--accent)]">AVOID all fluoroquinolones in pregnancy.</p>';
+                html += '<p class="mt-2">Mandatory: Test of Cure (U/C) 1-2 weeks after therapy.</p>';
+                html += '</div>';
+            }
+
+            // ========== CATHETER-RELATED ==========
+            if (status === 'catheter_related') {
+                html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">CAUTI - Empirical Antibiotic Therapy (7 days)</h4>';
+                html += '<p>Step 1: Replace or remove the catheter; obtain U/A + U/C from the new catheter.</p>';
+
+                if (!cath_high_mdr) {
+                    html += '<p class="font-semibold mt-3">No severe sepsis / low MDR risk:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Cephalexin 500 mg QID for 7 days</li>';
+                    html += '<li>Fosfomycin 3 g single dose</li>';
+                    html += '</ul>';
+                } else {
+                    html += '<p class="font-semibold mt-3">High MDR risk or recent hospitalization:</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Use broad-spectrum per local policy (e.g., Ceftriaxone)</li>';
+                    html += '<li>Then de-escalate based on culture results</li>';
+                    html += '</ul>';
+                }
+                html += '</div>';
+            }
+
+            // ========== GENERAL WARNINGS ==========
+            html += '<div class="result-box warning"><h4 class="font-semibold mb-3">General Warnings</h4>';
+            html += '<ul class="list-disc pl-5">';
+            html += '<li>Avoid fluoroquinolones as first-line if alternatives exist (IDSA recommendation).</li>';
+            html += '<li>Always adjust based on culture and sensitivity results when available.</li>';
+            html += '<li>Consider local antibiogram patterns when selecting empiric therapy.</li>';
+            html += '</ul></div>';
+
+            showResults('uti4Results', html);
+            return false;
+        }
+
+        // ============================================
+        // UTI 5: FOLLOW-UP
+        // ============================================
+        function runUTI5Followup(e) {
+            e.preventDefault();
+
+            var status = getRadioValue('status');
+            var response = getRadioValue('response');
+            var toc = getCheckboxValue('uti5_toc');
+            var recurrent_uti = getRadioValue('recurrent_uti') === 'yes';
+            var preg_rec_uti = getRadioValue('preg_rec_uti') === 'yes';
+            var trimester = getRadioValue('trimester');
+
+            var html = '';
+
+            // ========== FEMALE ==========
+            if (status === 'female') {
+                if (response === '1') {
+                    html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">FEMALE - Symptoms Resolved in 48-72 h</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>No routine U/A or U/C needed.</li>';
+                    html += '<li>Advise patient to return if symptoms recur.</li>';
+                    html += '<li>If recurrent UTIs (>= 2 in 6 months or >= 3 in 12 months), consider prophylaxis or post-coital AB.</li>';
+                    html += '</ul></div>';
+                } else if (response === '2') {
+                    html += '<div class="result-box warning"><h4 class="font-semibold mb-3">FEMALE - No Improvement After 48-72 h</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Obtain Urinalysis (U/A) AND Urine Culture (U/C) NOW - before next dose if possible.</li>';
+                    html += '<li>If culture shows resistant organism or different pathogen: Treat per antibiogram for 7 days (complicated cystitis regimen).</li>';
+                    html += '<li>If culture negative but high suspicion persists: Re-evaluate diagnosis (vaginitis, STI, interstitial cystitis, overactive bladder).</li>';
+                    html += '<li>If severe, febrile, or suspected upper-tract infection: Obtain renal ultrasound to rule out obstruction, stones, or abscess.</li>';
+                    html += '</ul></div>';
+                } else if (response === '3') {
+                    html += '<div class="result-box"><h4 class="font-semibold mb-3">FEMALE - Symptoms Returned 1-2 Weeks After Therapy</h4>';
+                    html += '<p>Obtain U/A and U/C NOW.</p>';
+                    html += '<p class="font-semibold mt-3">If SAME organism (relapse):</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Treat per antibiogram (7 days) AND obtain renal/bladder ultrasound to rule out stones, obstruction, or structural abnormality.</li>';
+                    html += '</ul>';
+                    html += '<p class="font-semibold mt-3">If NEW organism (reinfection):</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Treat as uncomplicated cystitis (short course).</li>';
+                    html += '<li>If recurrent (>= 2 in 6 months or >= 3 in 12 months), initiate prophylaxis (post-coital or continuous).</li>';
+                    html += '</ul>';
+                    html += '<p>If culture shows resistance to prior drug, choose alternative per antibiogram.</p></div>';
+                }
+            }
+
+            // ========== MALE ==========
+            if (status === 'male') {
+                if (response === '1') {
+                    html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">MALE - Symptoms Resolved in 48-72 h</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>No routine U/A or U/C needed unless complicated (e.g., known stones, prostatitis).</li>';
+                    html += '<li>Advise to return if symptoms recur.</li>';
+                    html += '</ul></div>';
+                } else if (response === '2') {
+                    html += '<div class="result-box warning"><h4 class="font-semibold mb-3">MALE - No Improvement After 48-72 h</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Obtain U/A and U/C NOW.</li>';
+                    html += '<li>Re-evaluate for prostatitis (digital rectal exam, perineal pain, prolonged symptoms).';
+                    html += '<ul class="list-disc pl-5 mt-1">';
+                    html += '<li>If acute bacterial prostatitis: Treat 4-6 weeks (culture-directed).</li>';
+                    html += '<li>If chronic prostatitis: Consider 4-6 week course + alpha-blockers if indicated.</li>';
+                    html += '</ul></li>';
+                    html += '<li>If no improvement despite appropriate therapy: Obtain renal ultrasound and post-void residual to rule out obstruction, stones, or abscess.</li>';
+                    html += '</ul></div>';
+                } else if (response === '3') {
+                    html += '<div class="result-box"><h4 class="font-semibold mb-3">MALE - Symptoms Returned 1-2 Weeks After Therapy</h4>';
+                    html += '<p>Obtain U/A and U/C NOW.</p>';
+                    html += '<p>Check for prostatitis or complicated UTI.</p>';
+                    html += '<p class="font-semibold mt-3">If relapse (same organism):</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Treat per antibiogram for 7 days (or 4-6 weeks if prostatitis) AND obtain imaging (renal ultrasound) to exclude obstruction or abscess.</li>';
+                    html += '</ul>';
+                    html += '<p class="font-semibold mt-3">If reinfection (new organism):</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Treat as uncomplicated cystitis (7 days) or evaluate for underlying cause (BPH, stones).</li>';
+                    html += '</ul>';
+                    html += '<p>Consider urology referral if recurrent or structural issue suspected.</p></div>';
+                }
+            }
+
+            // ========== PREGNANT ==========
+            if (status === 'pregnant') {
+                if (toc) {
+                    html += '<div class="result-box diagnosis"><h4 class="font-semibold mb-3">PREGNANT - Routine Test of Cure (TOC) 1 Week After Last Antibiotic Dose</h4>';
+                    html += '<p class="text-[var(--accent)]">YOU MUST obtain U/A and U/C even if the patient is symptom-free.</p>';
+                    html += '<p>(This prevents undiagnosed bacteriuria leading to pyelonephritis and preterm birth.)</p>';
+                    html += '<p class="font-semibold mt-3">If TOC is POSITIVE (bacteriuria persists):</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Treat again based on antibiogram (7 days).</li>';
+                    html += '<li>If antibiogram shows susceptibility to the previous drug, you MAY use it again, but ensure a FULL 7-day course (short courses are insufficient in pregnancy).</li>';
+                    html += '<li>If resistance: Choose an alternative safe in pregnancy per antibiogram.</li>';
+                    html += '</ul></div>';
+                } else if (response === '1') {
+                    html += '<div class="result-box warning"><h4 class="font-semibold mb-3">PREGNANT - Symptoms Resolved, But TOC NOT Yet Done</h4>';
+                    html += '<p class="text-[var(--warning)]">Even though symptoms are gone, YOU MUST obtain a Test of Cure (U/A + U/C) 1 week after the last antibiotic dose.</p>';
+                    html += '<p>(Skipping TOC risks pyelonephritis and adverse pregnancy outcomes.)</p></div>';
+                } else if (response === '2') {
+                    html += '<div class="result-box warning"><h4 class="font-semibold mb-3">PREGNANT - No Improvement After 48-72 h</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Obtain U/A and U/C NOW (before next dose if possible).</li>';
+                    html += '<li>Treat per antibiogram using pregnancy-safe drugs (avoid TMP-SMX in 1st/3rd trimester, avoid fluoroquinolones, avoid nitrofurantoin near term).</li>';
+                    html += '<li>If severe or febrile - evaluate for pyelonephritis (imaging: renal ultrasound).</li>';
+                    html += '<li>After treatment, obtain TOC 1 week later to confirm eradication.</li>';
+                    html += '</ul></div>';
+                } else if (response === '3') {
+                    html += '<div class="result-box"><h4 class="font-semibold mb-3">PREGNANT - Symptoms Returned After Therapy</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Obtain U/A and U/C NOW.</li>';
+                    html += '<li>Treat per antibiogram (7 days) with pregnancy-safe agents.</li>';
+                    html += '<li>After treatment, obtain TOC 1 week later.</li>';
+                    html += '<li>If recurrent UTIs in pregnancy - initiate PROPHYLAXIS.</li>';
+                    html += '</ul></div>';
+                }
+
+                // Prophylaxis in pregnancy
+                if (preg_rec_uti || (response === '3')) {
+                    html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">PROPHYLAXIS IN PREGNANCY (if >= 2 UTIs in current pregnancy)</h4>';
+                    html += '<p>Goal: Prevent pyelonephritis and preterm birth; continue until delivery.</p>';
+                    html += '<p class="font-semibold mt-3">Safe options (choose ONE, nightly dosing):</p>';
+                    html += '<ol class="list-decimal pl-5">';
+                    html += '<li>Nitrofurantoin 100 mg PO nightly - preferred in 2nd/3rd trimester; Avoid in 1st trimester and near term.</li>';
+                    html += '<li>TMP-SMX 480 mg (half of 960 mg tablet) PO nightly - use ONLY in 2nd/3rd trimester; Avoid in 1st trimester and near term.</li>';
+                    html += '<li>Cephalexin 250-500 mg PO nightly - safe alternative if above not suitable.</li>';
+                    html += '<li>Fosfomycin 3 g PO weekly - limited data but acceptable if other options contraindicated.</li>';
+                    html += '</ol>';
+                    html += '<p class="mt-3">Re-evaluate monthly; stop if no further UTIs after delivery.</p></div>';
+                }
+            }
+
+            // ========== CATHETER-RELATED ==========
+            if (status === 'catheter_related') {
+                if (response === '1') {
+                    html += '<div class="result-box treatment"><h4 class="font-semibold mb-3">CAUTI - Symptoms Resolved in 48-72 h</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>No routine U/A or U/C needed if clinical response is clear.</li>';
+                    html += '<li>Ensure catheter is removed or replaced only if new infection suspected.</li>';
+                    html += '</ul></div>';
+                } else if (response === '2') {
+                    html += '<div class="result-box warning"><h4 class="font-semibold mb-3">CAUTI - No Improvement After 48-72 h</h4>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Obtain U/A and U/C NOW (fresh sample from new catheter or clean catch after removal).</li>';
+                    html += '<li>If culture positive and patient still symptomatic: Treat per antibiogram for 7 days (complicated cystitis regimen). Consider replacing the catheter before sampling/treatment.</li>';
+                    html += '<li>If no improvement despite appropriate therapy: Obtain renal ultrasound to rule out obstruction, stones, or abscess. Evaluate for non-UTI causes (e.g., catheter-associated pain, bladder spasm).</li>';
+                    html += '</ul></div>';
+                } else if (response === '3') {
+                    html += '<div class="result-box"><h4 class="font-semibold mb-3">CAUTI - Symptoms Returned After Therapy</h4>';
+                    html += '<p>Obtain U/A and U/C NOW.</p>';
+                    html += '<p class="font-semibold mt-3">If relapse (same organism):</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Treat per antibiogram (7 days) AND obtain renal ultrasound to exclude obstruction.</li>';
+                    html += '</ul>';
+                    html += '<p class="font-semibold mt-3">If reinfection (new organism):</p>';
+                    html += '<ul class="list-disc pl-5">';
+                    html += '<li>Treat as complicated cystitis; consider catheter removal/replacement and aseptic technique.</li>';
+                    html += '</ul>';
+                    html += '<p>If recurrent CAUTIs, minimize catheter use, maintain closed system, consider alternatives.</p></div>';
+                }
+            }
+
+            // ========== RECURRENT UTI (NON-PREGNANT FEMALE) ==========
+            if (status === 'female' && recurrent_uti && response !== '2') {
+                html += '<div class="result-box"><h4 class="font-semibold mb-3">RECURRENT UTI PROPHYLAXIS (Female)</h4>';
+                html += '<p class="font-semibold">1) Post-coital prophylaxis:</p>';
+                html += '<ul class="list-disc pl-5 mb-2"><li>Nitrofurantoin 50-100 mg OR TMP-SMX single dose after each intercourse.</li></ul>';
+                html += '<p class="font-semibold">2) Continuous prophylaxis (6 months):</p>';
+                html += '<ul class="list-disc pl-5"><li>Nitrofurantoin 50-100 mg nightly, OR TMP-SMX half-tablet nightly, OR Cephalexin 250 mg nightly.</li></ul></div>';
+            }
+
+            // ========== FINAL NOTE ==========
+            html += '<div class="result-box"><p class="text-[var(--fg-muted)]">Always correlate clinical response with lab results - do not treat asymptomatic bacteriuria (except in pregnancy).</p></div>';
+
+            showResults('uti5Results', html);
+            return false;
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            setupConditionalFields();
+
+            // Keyboard navigation for cards
+            document.querySelectorAll('.card-nav').forEach(function(card) {
+                card.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

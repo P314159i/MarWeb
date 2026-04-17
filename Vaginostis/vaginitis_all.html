@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vaginitis Clinical Tool</title>
+<style>
+:root{
+  --pink:#db2777;--pink-l:#fce7f3;--pink-d:#831843;
+  --purple:#7c3aed;--purple-l:#ede9fe;
+  --blue:#2563eb;--blue-l:#dbeafe;--blue-d:#1e3a5f;
+  --green:#16a34a;--green-l:#d1fae5;
+  --red:#dc2626;--red-l:#fee2e2;
+  --yellow:#ca8a04;--yellow-l:#fef9c3;
+  --orange:#ea580c;--orange-l:#ffedd5;
+  --gray:#6b7280;--gray-l:#f9fafb;
+  --border:#e5e7eb;--r:14px;
+  --sh:0 4px 28px rgba(0,0,0,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:linear-gradient(135deg,#fdf2f8 0,#faf5ff 50%,#eff6ff 100%);
+  min-height:100vh;color:#1f2937}
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+
+/* LANDING */
+#landing.active{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:40px 20px}
+.land-hdr{text-align:center;margin-bottom:40px}
+.land-hdr h1{font-size:2rem;color:var(--pink-d);margin-bottom:8px}
+.land-hdr p{color:var(--gray);font-size:.95rem}
+.land-badge{display:inline-block;margin-top:10px;background:var(--pink-l);
+  color:var(--pink);padding:4px 14px;border-radius:99px;font-size:.78rem;font-weight:700}
+.cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;max-width:920px}
+.card-btn{background:#fff;border-radius:18px;box-shadow:var(--sh);
+  padding:32px 28px;cursor:pointer;border:2px solid transparent;
+  transition:all .2s;text-align:center;width:200px}
+.card-btn:hover{border-color:var(--pink);transform:translateY(-3px)}
+.card-btn .cb-icon{font-size:2.6rem;margin-bottom:12px}
+.card-btn h2{font-size:1.05rem;color:var(--pink-d);margin-bottom:6px}
+.card-btn p{font-size:.78rem;color:var(--gray);line-height:1.5}
+
+/* SHARED */
+.inner{max-width:740px;margin:0 auto;padding:24px 16px 80px}
+.back-bar{margin-bottom:18px}
+.back-bar button{background:#fff;border:2px solid var(--border);border-radius:10px;
+  padding:10px 20px;cursor:pointer;color:var(--gray);font-weight:600;font-size:.9rem;transition:all .18s}
+.back-bar button:hover{border-color:var(--pink);color:var(--pink)}
+.tool-hdr{text-align:center;padding:28px 24px 20px;background:#fff;
+  border-radius:var(--r);box-shadow:var(--sh);margin-bottom:20px;border-top:5px solid var(--pink)}
+.tool-hdr h1{font-size:1.45rem;color:var(--pink-d);margin-bottom:5px}
+.tool-hdr p{color:var(--gray);font-size:.88rem}
+.badge{display:inline-block;margin-top:8px;background:var(--pink-l);
+  color:var(--pink);padding:4px 14px;border-radius:99px;font-size:.76rem;font-weight:700}
+
+/* PROGRESS */
+.prog-wrap{margin-bottom:20px}
+.prog-top{display:flex;justify-content:space-between;font-size:.8rem;color:var(--gray);margin-bottom:6px}
+.prog-track{height:9px;background:var(--border);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple));
+  border-radius:99px;transition:width .4s ease}
+.step-dots{display:flex;justify-content:center;gap:8px;margin-top:10px}
+.step-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:.75rem;font-weight:700;border:2px solid var(--border);
+  background:#fff;color:var(--gray);transition:all .3s}
+.step-dot.done{background:var(--pink);border-color:var(--pink);color:#fff}
+.step-dot.active{background:#fff;border-color:var(--pink);color:var(--pink)}
+
+/* CARD */
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:20px}
+.card-hdr{padding:14px 22px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.card-hdr .icon{font-size:1.35rem}
+.card-hdr .sec-title{font-size:1rem;font-weight:700;color:var(--pink-d)}
+.card-hdr .sec-sub{font-size:.78rem;color:var(--gray);margin-top:1px}
+.card-body{padding:22px}
+.field{margin-bottom:18px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:.9rem;font-weight:600;color:#374151;margin-bottom:8px}
+.field .hint{font-size:.78rem;color:var(--gray);margin-bottom:6px;font-style:italic}
+.toggle-grp{display:flex;gap:8px}
+.toggle-btn{flex:1;padding:10px 6px;border:2px solid var(--border);border-radius:9px;
+  background:#fff;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--gray);
+  transition:all .18s;text-align:center}
+.toggle-btn:hover{border-color:var(--pink);color:var(--pink)}
+.toggle-btn.sel-yes{background:var(--green);border-color:var(--green);color:#fff}
+.toggle-btn.sel-no{background:#f3f4f6;border-color:#d1d5db;color:#374151}
+.inp{width:100%;padding:10px 14px;border:2px solid var(--border);border-radius:9px;
+  font-size:.92rem;outline:none;transition:border .2s;color:#1f2937;background:#fff}
+.inp:focus{border-color:var(--pink);box-shadow:0 0 0 3px var(--pink-l)}
+select.inp{appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.nav{display:flex;gap:12px;margin-top:24px}
+.btn-back{padding:13px 22px;border:2px solid var(--border);border-radius:10px;
+  background:#fff;font-size:.95rem;font-weight:600;cursor:pointer;color:var(--gray);transition:all .18s}
+.btn-back:hover{border-color:var(--pink);color:var(--pink)}
+.btn-back{padding:9px 20px;border:none;border-radius:10px;
+  background:#f3e8f9;color:var(--purple);font-size:.9rem;font-weight:700;cursor:pointer;
+  transition:opacity .18s;margin-bottom:14px;}
+.btn-back:hover{opacity:.8}
+.btn-next{flex:1;padding:13px 22px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:#fff;font-size:.97rem;font-weight:700;cursor:pointer;transition:opacity .18s,transform .14s}
+.btn-next:hover{opacity:.92;transform:translateY(-1px)}
+.btn-restart{display:block;width:100%;margin-top:18px;padding:14px;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:#fff;border:none;border-radius:10px;font-size:.97rem;font-weight:700;cursor:pointer}
+
+/* RESULTS / DIAGNOSIS */
+.diag-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:16px}
+.diag-hdr{padding:18px 22px;display:flex;align-items:center;gap:14px}
+.diag-hdr .d-icon{font-size:1.8rem;flex-shrink:0}
+.diag-hdr .d-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:3px}
+.diag-hdr h3{font-size:1.1rem;font-weight:800;line-height:1.3}
+.diag-body{padding:16px 22px;background:#fff}
+.diag-body ul{list-style:none}
+.diag-body li{padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem;display:flex;gap:10px;align-items:flex-start}
+.diag-body li:last-child{border-bottom:none}
+.diag-body li::before{content:"→";font-weight:700;flex-shrink:0}
+.conf{display:inline-block;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;margin-left:8px;vertical-align:middle}
+.conf-high{background:var(--red-l);color:var(--red)}
+.conf-likely{background:var(--orange-l);color:var(--orange)}
+.conf-possible{background:var(--yellow-l);color:var(--yellow)}
+.conf-confirmed{background:var(--green-l);color:var(--green)}
+.sum-table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:10px}
+.sum-table th{text-align:left;padding:8px 10px;background:var(--gray-l);color:var(--gray);font-weight:700;font-size:.75rem;text-transform:uppercase}
+.sum-table td{padding:9px 10px;border-bottom:1px solid var(--border)}
+.sum-table tr:last-child td{border-bottom:none}
+.no-diag{padding:20px;background:var(--yellow-l);border-radius:10px;border-left:4px solid var(--yellow);color:#713f12;font-size:.92rem}
+.divider{display:flex;align-items:center;gap:10px;margin-bottom:16px;
+  font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gray)}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* TREATMENT RESULTS */
+.tx-block{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px}
+.tx-block-hdr{padding:16px 22px;display:flex;align-items:center;gap:10px}
+.tx-block-hdr .t-icon{font-size:1.4rem}
+.tx-block-hdr .t-title{font-size:1rem;font-weight:700}
+.tx-block-hdr .t-sub{font-size:.78rem;opacity:.8;margin-top:2px}
+.tx-block-body{padding:4px 22px 18px}
+.tx-block-body ul{list-style:none}
+.tx-block-body li{padding:9px 0;border-bottom:1px solid var(--border);font-size:.9rem;
+  display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.tx-block-body li:last-child{border-bottom:none}
+.tx-block-body li::before{content:"→";font-weight:700;flex-shrink:0;color:var(--pink)}
+.tx-alert{padding:12px 16px;border-radius:10px;margin:10px 0;font-size:.9rem;line-height:1.5}
+.tx-alert.warn{background:var(--yellow-l);border-left:4px solid var(--yellow);color:#713f12}
+.tx-alert.info{background:var(--blue-l);border-left:4px solid var(--blue);color:#1e3a5f}
+.tx-alert.danger{background:var(--red-l);border-left:4px solid var(--red);color:#7f1d1d}
+.tx-alert.success{background:var(--green-l);border-left:4px solid var(--green);color:#14532d}
+
+/* PREVENTION */
+.prev-option{padding:14px 18px;border:2px solid var(--border);border-radius:12px;
+  cursor:pointer;margin-bottom:10px;transition:all .18s;display:flex;align-items:center;gap:12px;
+  background:#fff;font-size:.95rem;font-weight:600;color:#374151}
+.prev-option:hover,.prev-option.selected{border-color:var(--pink);color:var(--pink);background:var(--pink-l)}
+.prev-option .p-icon{font-size:1.4rem}
+.advice-section{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px}
+.advice-hdr{padding:16px 22px;font-size:1rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.advice-body{padding:0 22px 18px}
+.advice-body ul{list-style:none}
+.advice-body li{padding:9px 0;border-bottom:1px solid var(--border);font-size:.9rem;
+  display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.advice-body li:last-child{border-bottom:none}
+.advice-body li::before{content:"✓";color:var(--green);font-weight:700;flex-shrink:0}
+.general-section{background:var(--gray-l);border-radius:var(--r);padding:20px 22px;
+  margin-top:16px;border:1px solid var(--border)}
+.general-section h3{font-size:.9rem;font-weight:700;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+
+/* EDUCATION */
+.edu-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.edu-tab{padding:10px 18px;border:2px solid var(--border);border-radius:99px;
+  cursor:pointer;font-size:.88rem;font-weight:600;color:var(--gray);background:#fff;transition:all .18s}
+.edu-tab:hover,.edu-tab.active{border-color:var(--pink);color:var(--pink);background:var(--pink-l)}
+.edu-content{display:none}
+.edu-content.active{display:block}
+.edu-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px}
+.edu-card-hdr{padding:18px 22px;display:flex;align-items:center;gap:12px}
+.edu-card-hdr .e-icon{font-size:1.8rem}
+.edu-card-hdr h2{font-size:1.2rem;font-weight:800;color:#fff}
+.edu-card-hdr p{font-size:.82rem;color:rgba(255,255,255,.85);margin-top:3px}
+.edu-card-body{padding:20px 22px}
+.edu-section{margin-bottom:18px}
+.edu-section h4{font-size:.85rem;font-weight:700;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;
+  padding-bottom:6px;border-bottom:1px solid var(--border)}
+.edu-section ul{list-style:none}
+.edu-section li{padding:6px 0;font-size:.9rem;display:flex;gap:8px;
+  border-bottom:1px solid var(--border);line-height:1.5}
+.edu-section li:last-child{border-bottom:none}
+.edu-section li::before{content:"•";color:var(--pink);font-weight:700;flex-shrink:0}
+
+@media(max-width:560px){
+  .cards{flex-direction:column;align-items:center}
+  .card-btn{width:100%;max-width:320px}
+  .toggle-btn{font-size:.8rem;padding:9px 4px}
+  .btn-next,.btn-back{padding:11px 16px;font-size:.9rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LANDING ==================== -->
+<div id="landing" class="page active">
+  <div class="land-hdr">
+    <div style="font-size:2.5rem;margin-bottom:10px">🏥</div>
+    <h1>Vaginitis Clinical Tool</h1>
+    <p>UpToDate-Based Clinical Decision Support</p>
+    <span class="land-badge">For Healthcare Providers</span>
+  </div>
+  <div class="cards">
+    <div class="card-btn" onclick="showPage('diag')">
+      <div class="cb-icon">🔬</div>
+      <h2>Diagnosis</h2>
+      <p>Step-by-step diagnostic assistant with Amsel criteria and microscopy</p>
+    </div>
+    <div class="card-btn" onclick="showPage('treat')">
+      <div class="cb-icon">💊</div>
+      <h2>Treatment</h2>
+      <p>Tailored treatment protocols based on diagnosis, pregnancy, and modifiers</p>
+    </div>
+    <div class="card-btn" onclick="showPage('prev')">
+      <div class="cb-icon">🛡️</div>
+      <h2>Prevention</h2>
+      <p>Patient-specific prevention advice by vaginitis type and host factors</p>
+    </div>
+    <div class="card-btn" onclick="showPage('edu')">
+      <div class="cb-icon">📚</div>
+      <h2>Education</h2>
+      <p>Condition overviews, pathophysiology, and quick reference summaries</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== DIAGNOSIS PAGE ==================== -->
+<div id="diag" class="page">
+<div class="inner">
+  <div class="back-bar"><button onclick="showPage('landing')">← Back to Home</button></div>
+  <div class="tool-hdr">
+    <div style="font-size:2rem;margin-bottom:6px">🔬</div>
+    <h1>Vaginitis Diagnostic Assistant</h1>
+    <p>UpToDate-Based Step-by-Step Doctor Input Tool</p>
+    <span class="badge">Clinical Decision Support</span>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-top"><span id="d-sec-label">Section 1 of 5</span><span id="d-prog-pct">0%</span></div>
+    <div class="prog-track"><div class="prog-fill" id="d-prog-fill" style="width:0"></div></div>
+    <div class="step-dots" id="d-step-dots"></div>
+  </div>
+  <div id="d-app"></div>
+</div>
+</div>
+
+<!-- ==================== TREATMENT PAGE ==================== -->
+<div id="treat" class="page">
+<div class="inner">
+  <div class="back-bar"><button onclick="showPage('landing')">← Back to Home</button></div>
+  <div class="tool-hdr">
+    <div style="font-size:2rem;margin-bottom:6px">💊</div>
+    <h1>Vaginitis Treatment Protocol</h1>
+    <p>UpToDate-Based Treatment Choices — Doctor Assistant</p>
+    <span class="badge">Clinical Decision Support</span>
+  </div>
+  <div id="t-app"></div>
+</div>
+</div>
+
+<!-- ==================== PREVENTION PAGE ==================== -->
+<div id="prev" class="page">
+<div class="inner">
+  <div class="back-bar"><button onclick="showPage('landing')">← Back to Home</button></div>
+  <div class="tool-hdr">
+    <div style="font-size:2rem;margin-bottom:6px">🛡️</div>
+    <h1>Vaginitis Prevention Education</h1>
+    <p>UpToDate-Based Prevention Advice for Patients</p>
+    <span class="badge">Patient Education Tool</span>
+  </div>
+  <div id="p-app"></div>
+</div>
+</div>
+
+<!-- ==================== EDUCATION PAGE ==================== -->
+<div id="edu" class="page">
+<div class="inner">
+  <div class="back-bar"><button onclick="showPage('landing')">← Back to Home</button></div>
+  <div class="tool-hdr">
+    <div style="font-size:2rem;margin-bottom:6px">📚</div>
+    <h1>Vaginitis Educational Reference</h1>
+    <p>Condition overviews, pathophysiology, and treatment summaries</p>
+    <span class="badge">Clinical Reference</span>
+  </div>
+  <div class="edu-tabs">
+    <button class="edu-tab active" onclick="showEduTab('bv',this)">Bacterial Vaginosis</button>
+    <button class="edu-tab" onclick="showEduTab('vvc',this)">Candidiasis (VVC)</button>
+    <button class="edu-tab" onclick="showEduTab('trich',this)">Trichomoniasis</button>
+    <button class="edu-tab" onclick="showEduTab('gsm',this)">Atrophic Vaginitis / GSM</button>
+  </div>
+  <div class="edu-content active" id="edu-bv">
+    <div class="edu-card">
+      <div class="edu-card-hdr" style="background:linear-gradient(135deg,#2563eb,#1e3a5f)">
+        <div class="e-icon">🦠</div><div><h2>Bacterial Vaginosis (BV)</h2><p>Polymicrobial dysbiosis of vaginal flora</p></div>
+      </div>
+      <div class="edu-card-body">
+        <div class="edu-section"><h4>Overview</h4><ul>
+          <li>Replacement of normal Lactobacillus flora with anaerobes (Gardnerella, Prevotella, Mobiluncus)</li>
+          <li>Most common vaginal condition in women of reproductive age</li>
+          <li>Not a classic STI, but sexual activity is a risk factor</li>
+          <li>Can be asymptomatic; always treat in pregnancy</li>
+        </ul></div>
+        <div class="edu-section"><h4>Key Symptoms</h4><ul>
+          <li>Malodorous fishy vaginal odor (worse after intercourse)</li>
+          <li>Thin, homogeneous gray-white discharge</li>
+          <li>Minimal or no itching (distinguishes from candidiasis)</li>
+          <li>Vaginal pH &gt; 4.5</li>
+        </ul></div>
+        <div class="edu-section"><h4>Amsel Criteria (≥3 of 4 = BV)</h4><ul>
+          <li>Thin, homogeneous vaginal discharge</li>
+          <li>Vaginal pH &gt; 4.5</li>
+          <li>Positive whiff test (amine odor with KOH)</li>
+          <li>Clue cells &gt;20% on wet mount</li>
+        </ul></div>
+        <div class="edu-section"><h4>First-Line Treatment</h4><ul>
+          <li>Metronidazole 500 mg PO BID × 7 days</li>
+          <li>Metronidazole 0.75% gel intravaginally × 5 days</li>
+          <li>Clindamycin 2% cream intravaginally × 7 days</li>
+          <li>Tinidazole 1000 mg PO daily × 5 days (alternative)</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="edu-content" id="edu-vvc">
+    <div class="edu-card">
+      <div class="edu-card-hdr" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">
+        <div class="e-icon">🍄</div><div><h2>Vulvovaginal Candidiasis (VVC)</h2><p>Candida overgrowth of vaginal epithelium</p></div>
+      </div>
+      <div class="edu-card-body">
+        <div class="edu-section"><h4>Overview</h4><ul>
+          <li>Caused primarily by Candida albicans; non-albicans in recurrent/resistant cases</li>
+          <li>Disruption of normal flora allows Candida overgrowth</li>
+          <li>Classified as uncomplicated vs complicated (recurrent, severe, non-albicans, immunocompromised)</li>
+        </ul></div>
+        <div class="edu-section"><h4>Key Symptoms</h4><ul>
+          <li>Intense vaginal and vulvar itching (hallmark)</li>
+          <li>Thick, white, cottage-cheese-like discharge</li>
+          <li>Vaginal burning, dyspareunia, dysuria</li>
+          <li>pH typically ≤ 4.5 (normal)</li>
+        </ul></div>
+        <div class="edu-section"><h4>Risk Factors</h4><ul>
+          <li>Recent/prolonged antibiotic use</li>
+          <li>Diabetes mellitus (elevated glucose feeds Candida)</li>
+          <li>Immunocompromised state (HIV, chemotherapy, steroids)</li>
+          <li>Pregnancy, high-dose estrogen OCP use</li>
+        </ul></div>
+        <div class="edu-section"><h4>First-Line Treatment</h4><ul>
+          <li>Fluconazole 150 mg PO single dose (uncomplicated)</li>
+          <li>Clotrimazole or Miconazole cream intravaginally × 7 days</li>
+          <li>Recurrent: Fluconazole 150 mg q72h × 3 doses, then weekly × 6 months</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="edu-content" id="edu-trich">
+    <div class="edu-card">
+      <div class="edu-card-hdr" style="background:linear-gradient(135deg,#ea580c,#7c2d12)">
+        <div class="e-icon">🦠</div><div><h2>Trichomoniasis</h2><p>Sexually transmitted protozoal infection</p></div>
+      </div>
+      <div class="edu-card-body">
+        <div class="edu-section"><h4>Overview</h4><ul>
+          <li>Caused by Trichomonas vaginalis, a flagellated protozoan — most common curable STI worldwide</li>
+          <li>Can be asymptomatic, especially in men</li>
+          <li>Increases susceptibility to HIV and other STIs</li>
+        </ul></div>
+        <div class="edu-section"><h4>Key Symptoms</h4><ul>
+          <li>Copious, frothy, yellow-green vaginal discharge</li>
+          <li>Vaginal pH &gt; 4.5</li>
+          <li>"Strawberry cervix" — pathognomonic</li>
+          <li>Dysuria, dyspareunia, pruritus, postcoital bleeding</li>
+        </ul></div>
+        <div class="edu-section"><h4>Diagnosis</h4><ul>
+          <li>Motile trichomonads on wet mount (gold standard)</li>
+          <li>NAAT testing (highest sensitivity)</li>
+          <li>Screen for concurrent STIs (gonorrhea, chlamydia, HIV)</li>
+        </ul></div>
+        <div class="edu-section"><h4>Treatment</h4><ul>
+          <li>Metronidazole 500 mg PO BID × 7 days (preferred for women)</li>
+          <li>Treat sexual partners simultaneously — this is an STI</li>
+          <li>Test-of-cure at 3 months</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="edu-content" id="edu-gsm">
+    <div class="edu-card">
+      <div class="edu-card-hdr" style="background:linear-gradient(135deg,#16a34a,#14532d)">
+        <div class="e-icon">🌿</div><div><h2>Atrophic Vaginitis / GSM</h2><p>Genitourinary Syndrome of Menopause</p></div>
+      </div>
+      <div class="edu-card-body">
+        <div class="edu-section"><h4>Overview</h4><ul>
+          <li>Caused by estrogen deficiency in postmenopausal women — not an infection</li>
+          <li>Chronic and progressive without treatment; affects ~50% of postmenopausal women</li>
+        </ul></div>
+        <div class="edu-section"><h4>Key Symptoms</h4><ul>
+          <li>Dyspareunia (primary complaint), vaginal dryness and burning</li>
+          <li>Urinary frequency, urgency, incontinence, recurrent UTIs</li>
+          <li>Pale, thin, dry vaginal walls on exam; pH often &gt; 5.0</li>
+        </ul></div>
+        <div class="edu-section"><h4>Treatment — Local Estrogen (First-Line)</h4><ul>
+          <li>Estradiol vaginal tablet 10 mcg: nightly × 2 weeks, then 2×/week</li>
+          <li>Estriol cream 0.5 mg/g: nightly × 2 weeks, then 2×/week</li>
+          <li>Apply around urethra too if urinary symptoms present</li>
+        </ul></div>
+        <div class="edu-section"><h4>Non-Hormonal Options</h4><ul>
+          <li>Water-based vaginal lubricants (for intercourse)</li>
+          <li>Vaginal moisturizers with hyaluronic acid (regular use)</li>
+          <li>Ospemifene 60 mg PO daily (SERM — oral option)</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ==================== NAVIGATION ====================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='diag'&&!diagInited){initDiag();diagInited=true;}
+  if(id==='treat'&&!treatInited){initTreat();treatInited=true;}
+  if(id==='prev'&&!prevInited){initPrev();prevInited=true;}
+}
+let diagInited=false,treatInited=false,prevInited=false;
+
+function showEduTab(id,btn){
+  document.querySelectorAll('.edu-content').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.edu-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('edu-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ==================== DIAGNOSIS TOOL ====================
+const D={
+  demographics:{age:null,menopausal:null,pregnant:null},
+  symptoms:{fishyodor:null,itching:null,burning:null,dysuria:null,dyspareunia:null,
+    postcoitalbleed:null,largedischarge:null,frothydischarge:null,
+    frequency:null,incontinence:null,recurrentutis:null},
+  riskfactors:{dm:null,immunocomp:null,ocp:null,corticosteroids:null,
+    abx:null,iud:null,tightclothes:null,hottubs:null,newpartner:null},
+  exam:{dischargecolor:null,dischargeconsistency:null,palethinwalls:null,cervicitis:null,pH:null},
+  labs:{labavailable:null,whifftest:null,cluecells:null,kohhyphae:null,trichomonads:null}
+};
+const DSECTIONS=[
+  {id:'demographics',title:'Patient Demographics',icon:'👤',sub:'Basic information & background',
+   fields:[
+    {key:'age',label:'Patient age',type:'number',hint:''},
+    {key:'menopausal',label:'Post-menopausal?',type:'yn',hint:'Relevant for GSM / Atrophic Vaginitis'},
+    {key:'pregnant',label:'Currently pregnant?',type:'yn',hint:'Affects treatment choices'}
+   ]},
+  {id:'symptoms',title:'Symptoms',icon:'📋',sub:'Check all that apply',
+   fields:[
+    {key:'fishyodor',label:'Malodorous fishy vaginal odor?',type:'yn',hint:'Classic BV symptom, often worse after intercourse'},
+    {key:'itching',label:'Vaginal or vulvar itching?',type:'yn',hint:'Primary symptom of candidiasis'},
+    {key:'burning',label:'Vaginal burning or irritation?',type:'yn',hint:'Seen in candidiasis, atrophic vaginitis, trichomoniasis'},
+    {key:'dysuria',label:'Painful urination (dysuria)?',type:'yn',hint:'Can indicate trichomoniasis, atrophic vaginitis'},
+    {key:'dyspareunia',label:'Pain during intercourse (dyspareunia)?',type:'yn',hint:'Common in atrophic vaginitis & trichomoniasis'},
+    {key:'postcoitalbleed',label:'Postcoital bleeding?',type:'yn',hint:'May indicate cervicitis or trichomoniasis'},
+    {key:'largedischarge',label:'Large amount of vaginal discharge?',type:'yn',hint:'Seen in trichomoniasis and severe BV'},
+    {key:'frothydischarge',label:'Frothy discharge?',type:'yn',hint:'Classic for Trichomonas vaginalis'},
+    {key:'frequency',label:'Urinary frequency?',type:'yn',hint:'GSM / atrophic vaginitis feature'},
+    {key:'incontinence',label:'Urinary incontinence?',type:'yn',hint:'GSM / atrophic vaginitis feature'},
+    {key:'recurrentutis',label:'Recurrent UTIs?',type:'yn',hint:'Can accompany atrophic vaginitis / GSM'}
+   ]},
+  {id:'riskfactors',title:'Risk Factors',icon:'⚠️',sub:'Predisposing conditions & exposures',
+   fields:[
+    {key:'dm',label:'Diabetes Mellitus?',type:'yn',hint:'Predisposes to candidiasis'},
+    {key:'immunocomp',label:'Immunocompromised? (HIV, chemo, steroids)',type:'yn',hint:'Risk of severe or recurrent candidiasis'},
+    {key:'ocp',label:'Using oral contraceptives?',type:'yn',hint:'Hormonal changes may alter vaginal flora'},
+    {key:'corticosteroids',label:'Current systemic corticosteroid use?',type:'yn',hint:'Immunosuppression → candidiasis risk'},
+    {key:'abx',label:'Recent or prolonged antibiotic use?',type:'yn',hint:'Disrupts Lactobacillus → BV or candidiasis'},
+    {key:'iud',label:'IUD in place?',type:'yn',hint:'Associated with increased BV risk'},
+    {key:'tightclothes',label:'Wearing tight or synthetic clothing?',type:'yn',hint:'Warm/moist environment promotes candidiasis'},
+    {key:'hottubs',label:'Frequent hot-tub or pool exposure?',type:'yn',hint:'Disrupts vaginal pH and normal flora'},
+    {key:'newpartner',label:'New sexual partner or recent change in sexual activity?',type:'yn',hint:'Risk factor for trichomoniasis & BV'}
+   ]},
+  {id:'exam',title:'Physical Examination',icon:'🩺',sub:'Examination & measurement findings',
+   fields:[
+    {key:'dischargecolor',label:'Vaginal discharge color',type:'select',
+     options:['none','white/cheesy','yellow/green','gray/brown','other'],
+     hint:'White/cheesy → Candida | Yellow/green → Trichomoniasis | Gray → BV'},
+    {key:'dischargeconsistency',label:'Discharge consistency',type:'select',
+     options:['none','thin/homogeneous','thick/curdy','frothy','other'],
+     hint:'Thin → BV | Thick/curdy → Candida | Frothy → Trichomoniasis'},
+    {key:'palethinwalls',label:'Pale, thin vaginal walls (atrophy)?',type:'yn',hint:'Hallmark of GSM / atrophic vaginitis'},
+    {key:'cervicitis',label:'Cervicitis or friable cervix noted?',type:'yn',hint:'"Strawberry cervix" is classic for Trichomonas'},
+    {key:'pH',label:'Vaginal pH (enter 0 if not measured)',type:'number',hint:'Normal ≤4.5 | BV/Trich >4.5 | Candida usually ≤4.5'}
+   ]},
+  {id:'labs',title:'Lab / Microscopic Data',icon:'🧫',sub:'Optional — answer No to skip any',
+   fields:[
+    {key:'labavailable',label:'Do you have lab/microscopic results to enter?',type:'yn',hint:''},
+    {key:'whifftest',label:'Positive whiff test (amine odor with KOH)?',type:'yncond',cond:'labavailable',hint:'Characteristic of BV'},
+    {key:'cluecells',label:'Clue cells on wet mount (>20% of epithelial cells)?',type:'yncond',cond:'labavailable',hint:'Pathognomonic for BV'},
+    {key:'kohhyphae',label:'KOH prep positive for hyphae/pseudohyphae?',type:'yncond',cond:'labavailable',hint:'Confirms Candida'},
+    {key:'trichomonads',label:'Motile trichomonads on wet mount?',type:'yncond',cond:'labavailable',hint:'Confirms Trichomoniasis'}
+   ]}
+];
+const DSTEPLABELS=['Demographics','Symptoms','Risk Factors','Exam','Labs','Results'];
+let dStep=0;
+function flatGet(key){for(const s in D){if(key in D[s])return D[s][key];}return null;}
+function flatSet(key,val){for(const s in D){if(key in D[s]){D[s][key]=val;return;}}}
+
+function dRenderProgress(){
+  const total=DSTEPLABELS.length;
+  const pct=Math.round(dStep/(total-1)*100);
+  document.getElementById('d-prog-fill').style.width=pct+'%';
+  document.getElementById('d-prog-pct').textContent=pct+'%';
+  document.getElementById('d-sec-label').textContent=dStep<total-1?`Section ${dStep+1} of ${total-1}`:'Results';
+  let dots='';
+  DSTEPLABELS.forEach((l,i)=>{
+    const cls=i<dStep?'done':i===dStep?'active':'';
+    dots+=`<div class="step-dot ${cls}" title="${l}">${i+1}</div>`;
+  });
+  document.getElementById('d-step-dots').innerHTML=dots;
+}
+
+function dRenderSection(){
+  if(dStep>=DSECTIONS.length){dRenderResults();return;}
+  dRenderProgress();
+  const sec=DSECTIONS[dStep];
+  let fh='';
+  sec.fields.forEach(f=>{
+    if(f.type==='yncond'&&!flatGet(f.cond))return;
+    const hint=f.hint?`<div class="hint">${f.hint}</div>`:'';
+    if(f.type==='yn'||f.type==='yncond'){
+      const v=flatGet(f.key);
+      fh+=`<div class="field"><label>${f.label}</label>${hint}
+        <div class="toggle-grp">
+          <button class="toggle-btn ${v===true?'sel-yes':''}" onclick="dSetYN('${f.key}',true,this)">Yes</button>
+          <button class="toggle-btn ${v===false?'sel-no':''}" onclick="dSetYN('${f.key}',false,this)">No</button>
+        </div></div>`;
+    } else if(f.type==='number'){
+      const v=flatGet(f.key);
+      fh+=`<div class="field"><label>${f.label}</label>${hint}
+        <input class="inp" type="number" min="0" max="14" step="0.1" value="${v!==null?v:''}"
+          oninput="flatSet('${f.key}',this.value===''?null:parseFloat(this.value))"></div>`;
+    } else if(f.type==='select'){
+      const v=flatGet(f.key)||'none';
+      const opts=f.options.map(o=>`<option value="${o}"${v===o?' selected':''}>${o}</option>`).join('');
+      fh+=`<div class="field"><label>${f.label}</label>${hint}
+        <select class="inp" onchange="flatSet('${f.key}',this.value)">${opts}</select></div>`;
+    }
+  });
+  const back=dStep>0?`<button class="btn-back" onclick="dPrev()">Back</button>`:'';
+  document.getElementById('d-app').innerHTML=`
+    <div class="card">
+      <div class="card-hdr"><span class="icon">${sec.icon}</span>
+        <div><div class="sec-title">${sec.title}</div><div class="sec-sub">${sec.sub}</div></div>
+      </div>
+      <div class="card-body">${fh}</div>
+    </div>
+    <div class="nav">${back}<button class="btn-next" onclick="dNext()">${dStep===DSECTIONS.length-1?'See Diagnosis':'Next →'}</button></div>`;
+}
+
+function dSetYN(key,val,btn){
+  flatSet(key,val);
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('sel-yes','sel-no'));
+  btn.classList.add(val?'sel-yes':'sel-no');
+  if(key==='labavailable')dRenderSection();
+}
+function dNext(){dStep++;dRenderSection();window.scrollTo({top:0,behavior:'smooth'});}
+function dPrev(){dStep--;dRenderSection();window.scrollTo({top:0,behavior:'smooth'});}
+
+function dDiagnose(){
+  const pH=D.exam.pH>0?D.exam.pH:null;
+  const{fishyodor,itching,largedischarge,frothydischarge,dyspareunia,frequency,incontinence,recurrentutis,dysuria}=D.symptoms;
+  const{menopausal}=D.demographics;
+  const{dischargecolor,dischargeconsistency,palethinwalls,cervicitis}=D.exam;
+  const{whifftest,cluecells,kohhyphae,trichomonads}=D.labs;
+  const{dm,abx,immunocomp,corticosteroids,newpartner}=D.riskfactors;
+  const results=[];
+  let amsel=0;
+  if(fishyodor||whifftest)amsel++;
+  if(pH&&pH>4.5)amsel++;
+  if(dischargeconsistency&&(dischargeconsistency.includes('thin')||dischargeconsistency.includes('homogeneous')))amsel++;
+  if(cluecells)amsel++;
+  let bvlikely=false;
+  if(amsel>=3){bvlikely=true;results.push({cond:'BV',conf:'HIGH',confcls:'conf-high',icon:'🦠',
+    hdrcolor:'#eff6ff',border:'#2563eb',titlecolor:'#1e3a5f',title:'Bacterial Vaginosis (BV)',
+    items:[`Amsel criteria ${amsel}/4 — strong diagnosis.`,'Thin homogeneous gray-white discharge with fishy odor.',
+      pH?`pH ${pH} elevated (>4.5) supports BV.`:'',cluecells?'Clue cells present on wet mount.':'',
+      'Treatment: Metronidazole 500 mg PO BID × 7 days OR Metronidazole 0.75% gel × 5 days OR Clindamycin 2% cream × 7 days.',
+      'Avoid alcohol during metronidazole.'].filter(Boolean)});}
+  else if(amsel>=2&&fishyodor&&dischargeconsistency&&dischargeconsistency.includes('thin')){
+    bvlikely=true;results.push({cond:'BV',conf:'LIKELY',confcls:'conf-likely',icon:'🦠',
+    hdrcolor:'#eff6ff',border:'#2563eb',titlecolor:'#1e3a5f',title:'Bacterial Vaginosis (BV)',
+    items:['Clinical picture consistent with BV (Amsel 2/4, fishy odor, thin discharge).',
+      'Consider confirmatory wet mount or full Amsel criteria.',
+      'Treatment: Metronidazole 500 mg PO BID × 7 days.']});}
+  else if(fishyodor&&!kohhyphae&&!trichomonads&&!itching){
+    results.push({cond:'BV',conf:'POSSIBLE',confcls:'conf-possible',icon:'🦠',
+    hdrcolor:'#eff6ff',border:'#2563eb',titlecolor:'#1e3a5f',title:'Bacterial Vaginosis (BV)',
+    items:['Fishy odor without itching or competing diagnoses.',
+      'Consider wet mount, whiff test, or vaginal pH to confirm.','If confirmed: Metronidazole or Clindamycin.']});}
+  let candidalikely=false;
+  const isCandidaColor=dischargecolor&&(dischargecolor.includes('white')||dischargecolor.includes('cheesy'));
+  const isCandidaConsist=dischargeconsistency&&(dischargeconsistency.includes('thick')||dischargeconsistency.includes('curdy'));
+  if(itching&&(isCandidaColor||isCandidaConsist)){
+    if(!pH||pH<=4.5){candidalikely=true;results.push({cond:'Candida',conf:'LIKELY',confcls:'conf-likely',icon:'🍄',
+      hdrcolor:'#fdf4ff',border:'#7c3aed',titlecolor:'#4c1d95',title:'Vulvovaginal Candidiasis (VVC)',
+      items:['Itching + white/curdy discharge with normal or low pH.',
+        dm?'Diabetes — significant predisposing factor.':'',
+        abx?'Recent antibiotic use — disruption of normal flora.':'',
+        (immunocomp||corticosteroids)?'Immunocompromised state — increases severity/recurrence risk.':'',
+        'Treatment (uncomplicated): Fluconazole 150 mg PO single dose OR intravaginal azole × 1–7 days.',
+        'Complicated/recurrent: Fluconazole 150 mg q72h × 3 doses, then weekly × 6 months.'].filter(Boolean)});}
+  } else if(pH&&pH<=4.5&&kohhyphae){
+    candidalikely=true;results.push({cond:'Candida',conf:'LIKELY',confcls:'conf-likely',icon:'🍄',
+    hdrcolor:'#fdf4ff',border:'#7c3aed',titlecolor:'#4c1d95',title:'Vulvovaginal Candidiasis (VVC)',
+    items:['KOH prep positive despite borderline pH.','Treatment: Fluconazole 150 mg PO single dose OR topical azole.']});
+  } else if(kohhyphae){
+    candidalikely=true;results.push({cond:'Candida',conf:'CONFIRMED',confcls:'conf-confirmed',icon:'🍄',
+    hdrcolor:'#fdf4ff',border:'#7c3aed',titlecolor:'#4c1d95',title:'Vulvovaginal Candidiasis — CONFIRMED',
+    items:['Hyphae/pseudohyphae on KOH prep confirmed.','Treatment: Fluconazole 150 mg PO single dose.',
+      'If recurrent: weekly suppressive fluconazole × 6 months.']});}
+  let trichlikely=false;
+  const isTrichColor=dischargecolor&&(dischargecolor.includes('yellow')||dischargecolor.includes('green'));
+  if((largedischarge||frothydischarge||isTrichColor)&&pH&&pH>4.5&&(trichomonads||newpartner||dysuria||dyspareunia)){
+    trichlikely=true;results.push({cond:'Trich',conf:'LIKELY',confcls:'conf-likely',icon:'🔴',
+    hdrcolor:'#fff7ed',border:'#ea580c',titlecolor:'#7c2d12',title:'Trichomoniasis',
+    items:['Yellow-green frothy discharge + pH >4.5 + clinical features.',
+      newpartner?'New sexual partner — STI screening recommended.':'',
+      cervicitis?'Cervicitis noted — consider co-infection (Gonorrhea/Chlamydia).':'',
+      'First-line: <strong>Metronidazole 500 mg PO BID × 7 days</strong>.',
+      '→ If no response after 7 days: repeat the same 7-day course ONCE.',
+      '→ If still no response: Tinidazole 2000 mg PO daily × 5 days (or Metronidazole 2 g PO daily × 5 days).',
+      'Alternative first-line: Tinidazole 2000 mg PO single dose.',
+      'Treat sexual partners simultaneously.','Test-of-cure at 3 months.'].filter(Boolean)});
+  } else if(trichomonads){
+    trichlikely=true;results.push({cond:'Trich',conf:'CONFIRMED',confcls:'conf-confirmed',icon:'🔴',
+    hdrcolor:'#fff7ed',border:'#ea580c',titlecolor:'#7c2d12',title:'Trichomoniasis — CONFIRMED',
+    items:['Motile trichomonads seen on wet mount.',
+      'Treatment: Metronidazole 500 mg PO BID × 7 days OR 2 g single dose.',
+      'Treat partners — this is an STI.','Test-of-cure at 3 months.']});}
+  if(menopausal&&(dyspareunia||frequency||incontinence||recurrentutis)&&palethinwalls){
+    results.push({cond:'GSM',conf:'LIKELY',confcls:'conf-likely',icon:'🌿',
+    hdrcolor:'#f0fdf4',border:'#16a34a',titlecolor:'#14532d',title:'Atrophic Vaginitis / GSM',
+    items:['Post-menopausal + dyspareunia/urinary symptoms + pale thin walls.',
+      'Caused by estrogen deficiency — not an infection.',
+      'Treatment: Topical vaginal estrogen (cream, ring, or tablet) — first-line.',
+      'Non-hormonal: vaginal moisturizers + lubricants for intercourse.',
+      'Ospemifene 60 mg PO daily if vaginal estrogen declined.']});
+  } else if(menopausal&&(dyspareunia||frequency||incontinence)&&!bvlikely&&!candidalikely&&!trichlikely){
+    results.push({cond:'GSM',conf:'POSSIBLE',confcls:'conf-possible',icon:'🌿',
+    hdrcolor:'#f0fdf4',border:'#16a34a',titlecolor:'#14532d',title:'Atrophic Vaginitis / GSM — Possible',
+    items:['Post-menopausal with urogenital symptoms; no other cause strongly identified.',
+      'Examine for pale/thin vaginal walls to confirm.',
+      'Trial of topical vaginal estrogen is reasonable after excluding infection.']});}
+  return results;
+}
+
+function dRenderResults(){
+  dRenderProgress();
+  const results=dDiagnose();
+  const rfs=[];
+  if(D.riskfactors.dm)rfs.push({r:'Diabetes Mellitus',e:'↑ Candidiasis risk'});
+  if(D.riskfactors.abx)rfs.push({r:'Recent antibiotics',e:'↑ BV & Candidiasis risk'});
+  if(D.riskfactors.immunocomp)rfs.push({r:'Immunocompromised',e:'Severe/recurrent Candidiasis'});
+  if(D.riskfactors.newpartner)rfs.push({r:'New sexual partner',e:'↑ Trichomoniasis & BV risk'});
+  if(D.riskfactors.iud)rfs.push({r:'IUD in place',e:'↑ BV risk'});
+  if(D.riskfactors.corticosteroids)rfs.push({r:'Systemic corticosteroids',e:'↑ Candidiasis risk'});
+  let dh='';
+  if(!results.length){
+    dh=`<div class="no-diag"><strong>No clear infectious cause identified.</strong><br><br>
+      Consider mixed infection, non-infectious vulvar irritation (contact dermatitis, lichen sclerosus),
+      or repeat evaluation with full microscopy.</div>`;
+  } else {
+    results.forEach(r=>{
+      const items=r.items.map(i=>`<li>${i}</li>`).join('');
+      dh+=`<div class="diag-card" style="border-top:5px solid ${r.border}">
+        <div class="diag-hdr" style="background:${r.hdrcolor}">
+          <div class="d-icon">${r.icon}</div>
+          <div><div class="d-label">${r.cond}</div>
+          <h3 style="color:${r.titlecolor}">${r.title}<span class="conf ${r.confcls}">${r.conf}</span></h3></div>
+        </div>
+        <div class="diag-body"><ul>${items}</ul></div></div>`;
+    });
+  }
+  let rfh='';
+  if(rfs.length){
+    const rows=rfs.map(r=>`<tr><td>${r.r}</td><td>${r.e}</td></tr>`).join('');
+    rfh=`<div class="card" style="margin-top:18px">
+      <div class="card-hdr"><span class="icon">⚠️</span>
+        <div><div class="sec-title">Active Risk Factors</div><div class="sec-sub">Predisposing conditions detected</div></div></div>
+      <div class="card-body"><table class="sum-table"><tr><th>Risk Factor</th><th>Clinical Relevance</th></tr>${rows}</table></div></div>`;
+  }
+  document.getElementById('d-app').innerHTML=`
+    <div style="margin-bottom:18px"><div class="divider">Diagnostic Impressions</div>${dh}</div>${rfh}
+    <div class="nav">
+      <button class="btn-back" onclick="dPrev()">Back</button>
+      <button class="btn-next" onclick="dRestart()">New Patient</button>
+    </div>`;
+}
+function dRestart(){
+  Object.keys(D).forEach(s=>Object.keys(D[s]).forEach(k=>D[s][k]=null));
+  dStep=0;dRenderSection();window.scrollTo({top:0,behavior:'smooth'});
+}
+function initDiag(){dStep=0;dRenderSection();}
+
+// ==================== TREATMENT TOOL ====================
+const TX={
+  diag:null,pregnant:null,trimester:null,
+  recurrent:null,complicated:null,cervicitis:null,concurrentBV:null
+};
+const DIAG_OPTIONS=[
+  {key:'trichomoniasis',label:'Trichomoniasis',icon:'🔴'},
+  {key:'bacterial_vaginosis',label:'Bacterial Vaginosis (BV)',icon:'🦠'},
+  {key:'candidial_vaginitis',label:'Candidiasis (VVC)',icon:'🍄'},
+  {key:'atrophic_vaginitis',label:'Atrophic Vaginitis / GSM',icon:'🌿'}
+];
+
+function initTreat(){tRenderStep1();}
+
+function tRenderStep1(){
+  const opts=DIAG_OPTIONS.map(o=>`
+    <div class="prev-option ${TX.diag===o.key?'selected':''}" onclick="tSelectDiag('${o.key}')">
+      <span class="p-icon">${o.icon}</span>${o.label}
+    </div>`).join('');
+  document.getElementById('t-app').innerHTML=`
+    <div class="card">
+      <div class="card-hdr"><span class="icon">🏷️</span>
+        <div><div class="sec-title">Select Diagnosis</div>
+        <div class="sec-sub">Choose the confirmed or suspected condition</div></div>
+      </div>
+      <div class="card-body">${opts}</div>
+    </div>
+    <div id="t-modifiers"></div>
+    <div id="t-results"></div>`;
+}
+
+
+function tSelectDiag(key){
+  TX.diag=key;TX.pregnant=null;TX.trimester=null;
+  TX.recurrent=null;TX.complicated=null;TX.cervicitis=null;TX.concurrentBV=null;
+  tGoStep2();
+}
+function tGoStep2(){
+  document.getElementById('t-app').innerHTML=`<button class="btn-back" onclick="tBackToStep1()">← Back to Diagnosis</button><div id="t-modifiers"></div><div id="t-results"></div>`;
+  tRenderModifiers();
+}
+function tBackToStep1(){TX.diag=null;tRenderStep1();}
+
+function tSetYN(key,val,btn){
+  TX[key]=val;
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('sel-yes','sel-no'));
+  btn.classList.add(val?'sel-yes':'sel-no');
+  tRenderModifiers();
+}
+
+function tSetTrimester(val,btn){
+  TX.trimester=val;
+  document.querySelectorAll('.trim-btn').forEach(b=>b.classList.remove('sel-yes'));
+  btn.classList.add('sel-yes');
+}
+
+function tRenderModifiers(){
+  const fields=[
+    {key:'pregnant',label:'Patient is pregnant?',show:true},
+    {key:'recurrent',label:'Recurrent infection? (≥3 episodes/year or ≥2 in 6 months)',show:true},
+    {key:'complicated',label:'Complicated? (severe symptoms, immunosuppressed, resistant organism)',show:true},
+    {key:'cervicitis',label:'Cervicitis present? (mucopurulent discharge, friable cervix)',show:true},
+    {key:'concurrentBV',label:'Concurrent Bacterial Vaginosis suspected?',show:TX.diag==='candidial_vaginitis'}
+  ];
+  let fh=fields.filter(f=>f.show).map(f=>{
+    const ys=TX[f.key]===true?'sel-yes':'';
+    const ns=TX[f.key]===false?'sel-no':'';
+    return `<div class="field"><label>${f.label}</label>
+      <div class="toggle-grp">
+        <button class="toggle-btn ${ys}" onclick="tSetYN('${f.key}',true,this)">Yes</button>
+        <button class="toggle-btn ${ns}" onclick="tSetYN('${f.key}',false,this)">No</button>
+      </div></div>`;
+  }).join('');
+  if(TX.pregnant===true){
+    const t=TX.trimester;
+    fh+=`<div class="field"><label>Pregnancy trimester</label>
+      <div class="toggle-grp">
+        <button class="toggle-btn trim-btn ${t==='1'?'sel-yes':''}" onclick="tSetTrimester('1',this)">1st</button>
+        <button class="toggle-btn trim-btn ${t==='2'?'sel-yes':''}" onclick="tSetTrimester('2',this)">2nd</button>
+        <button class="toggle-btn trim-btn ${t==='3'?'sel-yes':''}" onclick="tSetTrimester('3',this)">3rd</button>
+      </div></div>`;
+  }
+  document.getElementById('t-modifiers').innerHTML=`
+    <div class="card">
+      <div class="card-hdr"><span class="icon">⚙️</span>
+        <div><div class="sec-title">Host & Disease Modifiers</div>
+        <div class="sec-sub">Refine the treatment protocol</div></div>
+      </div>
+      <div class="card-body">${fh}</div>
+    </div>
+    <div class="nav"><button class="btn-next" onclick="tRenderResults()">Generate Treatment Plan →</button></div>`;
+}
+
+function tBlock(icon,title,sub,color,items,alerts){
+  const lis=items.map(i=>`<li>${i}</li>`).join('');
+  const als=(alerts||[]).map(a=>`<div class="tx-alert ${a.type}">${a.text}</div>`).join('');
+  return `<div class="tx-block">
+    <div class="tx-block-hdr" style="background:${color}">
+      <div class="t-icon">${icon}</div>
+      <div><div class="t-title">${title}</div>${sub?`<div class="t-sub">${sub}</div>`:''}
+      </div></div>
+    <div class="tx-block-body">${als}<ul>${lis}</ul></div>
+  </div>`;
+}
+
+function tRenderResults(){
+  const{diag,pregnant,trimester,recurrent,complicated,cervicitis,concurrentBV}=TX;
+  let html='<div class="divider">Treatment Protocol</div>';
+
+  if(diag==='trichomoniasis'){
+    html+=tBlock('🔴','Trichomoniasis','Always treat the partner simultaneously','#fff7ed',[
+      'This is an STI — screen for Chlamydia, Gonorrhea, Syphilis, and HIV.',
+      'First-line: <strong>Metronidazole 500 mg PO BID × 7 days</strong> (preferred for women).',
+      '→ If no response after 7 days: repeat the same 7-day course ONCE.',
+      '→ If still no response: Tinidazole 2000 mg PO daily × 5 days (or Metronidazole 2 g PO daily × 5 days).',
+      'Alternative: Tinidazole 2000 mg PO single dose.',
+      'Abstain from intercourse until both partners complete therapy and are asymptomatic (≥7 days).',
+      'Avoid alcohol during metronidazole or tinidazole (disulfiram-like reaction).',
+      'Test-of-cure recommended at 3 months.'
+    ],[
+      pregnant?{type:'warn',text:'<strong>Pregnancy:</strong> Metronidazole is safe in 2nd & 3rd trimesters. Avoid in 1st trimester unless benefits outweigh risks. Tinidazole: avoid in 1st trimester.'}:null
+    ].filter(Boolean));
+    if(recurrent)html+=tBlock('🔁','Recurrent Trichomoniasis','',var_orange_l,[
+      'Tinidazole 2000 mg PO single dose (patient + partner).',
+      'Ensure partner adherence — retest at 4–6 weeks.',
+      'If still failing: consider tinidazole 2000 mg daily × 5 days.',
+    ]);
+    if(complicated)html+=tBlock('⚠️','Complicated / Severe','',var_red_l,[
+      'Metronidazole 500 mg PO BID × 7 days (preferred).',
+      'If failed: Tinidazole 2000 mg PO daily × 5 days.'
+    ]);
+    if(cervicitis)html+=tBlock('🔬','Cervicitis Co-Treatment','Treat for Chlamydia & Gonorrhea','#eff6ff',[
+      'Azithromycin 1 g PO single dose, OR',
+      'Doxycycline 100 mg PO BID × 7 days.',
+      'Treat sexual partner simultaneously.'
+    ]);
+  }
+
+  else if(diag==='bacterial_vaginosis'){
+    if(pregnant){
+      html+=tBlock('🦠','BV in Pregnancy','Treat ALL BV in pregnancy to reduce preterm birth risk','#eff6ff',[
+        'Metronidazole 500 mg PO BID × 7 days (avoid 1st trimester unless necessary).',
+        'Clindamycin 2% cream — one applicator intravaginally nightly × 7 days <em>(safe all trimesters)</em>.',
+        'Metronidazole 0.75% gel — one full applicator nightly × 5 days (safe 2nd/3rd trimester).',
+        'Tinidazole 1000 mg PO daily × 5 days OR 2000 mg PO single dose (alternative).',
+        'Clindamycin suppository 100 mg vaginally nightly × 3 days (safe in pregnancy).'
+      ],[{type:'warn',text:'Treat even asymptomatic BV in pregnancy — associated with preterm birth.'}]);
+    } else {
+      html+=tBlock('🦠','BV — First Line (Non-Pregnant)','Choose ONE','#eff6ff',[
+        'Metronidazole 500 mg PO BID × 7 days.',
+        'Clindamycin 2% cream — one applicator intravaginally nightly × 7 days.',
+        'Metronidazole 0.75% gel — one full applicator nightly × 5 days.',
+        'Tinidazole 1000 mg PO daily × 5 days OR 2000 mg PO single dose.',
+        'Clindamycin suppository 100 mg vaginally nightly × 3 days.'
+      ],[
+        {type:'info',text:'Avoid alcohol during metronidazole or tinidazole. If symptoms persist after 7 days, repeat or switch to alternative.'},
+        {type:'success',text:'<strong>Asymptomatic BV:</strong> Do NOT treat unless patient is pregnant.'}
+      ]);
+    }
+    if(recurrent)html+=tBlock('🔁','Recurrent BV','≥3 episodes/year','#fef9c3',[
+      'Induction: Metronidazole 500 mg PO BID × 7 days.',
+      'Maintenance: Metronidazole 500 mg PO twice weekly × 4–6 months, OR',
+      'Clindamycin 2% cream twice weekly × 4–6 months.',
+      'Consider probiotic supplementation (oral or vaginal Lactobacillus).'
+    ]);
+    if(complicated)html+=tBlock('⚠️','Complicated / Severe BV','',var_red_l,[
+      'Full 7-day metronidazole or clindamycin course.',
+      'Consider adding vaginal boric acid 600 mg suppository nightly × 14 days if refractory (exclude pregnancy first).'
+    ]);
+  }
+
+  else if(diag==='candidial_vaginitis'){
+    if(pregnant){
+      html+=tBlock('🍄','VVC in Pregnancy','Prefer topical azoles — avoid oral fluconazole','#fdf4ff',[
+        'Clotrimazole 1% cream — one applicator nightly × 7 days, OR',
+        'Miconazole 2% cream — one applicator nightly × 7 days, OR',
+        'Nystatin vaginal tablets 100,000 IU — one nightly × 14 days <em>(safe in pregnancy)</em>.'
+      ],[{type:'danger',text:'<strong>Avoid oral fluconazole</strong> in pregnancy, especially 1st trimester — teratogenic risk.'}]);
+      if(recurrent)html+=tBlock('🔁','Recurrent VVC in Pregnancy','',var_orange_l,[
+        'Clotrimazole 1% cream nightly × 7 days, then maintenance 2 nights/week until delivery.'
+      ]);
+    } else {
+      if(!recurrent&&!complicated){
+        html+=tBlock('🍄','Uncomplicated VVC','First episode, mild-moderate','#fdf4ff',[
+          'Fluconazole 150 mg PO single dose <em>(repeat 72 h later if symptoms persist)</em>.',
+          'Clotrimazole 1% cream — one applicator nightly × 7 days, OR',
+          'Miconazole 2% cream — one applicator nightly × 7 days, OR',
+          'Nystatin vaginal tablets 100,000 IU — one nightly × 14 days (alternative).'
+        ]);
+      }
+      if(recurrent)html+=tBlock('🔁','Recurrent VVC','≥3 episodes/year','#fdf4ff',[
+        'Induction: Fluconazole 150 mg PO every 72 h × 3 doses.',
+        'Maintenance: Fluconazole 150 mg PO weekly × 6 months.',
+        'Alternative maintenance: Clotrimazole 1% cream nightly × 7 days, then 2 nights/week × 6 months.',
+        'If refractory: Vaginal culture & susceptibility; consider boric acid 600 mg suppository QHS × 14 days (only if culture negative for resistant Candida; never in pregnancy).',
+        'Evaluate for uncontrolled diabetes, immunosuppression, high-dose estrogen.'
+      ]);
+      if(complicated)html+=tBlock('⚠️','Complicated / Severe VVC','',var_red_l,[
+        'Fluconazole 150 mg PO every 72 h × 2–3 doses.',
+        'Clotrimazole 1% cream nightly × 14 days.',
+        'If no response: vaginal culture for species ID (consider C. glabrata, C. krusei) & susceptibility.'
+      ]);
+    }
+    if(concurrentBV)html+=tBlock('🦠','Concurrent BV','Add BV therapy','#eff6ff',[
+      'Clindamycin 2% cream — one applicator nightly × 7 days <em>(safe in pregnancy)</em>.',
+      'Alternative: Metronidazole 500 mg PO BID × 7 days (avoid in 1st trimester).'
+    ]);
+  }
+
+  else if(diag==='atrophic_vaginitis'){
+    html+=tBlock('🌿','Atrophic Vaginitis / GSM','Restore vaginal moisture & epithelium','#f0fdf4',[
+      '<strong>Local estrogen — first-line:</strong>',
+      'Estradiol vaginal tablet 10 mcg: insert nightly × 2 weeks, then 2×/week × 6 months.',
+      'Estriol cream 0.5 mg/g: pea-sized amount nightly × 2 weeks, then 2×/week for maintenance.',
+      'Apply intravaginally AND around urethra if urinary symptoms present.',
+      '<strong>Non-hormonal options (if estrogen contraindicated):</strong>',
+      'Water-based vaginal lubricants for intercourse.',
+      'Vaginal moisturizers (hyaluronic acid gels) — use regularly, not just during sex.',
+      'Ospemifene 60 mg PO daily (no history of estrogen-dependent cancer or clotting disorders).',
+      'Laser / radiofrequency therapy — specialist referral for severe cases.'
+    ],[
+      {type:'info',text:'Re-evaluate every 3–6 months. Continue maintenance estrogen if symptoms recur on stopping. Treat concurrent UTIs or VVC promptly — atrophic changes increase infection risk.'}
+    ]);
+    if(recurrent)html+=tBlock('🔁','Recurrent GSM Symptoms','',var_green_l,[
+      'Long-term maintenance with low-dose local estrogen is usually necessary.',
+      'Discuss duration and monitoring with the patient.',
+      'Consider pelvic floor physical therapy if incontinence or prolapse present.'
+    ]);
+  }
+
+  html+=`<div class="nav"><button class="btn-next" onclick="tRestart()">New Treatment Query</button></div>`;
+  document.getElementById('t-app').innerHTML='<button class="btn-back" onclick="tGoStep2()">← Back to Modifiers</button>'+html;
+  window.scrollTo(0,0);
+}
+
+const var_orange_l='#ffedd5',var_red_l='#fee2e2',var_green_l='#d1fae5';
+
+function tRestart(){
+  Object.keys(TX).forEach(k=>TX[k]=null);
+  initTreat();window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ==================== PREVENTION TOOL ====================
+const PREVTYPES=[
+  {key:'bv',label:'Bacterial Vaginosis',icon:'🦠'},
+  {key:'candida',label:'Candidiasis (VVC)',icon:'🍄'},
+  {key:'trich',label:'Trichomoniasis',icon:'🔴'},
+  {key:'atrophic',label:'Atrophic Vaginitis / GSM',icon:'🌿'}
+];
+let pState={type:null,pregnant:false,menopausal:false,diabetic:false,recurrent:false};
+const PREVADVICE={
+  bv:{title:'Bacterial Vaginosis (BV)',color:'#eff6ff',border:'#2563eb',icon:'🦠',
+    advice:['Do <strong>NOT</strong> douche — douching is the strongest behavioral risk factor for BV.',
+      'Wear cotton underwear; avoid tight, synthetic clothing to keep the area dry.',
+      'Avoid prolonged sitting in wet clothing (swimsuits, gym clothes).',
+      'Limit unnecessary antibiotic use — broad-spectrum antibiotics wipe out Lactobacilli.',
+      'If using hormonal contraception, discuss with your doctor (some progesterone-only methods may increase BV risk).',
+      'Avoid scented feminine hygiene products, sprays, or powders.',
+      'In <strong>pregnancy</strong>: treat ALL BV (symptomatic and asymptomatic) to prevent preterm birth.'],
+    recurrent:'For <strong>recurrent BV</strong>: maintenance therapy (Metronidazole 500 mg PO twice weekly × 4–6 months, or vaginal Clindamycin cream twice weekly). Discuss probiotic supplementation (oral or vaginal Lactobacillus).'},
+  candida:{title:'Candidiasis / VVC',color:'#fdf4ff',border:'#7c3aed',icon:'🍄',
+    advice:['Keep the genital area dry — change out of wet clothing promptly.',
+      'Wear cotton underwear and loose-fitting clothing to promote airflow.',
+      'Avoid tight jeans, leggings, or synthetic underwear that trap moisture.',
+      'Do <strong>NOT</strong> use scented products, douches, or bubble baths.',
+      'If diabetic: maintain good blood-glucose control — high glucose feeds yeast.',
+      'Limit prolonged or unnecessary antibiotic use.'],
+    recurrent:'For <strong>recurrent VVC (≥3/year)</strong>: maintenance therapy (Fluconazole 150 mg PO weekly × 6 months). Evaluate for uncontrolled diabetes or immunosuppression. Consider probiotic therapy.',
+    pregnant:'In <strong>pregnancy</strong>: prefer topical azoles (clotrimazole, miconazole) — avoid oral fluconazole unless absolutely necessary.'},
+  trich:{title:'Trichomoniasis',color:'#fff7ed',border:'#ea580c',icon:'🔴',
+    advice:['Treat sexual partners at the same time (single-dose or 7-day metronidazole/tinidazole).',
+      'Abstain from sexual intercourse until both partners complete therapy and are asymptomatic (≥7 days).',
+      'Use condoms consistently and correctly to reduce reinfection risk.',
+      'Avoid alcohol during metronidazole or tinidazole (disulfiram-like reaction).',
+      'Do <strong>NOT</strong> douche — disrupts vaginal flora and increases susceptibility.',
+      'If recurrent: screen for other STDs (chlamydia, gonorrhea, HIV) and discuss partner notification.',
+      'Maintain good genital hygiene — gentle cleansing with warm water only.']},
+  atrophic:{title:'Atrophic Vaginitis / GSM',color:'#f0fdf4',border:'#16a34a',icon:'🌿',
+    advice:['<strong>Local estrogen therapy</strong> is the cornerstone of prevention and treatment.',
+      'Estradiol vaginal tablet 10 mcg: insert nightly × 2 weeks, then 2×/week.',
+      'Estriol cream 0.5 mg/g: pea-sized amount nightly × 2 weeks, then 2×/week.',
+      'Insert both intravaginally AND around the urethra if urinary symptoms present.',
+      '<strong>Non-hormonal:</strong> water-based lubricants; vaginal moisturizers (hyaluronic acid) used regularly; Ospemifene 60 mg PO daily.',
+      'Avoid scented soaps, sprays, or douches — further irritates atrophic mucosa.',
+      'Consider pelvic floor physical therapy if incontinence or prolapse present.',
+      'Treat concurrent UTIs or yeast infections promptly.',
+      'Reevaluate every 3–6 months; continue maintenance estrogen if symptoms return when stopped.'],
+    recurrent:'For <strong>recurrent GSM</strong>: long-term maintenance with low-dose local estrogen is usually necessary — discuss duration and monitoring with your doctor.'}
+};
+
+function initPrev(){renderPrevStep1();}
+function renderPrevStep1(){
+  let opts=PREVTYPES.map(t=>`
+    <div class="prev-option ${pState.type===t.key?'selected':''}" onclick="pSelectType('${t.key}')">
+      <span class="p-icon">${t.icon}</span>${t.label}
+    </div>`).join('');
+  document.getElementById('p-app').innerHTML=`
+    <div class="card">
+      <div class="card-hdr"><span class="icon">🏷️</span>
+        <div><div class="sec-title">Select Vaginitis Type</div>
+        <div class="sec-sub">Choose the condition for prevention advice</div></div>
+      </div>
+      <div class="card-body">${opts}</div>
+    </div>
+    <div id="p-host-section"></div>
+    <div id="p-advice-section"></div>`;
+}
+
+function pSelectType(key){
+  pState.type=key;pState.pregnant=false;pState.menopausal=false;pState.diabetic=false;pState.recurrent=false;
+  pGoStep2();
+}
+function pGoStep2(){
+  document.getElementById('p-app').innerHTML=`<button class="btn-back" onclick="pBackToStep1()">← Back to Type Selection</button><div id="p-host-section"></div><div id="p-advice-section"></div>`;
+  renderPrevHostFactors();
+}
+function pBackToStep1(){pState.type=null;renderPrevStep1();}
+function renderPrevHostFactors(){
+  const fields=[
+    {key:'pregnant',label:'Patient is pregnant?'},
+    {key:'menopausal',label:'Patient is postmenopausal?'},
+    {key:'diabetic',label:'Patient has diabetes mellitus?'},
+    {key:'recurrent',label:'Recurrent infections (≥3/year or ≥2 in 6 months)?'}
+  ];
+  let fh=fields.map(f=>{
+    const ys=pState[f.key]===true?'sel-yes':'';
+    const ns=pState[f.key]===false?'sel-no':'';
+    return `<div class="field"><label>${f.label}</label>
+      <div class="toggle-grp">
+        <button class="toggle-btn ${ys}" onclick="pSetFactor('${f.key}',true,this)">Yes</button>
+        <button class="toggle-btn ${ns}" onclick="pSetFactor('${f.key}',false,this)">No</button>
+      </div></div>`;
+  }).join('');
+  document.getElementById('p-host-section').innerHTML=`
+    <div class="card">
+      <div class="card-hdr"><span class="icon">👤</span>
+        <div><div class="sec-title">Host Factors</div><div class="sec-sub">Refine advice for this patient</div></div>
+      </div>
+      <div class="card-body">${fh}</div>
+    </div>
+    <div class="nav"><button class="btn-next" onclick="renderPrevAdvice()">Show Prevention Advice →</button></div>`;
+}
+function pSetFactor(key,val,btn){
+  pState[key]=val;
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('sel-yes','sel-no'));
+  btn.classList.add(val?'sel-yes':'sel-no');
+}
+function renderPrevAdvice(){
+  const a=PREVADVICE[pState.type];
+  if(!a)return;
+  let specific=`<div class="advice-section">
+    <div class="advice-hdr" style="background:${a.color};border-bottom:3px solid ${a.border}">
+      <span style="font-size:1.4rem">${a.icon}</span>
+      <div><div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:#6b7280">Condition-Specific</div>
+      <div style="font-size:1rem;font-weight:700">${a.title} — Prevention</div></div>
+    </div>
+    <div class="advice-body"><ul>${a.advice.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+  if(pState.recurrent&&a.recurrent)specific+=`<div class="tx-alert warn" style="margin:10px 0">${a.recurrent}</div>`;
+  if(pState.pregnant&&a.pregnant)specific+=`<div class="tx-alert success" style="margin:10px 0">${a.pregnant}</div>`;
+  specific+=`</div></div>`;
+  const general=`<div class="general-section"><h3>General Prevention — All Types</h3>
+    <ul class="advice-body" style="padding:0">
+      <li style="padding:7px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>Gentle cleansing with warm water only; avoid douching, scented products, and harsh soaps.</li>
+      <li style="padding:7px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>Wipe <strong>front-to-back</strong> after using the toilet.</li>
+      <li style="padding:7px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>Avoid prolonged hot tub, pool, or hot bath exposure (&gt;10 minutes).</li>
+      <li style="padding:7px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>Use <strong>condoms</strong> for all sexual activity.</li>
+      <li style="padding:7px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>Limit unnecessary antibiotic use.</li>
+      <li style="padding:7px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>Wear <strong>breathable, cotton underwear</strong>; avoid tight synthetic clothing.</li>
+      <li style="padding:7px 0;border-bottom:1px solid #e5e7eb;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>If diabetic: keep blood glucose under control.</li>
+      <li style="padding:7px 0;display:flex;gap:8px"><span style="color:var(--green);font-weight:700">✓</span>If recurrent: ask your provider about probiotic therapy.</li>
+    </ul></div>`;
+  document.getElementById('p-app').innerHTML='<button class="btn-back" onclick="pGoStep2()">← Back to Host Factors</button>'+specific+general+
+    `<div class="nav"><button class="btn-next" onclick="pRestart()">Start Over</button></div>`;
+  window.scrollTo(0,0);
+}
+function pRestart(){
+  pState={type:null,pregnant:false,menopausal:false,diabetic:false,recurrent:false};
+  renderPrevStep1();window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

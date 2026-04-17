@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hyperlipidemia Assistant</title>
+<style>
+
+:root{
+  --blue:#2563eb;--blue-l:#dbeafe;--blue-d:#1e3a5f;
+  --green:#16a34a;--green-l:#d1fae5;
+  --red:#dc2626;--red-l:#fee2e2;
+  --yellow:#ca8a04;--yellow-l:#fef9c3;
+  --purple:#7c3aed;--purple-l:#ede9fe;
+  --teal:#0891b2;--teal-l:#cffafe;
+  --gray:#6b7280;--gray-l:#f3f4f6;
+  --border:#e5e7eb;--r:14px;--sh:0 4px 28px rgba(0,0,0,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);min-height:100vh;color:#1f2937}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 80px}
+.hdr{text-align:center;padding:30px 24px 22px;background:#fff;border-radius:var(--r);
+  box-shadow:var(--sh);margin-bottom:22px;border-top:5px solid var(--blue)}
+.hdr.green{border-top-color:var(--green)}
+.hdr h1{font-size:1.5rem;color:var(--blue-d);margin-bottom:5px}
+.hdr p{color:var(--gray);font-size:.9rem}
+.badge{display:inline-block;margin-top:10px;background:var(--blue-l);color:var(--blue);
+  padding:4px 14px;border-radius:99px;font-size:.78rem;font-weight:700}
+.badge.green{background:var(--green-l);color:var(--green)}
+.disclaimer{background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid var(--yellow);
+  border-radius:10px;padding:14px 18px;margin-bottom:18px;font-size:.84rem;color:#78350f;
+  display:flex;gap:10px;align-items:flex-start}
+.disclaimer b{display:block;margin-bottom:3px;font-size:.88rem}
+/* Home buttons */
+.home-btn-grid{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:18px}
+.home-btn{flex:1;min-width:220px;padding:28px 20px;border:none;border-radius:14px;
+  cursor:pointer;color:#fff;text-align:center;font-size:1.05rem;font-weight:700;
+  line-height:1.4;transition:transform .16s,box-shadow .16s;box-shadow:var(--sh)}
+.home-btn:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.18)}
+.home-btn .hb-icon{font-size:2.2rem;margin-bottom:10px}
+.home-btn .hb-sub{font-size:.82rem;font-weight:400;opacity:.88;margin-top:6px;line-height:1.35}
+.home-btn-1{background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+.home-btn-2{background:linear-gradient(135deg,#16a34a,#15803d)}
+/* Mode cards (h2 menu) */
+.mode-grid{display:grid;gap:14px;margin-bottom:18px}
+.mode-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:20px 22px;
+  cursor:pointer;transition:.18s;border-left:5px solid var(--border);display:flex;gap:16px}
+.mode-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.13)}
+.mode-card.blue{border-left-color:var(--blue)}.mode-card.green{border-left-color:var(--green)}
+.mode-card.teal{border-left-color:var(--teal)}
+.mode-icon{font-size:1.9rem;flex-shrink:0}
+.mode-title{font-size:1rem;font-weight:700;color:var(--blue-d);margin-bottom:4px}
+.mode-desc{font-size:.84rem;color:var(--gray);line-height:1.4}
+/* Progress */
+.prog-wrap{margin-bottom:18px}
+.prog-lbl{display:flex;justify-content:space-between;font-size:.8rem;color:var(--gray);margin-bottom:5px}
+.prog-track{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),#06b6d4);
+  border-radius:99px;transition:width .4s ease}
+.prog-fill.green{background:linear-gradient(90deg,var(--green),var(--blue))}
+/* History */
+.hist-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;
+  border-radius:8px;margin-bottom:7px;border:1px solid var(--border);font-size:.86rem}
+.hist-q{flex:1;color:#374151}
+.abadge{font-size:.75rem;font-weight:700;padding:3px 10px;border-radius:99px;flex-shrink:0}
+.av{background:var(--green-l);color:var(--green)}
+/* Card */
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:18px}
+.card-hdr{padding:14px 22px;background:var(--gray-l);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px}
+.card-hdr .icon{font-size:1.3rem}
+.card-hdr .cat{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gray)}
+.card-body{padding:26px 22px}
+.q-text{font-size:1.1rem;font-weight:700;color:var(--blue-d);line-height:1.5;margin-bottom:12px}
+.hint{padding:10px 14px;border-radius:6px;font-size:.85rem;margin-bottom:22px;display:flex;gap:8px;align-items:flex-start}
+.hint.blue{background:#f0f9ff;border-left:4px solid #38bdf8;color:#0369a1}
+.hint.green{background:#f0fdf4;border-left:4px solid #4ade80;color:#166534}
+/* Inputs */
+.inp-group{margin-bottom:16px}
+.inp-group label{display:block;font-size:.88rem;font-weight:600;color:var(--blue-d);margin-bottom:6px}
+.inp-group input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:9px;
+  font-size:1rem;outline:none;transition:border-color .2s}
+.inp-group input:focus{border-color:var(--blue)}
+.inp-group .unit{font-size:.8rem;color:var(--gray);margin-top:3px}
+/* Buttons */
+.btn-grp{display:flex;gap:12px;flex-wrap:wrap}
+.btn{flex:1;min-width:100px;padding:14px 18px;border:none;border-radius:10px;cursor:pointer;
+  font-size:.95rem;font-weight:700;transition:transform .14s,box-shadow .14s;
+  display:flex;align-items:center;justify-content:center;gap:8px;line-height:1.3;text-align:center}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.14)}
+.btn-yes{background:var(--green);color:#fff}.btn-no{background:var(--red);color:#fff}
+.btn-primary{background:var(--blue);color:#fff}.btn-green{background:var(--green);color:#fff}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-secondary{background:var(--purple-l);color:var(--purple);border:2px solid var(--purple)}
+.btn-secondary:hover{background:var(--purple);color:#fff}
+.btn-outline{background:#fff;color:var(--blue);border:2px solid var(--blue)}
+.btn-outline:hover{background:var(--blue);color:#fff}
+.btn-back{display:flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--border);
+  color:var(--gray);padding:8px 16px;border-radius:9px;cursor:pointer;font-size:.86rem;
+  font-weight:600;transition:.15s;margin-bottom:16px}
+.btn-back:hover{border-color:var(--blue);color:var(--blue)}
+/* RF / checkbox lists */
+.rf-list{background:var(--gray-l);border-radius:8px;padding:14px 18px;margin-bottom:18px}
+.rf-list li{padding:5px 0;font-size:.9rem;color:#374151;list-style:none;
+  border-bottom:1px solid var(--border)}
+.rf-list li:last-child{border-bottom:none}
+.rf-list li::before{content:"• ";color:var(--blue);font-weight:700}
+.cnt-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.cnt-btn{padding:10px 22px;border:2px solid var(--border);border-radius:9px;background:#fff;
+  cursor:pointer;font-size:1rem;font-weight:700;color:#374151;transition:.15s}
+.cnt-btn:hover,.cnt-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.chk-list{margin-bottom:18px}
+.chk-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--border);cursor:pointer}
+.chk-item:last-child{border-bottom:none}
+.chk-box{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;
+  flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;
+  transition:.15s;background:#fff}
+.chk-item.checked .chk-box{background:var(--blue);border-color:var(--blue);color:#fff}
+.chk-label{font-size:.9rem;color:#374151;line-height:1.4}
+/* Med options (h2) */
+.med-option{padding:14px 18px;border:2px solid var(--border);border-radius:10px;
+  margin-bottom:10px;cursor:pointer;transition:.15s;display:flex;align-items:flex-start;gap:12px}
+.med-option:hover{border-color:var(--green);background:var(--green-l)}
+.med-option.selected{border-color:var(--green);background:var(--green-l)}
+.med-num{width:28px;height:28px;border-radius:50%;background:var(--border);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.88rem;flex-shrink:0;margin-top:1px}
+.med-option.selected .med-num{background:var(--green);color:#fff}
+.med-label{font-size:.95rem;font-weight:600;color:#1f2937}
+.med-sub{font-size:.82rem;color:var(--gray);margin-top:2px}
+.rfc-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;
+  border-bottom:1px solid var(--border);cursor:pointer}
+.rfc-item:last-child{border-bottom:none}
+.rfc-box{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;
+  flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;
+  transition:.15s;background:#fff;font-size:.85rem}
+.rfc-item.checked .rfc-box{background:var(--green);border-color:var(--green);color:#fff}
+.rfc-label{font-size:.9rem;color:#374151;line-height:1.4}
+/* Section title */
+.section-title{font-size:.8rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--gray);margin:18px 0 8px;padding-bottom:4px;
+  border-bottom:1px solid var(--border)}
+/* Result cards */
+.res-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:16px}
+.res-urgent .res-hdr{background:#fef2f2;border-bottom:5px solid var(--red)}
+.res-routine .res-hdr{background:var(--blue-l);border-bottom:5px solid var(--blue)}
+.res-good .res-hdr{background:var(--green-l);border-bottom:5px solid var(--green)}
+.res-watch .res-hdr{background:var(--yellow-l);border-bottom:5px solid var(--yellow)}
+.res-info .res-hdr{background:var(--purple-l);border-bottom:5px solid var(--purple)}
+.res-teal .res-hdr{background:var(--teal-l);border-bottom:5px solid var(--teal)}
+.res-hdr{padding:20px 24px}
+.res-hdr .big-icon{font-size:2rem;margin-bottom:6px}
+.res-hdr .cat-lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;opacity:.65;margin-bottom:4px}
+.res-hdr h2{font-size:1.2rem;font-weight:800}
+.res-urgent h2{color:var(--red)}.res-routine h2{color:var(--blue)}
+.res-good h2{color:var(--green)}.res-watch h2{color:var(--yellow)}
+.res-info h2{color:var(--purple)}.res-teal h2{color:var(--teal)}
+.res-body{padding:20px 24px;background:#fff}
+.res-body ul{list-style:none}
+.res-body li{padding:9px 0;border-bottom:1px solid var(--border);
+  font-size:.93rem;display:flex;gap:10px;align-items:flex-start}
+.res-body li:last-child{border-bottom:none}
+.res-body li::before{content:"→";font-weight:700;flex-shrink:0;margin-top:1px}
+.res-urgent li::before{color:var(--red)}.res-routine li::before{color:var(--blue)}
+.res-good li::before{color:var(--green)}.res-watch li::before{color:var(--yellow)}
+.res-info li::before{color:var(--purple)}.res-teal li::before{color:var(--teal)}
+/* Boxes */
+.note-box{background:var(--yellow-l);border:1px solid #fcd34d;border-radius:8px;
+  padding:12px 16px;font-size:.86rem;color:#78350f;margin-bottom:12px}
+.alert-box{background:var(--red-l);border:1px solid #fca5a5;border-radius:8px;
+  padding:12px 16px;font-size:.86rem;color:#7f1d1d;margin-bottom:12px}
+.success-box{background:var(--green-l);border:1px solid #86efac;border-radius:8px;
+  padding:12px 16px;font-size:.86rem;color:#14532d;margin-bottom:12px}
+.btn-restart{display:block;width:100%;margin-top:14px;padding:14px;
+  background:var(--blue);color:#fff;border:none;border-radius:10px;
+  font-size:.98rem;font-weight:700;cursor:pointer}
+.btn-restart:hover{background:var(--blue-d)}
+.btn-home{display:block;width:100%;margin-top:10px;padding:14px;
+  background:#fff;color:var(--blue);border:2px solid var(--blue);border-radius:10px;
+  font-size:.95rem;font-weight:700;cursor:pointer}
+.btn-home:hover{background:var(--blue);color:#fff}
+@media(max-width:480px){
+  .q-text{font-size:1rem}.btn{padding:12px 10px;font-size:.88rem}
+  .home-btn{min-width:160px;padding:22px 14px}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div style="font-size:2.4rem;margin-bottom:8px">🫀</div>
+    <h1>Hyperlipidemia Assistant</h1>
+    <p>Lipid Profile Interpretation · Treatment Initiation · Follow-Up Management</p>
+    <span class="badge">Doctor Assistant · Evidence-Based Algorithm</span>
+  </div>
+
+  <div class="disclaimer">
+    <span style="font-size:1.3rem;flex-shrink:0">⚠️</span>
+    <div>
+      <b>Clinical Disclaimer</b>
+      This tool is intended for use by licensed medical professionals only. It provides
+      algorithmic guidance based on established clinical guidelines and does not replace
+      clinical judgment. Always verify recommendations against current guidelines and
+      individual patient context. Not for patient self-use.
+    </div>
+  </div>
+
+  <div id="prog-wrap" class="prog-wrap" style="display:none">
+    <div class="prog-lbl"><span>Progress</span><span id="prog-step">Step 1</span></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0"></div></div>
+  </div>
+
+  <div id="hist-box"></div>
+  <div id="main-box"></div>
+
+</div>
+<script>
+
+// ── Global navigation ─────────────────────────────────────
+let APP='home'; // 'home' | 'h1' | 'h2'
+
+function navigate(page){
+  APP=page;
+  document.getElementById('hist-box').innerHTML='';
+  document.getElementById('prog-wrap').style.display='none';
+  if(page==='h1'){h1Reset();h1Render();}
+  else if(page==='h2'){h2Reset();h2RenderMenu();}
+  else renderHome();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function MB(){return document.getElementById('main-box');}
+function HB(){return document.getElementById('hist-box');}
+function setProgress(cur,total,green){
+  document.getElementById('prog-wrap').style.display='block';
+  const pf=document.getElementById('prog-fill');
+  pf.style.width=Math.min((cur-1)/total*100,95)+'%';
+  pf.className='prog-fill'+(green?' green':'');
+  document.getElementById('prog-step').textContent='Step '+cur;
+}
+
+// ════════════════════════════════════════════════════════
+//  HOME
+// ════════════════════════════════════════════════════════
+function renderHome(){
+  document.getElementById('prog-wrap').style.display='none';
+  MB().innerHTML=`
+  <div class="home-btn-grid">
+    <button class="home-btn home-btn-1" onclick="navigate('h1')">
+      <div class="hb-icon">🩺</div>
+      <div>Initial Assessment</div>
+      <div class="hb-sub">New patient · Interpret lipid profile · Start treatment</div>
+    </button>
+    <button class="home-btn home-btn-2" onclick="navigate('h2')">
+      <div class="hb-icon">🔄</div>
+      <div>Follow-Up Management</div>
+      <div class="hb-sub">Patient on therapy · Escalate treatment · TG follow-up</div>
+    </button>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════
+//  H1 — INITIAL ASSESSMENT
+// ════════════════════════════════════════════════════════
+let h1S={}, h1Hist=[], h1Step=1, h1VHR=[], h1HR=[];
+const H1_VHR=["CVA / Stroke","MI (Myocardial Infarction)","PCI (Percutaneous Coronary Intervention)",
+  "CABG (Coronary Artery Bypass Graft)","Stable Angina (within last 1 year)",
+  "Unstable Angina (within last 1 year)","Familial Hypercholesterolemia",
+  "Diabetes Mellitus with end-organ damage","PAD (Peripheral Artery Disease)","GFR < 30 mL/min/1.73m²"];
+const H1_HR=["Stroke (not recent)","TIA (Transient Ischemic Attack)","> 50% stenosis of coronary artery"];
+const H1_TOTAL=7;
+
+function h1Reset(){h1S={};h1Hist=[];h1Step=1;h1VHR=[];h1HR=[];HB().innerHTML='';}
+function h1PushHist(l,v){h1Hist.push({l,v});HB().innerHTML=h1Hist.map(x=>`<div class="hist-item"><span class="hist-q">${x.l}</span><span class="abadge av">${x.v}</span></div>`).join('');}
+function h1Render(){setProgress(h1Step,H1_TOTAL,false);
+  if(h1Step===1)h1Step1();else if(h1Step===2)h1Step2();else if(h1Step===3)h1Step3();
+  else if(h1Step===4)h1Step4();else if(h1Step===5)h1Step5();else if(h1Step===6)h1Step6();
+  else h1Results();
+  window.scrollTo({top:0,behavior:'smooth'});}
+
+function h1Step1(){
+  MB().innerHTML=`
+  <button class="btn-back" onclick="navigate('home')">← Home</button>
+  <div class="card">
+    <div class="card-hdr"><span class="icon">👤</span><span class="cat">Patient Data</span></div>
+    <div class="card-body">
+      <div class="q-text">Enter patient demographics &amp; lipid values</div>
+      <div class="hint blue">💡 Age, LDL, HDL and TG are required.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="inp-group" style="grid-column:1/-1"><label>Patient Age (years)</label>
+          <input type="number" id="a-age" min="1" max="120" placeholder="e.g. 55"></div>
+        <div class="inp-group" style="grid-column:1/-1"><label>LDL Cholesterol (mg/dL)</label>
+          <input type="number" id="a-ldl" placeholder="mg/dL"></div>
+        <div class="inp-group"><label>HDL (mg/dL)</label>
+          <input type="number" id="a-hdl" placeholder="mg/dL"></div>
+        <div class="inp-group"><label>Triglycerides (mg/dL)</label>
+          <input type="number" id="a-tg" placeholder="mg/dL"></div>
+        <div class="inp-group" style="grid-column:1/-1">
+          <label>Total Cholesterol <span style="font-weight:400;color:var(--gray)">(optional)</span></label>
+          <input type="number" id="a-tc" placeholder="mg/dL"></div>
+      </div>
+      <div class="section-title">Diabetes Mellitus</div>
+      <div class="q-text" style="font-size:.95rem">Does the patient have Diabetes Mellitus?</div>
+      <div class="btn-grp">
+        <button class="btn btn-yes" onclick="h1DM(true)">✓ Yes</button>
+        <button class="btn btn-no" onclick="h1DM(false)">✗ No</button>
+      </div>
+    </div>
+  </div>`;}
+function h1DM(v){
+  const age=parseFloat(document.getElementById('a-age').value);
+  const ldl=parseFloat(document.getElementById('a-ldl').value);
+  const hdl=parseFloat(document.getElementById('a-hdl').value);
+  const tg=parseFloat(document.getElementById('a-tg').value);
+  if(!age||!ldl||!hdl||!tg){alert('Please fill in Age, LDL, HDL and TG.');return;}
+  Object.assign(h1S,{age,DM:v,LDL:ldl,HDL:hdl,TG:tg,TC:parseFloat(document.getElementById('a-tc').value)||null});
+  h1PushHist('Age',age+' yrs');h1PushHist('DM',v?'Yes':'No');
+  h1PushHist('LDL',ldl+' mg/dL');h1PushHist('HDL',hdl+' mg/dL');h1PushHist('TG',tg+' mg/dL');
+  h1Step=2;h1Render();}
+
+function h1Step2(){
+  MB().innerHTML=`
+  <button class="btn-back" onclick="navigate('home')">← Home</button>
+  <div class="card">
+    <div class="card-hdr"><span class="icon">❤️</span><span class="cat">CVD Risk Factors</span></div>
+    <div class="card-body">
+      <div class="q-text">How many CVD risk factors does the patient have?</div>
+      <ul class="rf-list">${['Obesity (BMI ≥ 30)','Current smoker','Hypertension (HTN)','Microalbuminuria','Macroalbuminuria'].map(x=>`<li>${x}</li>`).join('')}</ul>
+      <div class="hint blue">💡 Count only currently active risk factors.</div>
+      <div class="cnt-btns">${[0,1,2,3,4,5].map(n=>`<button class="cnt-btn" onclick="h1CVDRF(${n})">${n===5?'5+':n}</button>`).join('')}</div>
+    </div>
+  </div>`;}
+function h1CVDRF(n){h1S.CVDRF=n;h1PushHist('CVD Risk Factors',n+(n===5?'+':' factor'+(n===1?'':'s')));h1Step=3;h1Render();}
+
+function h1Step3(){
+  MB().innerHTML=`
+  <button class="btn-back" onclick="navigate('home')">← Home</button>
+  <div class="card">
+    <div class="card-hdr"><span class="icon">🫀</span><span class="cat">CVD History</span></div>
+    <div class="card-body">
+      <div class="q-text">Does the patient have any cardiovascular disease history?</div>
+      <div class="hint blue">💡 Stroke, MI, PCI, CABG, angina, PAD, or significant coronary stenosis.</div>
+      <div class="btn-grp">
+        <button class="btn btn-yes" onclick="h1CVD(true)">✓ Yes — Has CVD</button>
+        <button class="btn btn-no" onclick="h1CVD(false)">✗ No — No CVD</button>
+      </div>
+    </div>
+  </div>`;}
+function h1CVD(v){h1S.CVD=v;h1PushHist('CVD History',v?'Yes':'No');h1Step=v?4:6;h1Render();}
+
+function h1Step4(){
+  MB().innerHTML=`
+  <button class="btn-back" onclick="navigate('home')">← Home</button>
+  <div class="card">
+    <div class="card-hdr"><span class="icon">🔴</span><span class="cat">Very High Risk Conditions</span></div>
+    <div class="card-body">
+      <div class="q-text">Select all <b>Very High Risk</b> conditions that apply</div>
+      <div class="hint blue">💡 Leave unchecked if none apply.</div>
+      <div class="chk-list">${H1_VHR.map((c,i)=>`<div class="chk-item" id="vhr-${i}" onclick="h1TogVHR(${i})"><div class="chk-box" id="vhrb-${i}"></div><span class="chk-label">${c}</span></div>`).join('')}</div>
+      <div class="btn-grp"><button class="btn btn-primary" onclick="h1ConfVHR()">Continue →</button></div>
+    </div>
+  </div>`;}
+function h1TogVHR(i){
+  const el=document.getElementById('vhr-'+i),box=document.getElementById('vhrb-'+i);
+  if(h1VHR.includes(i)){h1VHR=h1VHR.filter(x=>x!==i);el.classList.remove('checked');box.textContent='';}
+  else{h1VHR.push(i);el.classList.add('checked');box.textContent='✓';}}
+function h1ConfVHR(){
+  h1S.CVDveryhighrisk=h1VHR.length>0;
+  h1PushHist('Very High Risk',h1VHR.length>0?h1VHR.length+' cond.':'None');
+  h1VHR=[];h1Step=5;h1Render();}
+
+function h1Step5(){
+  MB().innerHTML=`
+  <button class="btn-back" onclick="navigate('home')">← Home</button>
+  <div class="card">
+    <div class="card-hdr"><span class="icon">🟠</span><span class="cat">High Risk Conditions</span></div>
+    <div class="card-body">
+      <div class="q-text">Select all <b>High Risk</b> conditions that apply</div>
+      <div class="hint blue">💡 These are separate from Very High Risk.</div>
+      <div class="chk-list">${H1_HR.map((c,i)=>`<div class="chk-item" id="hr-${i}" onclick="h1TogHR(${i})"><div class="chk-box" id="hrb-${i}"></div><span class="chk-label">${c}</span></div>`).join('')}</div>
+      <div class="btn-grp"><button class="btn btn-primary" onclick="h1ConfHR()">Continue →</button></div>
+    </div>
+  </div>`;}
+function h1TogHR(i){
+  const el=document.getElementById('hr-'+i),box=document.getElementById('hrb-'+i);
+  if(h1HR.includes(i)){h1HR=h1HR.filter(x=>x!==i);el.classList.remove('checked');box.textContent='';}
+  else{h1HR.push(i);el.classList.add('checked');box.textContent='✓';}}
+function h1ConfHR(){
+  h1S.CVDhighrisk=h1HR.length>0;
+  h1PushHist('High Risk',h1HR.length>0?h1HR.length+' cond.':'None');
+  h1HR=[];h1Step=6;h1Render();}
+
+function h1Step6(){
+  MB().innerHTML=`
+  <button class="btn-back" onclick="navigate('home')">← Home</button>
+  <div class="card">
+    <div class="card-hdr"><span class="icon">📊</span><span class="cat">ASCVD Risk Score</span></div>
+    <div class="card-body">
+      <div class="q-text">Enter the 10-year ASCVD risk score (if calculated)</div>
+      <div class="hint blue">💡 ACC/AHA: tools.acc.org/ASCVD-Risk-Estimator. Skip if unavailable.</div>
+      <div class="inp-group"><label>10-year ASCVD Risk (%)</label>
+        <input type="number" id="a-ascvd" min="0" max="100" step="0.1" placeholder="e.g. 12.5"></div>
+      <div class="btn-grp">
+        <button class="btn btn-primary" onclick="h1SetASCVD()">✓ Use This Score</button>
+        <button class="btn btn-secondary" onclick="h1SkipASCVD()">Skip — Not Available</button>
+      </div>
+    </div>
+  </div>`;}
+function h1SetASCVD(){
+  const v=parseFloat(document.getElementById('a-ascvd').value);
+  if(isNaN(v)||v<0||v>100){alert('Enter a valid percentage (0–100).');return;}
+  h1S.ASCVD=v;h1PushHist('ASCVD Score',v+'%');h1Step=7;h1Render();}
+function h1SkipASCVD(){h1S.ASCVD=null;h1PushHist('ASCVD Score','Skipped');h1Step=7;h1Render();}
+
+function calcStatin(age,DM,CVDRF,CVD,LDL,ASCVD,VHR){
+  let si='moderate',lc=130,note=null;
+  if(!DM&&CVDRF===0&&!CVD){
+    if(LDL>190){si='high';lc=100;}
+    else if(ASCVD!==null){
+      if(ASCVD<5){si='very-low';lc=190;}
+      else if(ASCVD<7.5){si='low';lc=160;}
+      else if(ASCVD<20){si='moderate';lc=100;}
+      else{si='high';lc=100;}
+    }else{si='moderate';lc=130;}
+  }else if(DM&&age>=40&&age<=75){
+    si=CVDRF===0?'moderate':'high';lc=CVDRF===0?100:70;
+    if(CVD){si='high';lc=55;}
+  }else if(DM&&CVD){si='high';lc=55;}
+  else if(!DM&&CVD){si='high';lc=VHR?55:70;}
+  else if(DM&&(age>75||age<40)){
+    if(CVDRF>=1){si='moderate';lc=100;note='Continue statin if already taking. Starting controversial — may prescribe per individual risk.';}
+    else{si='low';lc=130;note='Continue statin if already taking. Starting controversial — not necessary to start moderate intensity.';}
+  }else if(LDL>190){si='high';lc=100;}
+  return{si,lc,note};}
+
+const SI_LABEL={'high':'HIGH INTENSITY','moderate':'MODERATE INTENSITY','low':'LOW INTENSITY','very-low':'VERY LOW / OPTIONAL'};
+const SI_COLOR={'high':'urgent','moderate':'routine','low':'watch','very-low':'good'};
+const SI_OPTS={'high':['Atorvastatin 40–80 mg daily','Rosuvastatin 20–40 mg daily'],
+  'moderate':['Atorvastatin 10–20 mg daily','Rosuvastatin 5–10 mg daily','Simvastatin 20–40 mg daily','Pravastatin 40–80 mg daily'],
+  'low':['Atorvastatin 10 mg daily','Rosuvastatin 5 mg daily','Simvastatin 10 mg daily'],
+  'very-low':['Consider moderate intensity if treatment desired','Lifestyle modification as primary therapy']};
+
+function buildTGCard(tg,hr,fu){
+  const sev=tg>=1000?'CRITICAL':tg>=500?'SEVERE':tg>=200?'MODERATE':'MILD';
+  const col=tg>=500?'urgent':'watch';
+  let mgmt='';
+  if(tg>=1000){mgmt=`<div class="alert-box">🚨 <b>CRITICAL</b> — Pancreatitis risk is very high. Consider hospital admission.</div><ul>
+    <li>STRICT dietary modification — fat &lt;5% of total calories</li>
+    <li>Start Fibrate IMMEDIATELY — Fenofibrate 145–160 mg daily OR Gemfibrozil 600 mg BID</li>
+    <li>Omega-3 EPA/DHA 4000 mg daily</li>
+    <li>Check TG every 2–3 days until &lt;1000 mg/dL</li>
+    <li>Monitor for pancreatitis: severe abdominal pain, nausea, vomiting</li></ul>`;}
+  else if(tg>=500){mgmt=hr
+    ?`<ul><li>Icosapent Ethyl 2000 mg BID — REDUCE-IT trial: 25% CV event reduction</li>
+      <li>Continue lifestyle modification education</li>
+      <li>Consider hospital admission if TG approaching 1000</li>
+      <li>Follow-up: 1–1.5 months; if TG still &gt;500 → add Fibrate</li></ul>`
+    :`<ul><li>Start Fibrate — Fenofibrate 145–160 mg daily OR Gemfibrozil 600 mg BID</li>
+      <li>Continue lifestyle modification education</li>
+      <li>Follow-up: 1–1.5 months; if TG still &gt;500 → add Omega-3 EPA/DHA 4000 mg daily</li>
+      <li>Pancreatitis risk is significant when TG &gt;500</li></ul>`;}
+  else{mgmt=hr
+    ?`<ul><li>Icosapent Ethyl 2000 mg BID — REDUCE-IT trial evidence</li>
+      <li>Continue lifestyle modification education</li>
+      <li>Follow-up: 3–6 months with repeat lipid panel</li></ul>`
+    :`<ul><li>Lifestyle modification as PRIMARY therapy</li>
+      <li>Consider Fibrate if TG &gt;200 after lifestyle changes</li>
+      <li>Follow-up: 3–6 months with lipid panel</li></ul>`;}
+  return `<div class="res-card res-${col}">
+    <div class="res-hdr"><div class="big-icon">${tg>=500?'🚨':'📊'}</div>
+    <div class="cat-lbl">Hypertriglyceridemia${fu?' Follow-Up':''}</div>
+    <h2>TG ${tg} mg/dL — ${sev} | ${hr?'High Risk':'Standard Risk'}</h2></div>
+    <div class="res-body">
+      ${hr?`<div class="note-box">🔴 <b>HIGH RISK</b> — Icosapent Ethyl preferred where applicable.</div>`:''}
+      ${mgmt}
+      <div class="section-title">Lifestyle Modifications</div>
+      <ul><li>Weight loss if overweight/obese; stop TG-raising medications</li>
+      <li>Smoking cessation; alcohol cessation/reduction</li>
+      <li>Blood pressure &amp; glycemic control</li>
+      <li>Exercise: 150 min/week moderate OR 75 min/week vigorous</li>
+      <li>Decrease simple carbohydrates and dietary fats</li></ul>
+    </div></div>`;}
+
+function h1Results(){
+  const {si,lc,note}=calcStatin(h1S.age,h1S.DM,h1S.CVDRF,h1S.CVD,h1S.LDL,h1S.ASCVD,h1S.CVDveryhighrisk);
+  const atT=h1S.LDL<=lc;
+  const opts=SI_OPTS[si]||[];
+  const ldlCard=atT
+    ?`<div class="res-card res-good"><div class="res-hdr"><div class="big-icon">✅</div>
+      <div class="cat-lbl">LDL Status</div><h2>LDL at Target (${h1S.LDL} ≤ ${lc} mg/dL)</h2></div>
+      <div class="res-body"><ul><li>No statin therapy required at this time</li>
+      <li>Continue lifestyle modifications</li><li>Annual lipid panel recommended</li></ul></div></div>`
+    :`<div class="res-card res-urgent"><div class="res-hdr"><div class="big-icon">⚠️</div>
+      <div class="cat-lbl">LDL Above Target</div><h2>LDL ${h1S.LDL} mg/dL — Target &lt; ${lc} mg/dL</h2></div>
+      <div class="res-body"><ul><li>LDL exceeds target by ${Math.round(h1S.LDL-lc)} mg/dL — treatment required</li>
+      <li>Review secondary causes of hypercholesterolemia below</li></ul></div></div>`;
+  const secCauses=!atT?`<div class="res-card res-watch">
+    <div class="res-hdr"><div class="big-icon">🔬</div>
+    <div class="cat-lbl">Hypercholesterolemia Assessment</div><h2>Check for Secondary Causes</h2></div>
+    <div class="res-body">
+      <div class="section-title">Order the Following Labs</div>
+      <ul><li>Hypothyroidism — TSH, Free T4</li>
+      <li>Hepatic cholestasis — ALT, AST, ALP, Bilirubin</li>
+      <li>Nephrotic / Nephritic syndrome — Urinalysis, urine protein</li>
+      <li>CKD — BUN, Creatinine, eGFR</li></ul>
+      <div class="section-title">Clinical — Cushing's Syndrome</div>
+      <ul><li>Hirsutism, abdominal striae (purple), central obesity</li>
+      <li>Easy bruising, buffalo hump, menstrual irregularities</li></ul>
+      <div class="section-title">Drugs That Increase LDL</div>
+      <ul><li>Corticosteroids, Tacrolimus, Sirolimus, Carbamazepine</li>
+      <li>Cyclosporine, Thiazides, Retinoids, Antiretrovirals</li></ul>
+      <div class="section-title">Screen for Familial Hypercholesterolemia</div>
+      <ul><li>Family history of premature CVD (♂ &lt;55y, ♀ &lt;65y)</li>
+      <li>Xanthelasma, tendon xanthoma, corneal arcus, plantar xanthoma</li>
+      <li>If suspected → genetic testing, screen family, consider PCSK9 inhibitor</li></ul>
+    </div></div>`:'';
+  MB().innerHTML=`
+    <button class="btn-back" onclick="navigate('home')">← Home</button>
+    <div class="res-card res-${SI_COLOR[si]}">
+      <div class="res-hdr"><div class="big-icon">💊</div>
+      <div class="cat-lbl">Statin Recommendation</div>
+      <h2>${SI_LABEL[si]} — LDL Target &lt; ${lc} mg/dL</h2></div>
+      <div class="res-body">
+        ${note?`<div class="note-box">📝 ${note}</div>`:''}
+        <div class="section-title">Patient Summary</div>
+        <ul><li>Age: ${h1S.age} yrs | DM: ${h1S.DM?'Yes':'No'} | LDL: ${h1S.LDL} | HDL: ${h1S.HDL} | TG: ${h1S.TG} mg/dL</li>
+        ${h1S.ASCVD!==null?`<li>10-yr ASCVD Risk: ${h1S.ASCVD}%</li>`:''}</ul>
+        <div class="section-title">Medication Options</div>
+        <ul>${opts.map(o=>`<li>${o}</li>`).join('')}</ul>
+        ${si==='high'&&h1S.LDL>170?`<div class="section-title">Very Elevated LDL</div><ul>
+          <li>High-intensity statin + Ezetimibe 10 mg daily</li>
+          <li>Consider PCSK9 inhibitor if very high risk</li></ul>`:''}
+        <div class="section-title">Adverse Effects to Discuss</div>
+        <ul><li>Myalgia / muscle pain (5–10%)</li><li>Elevated liver enzymes (2%)</li>
+        <li>New-onset diabetes (small risk)</li><li>Drug interactions — check CYP450</li></ul>
+        <div class="section-title">Monitoring</div>
+        <ul><li>First follow-up: 4–12 weeks after starting statin</li>
+        <li>Labs: Lipid panel, LFTs, CK (if muscle symptoms)</li></ul>
+      </div></div>
+    ${ldlCard}${secCauses}
+    ${h1S.TG>=150?buildTGCard(h1S.TG,false,false):''}
+    <div class="res-card res-info">
+      <div class="res-hdr"><div class="big-icon">📋</div><div class="cat-lbl">Quick Reference</div>
+      <h2>LDL Targets by Risk Category</h2></div>
+      <div class="res-body"><ul>
+        <li><b>Very High Risk</b> — &lt;55 mg/dL (High intensity)</li>
+        <li><b>High Risk</b> — &lt;70 mg/dL (High intensity)</li>
+        <li><b>Moderate Risk</b> — &lt;100 mg/dL (Moderate intensity)</li>
+        <li><b>Low Risk</b> — &lt;130 mg/dL (Consider moderate)</li>
+        <li><b>Very Low Risk</b> — &lt;190 mg/dL (Optional / lifestyle first)</li>
+      </ul>
+      <div class="section-title">TG Categories</div>
+      <ul><li>Normal: &lt;150 — No treatment</li>
+      <li>Borderline High: 150–199 — Lifestyle</li>
+      <li>High: 200–499 — Lifestyle, consider fibrate</li>
+      <li>Very High: ≥500 — Fibrate + strict diet + pancreatitis risk</li></ul>
+      </div></div>
+    <button class="btn-restart" onclick="h1Reset();h1Render()">🔄 New Patient</button>
+    <button class="btn-home" onclick="navigate('home')">← Back to Home</button>`;}
+
+// ════════════════════════════════════════════════════════
+//  H2 — FOLLOW-UP MANAGEMENT
+// ════════════════════════════════════════════════════════
+let h2Mode=0,h2Step=1,h2S={},h2Hist=[],h2Med=null,h2RFC={};
+
+function h2Reset(){h2Mode=0;h2Step=1;h2S={};h2Hist=[];h2Med=null;h2RFC={};HB().innerHTML='';}
+function h2PushHist(l,v){h2Hist.push({l,v});HB().innerHTML=h2Hist.map(x=>`<div class="hist-item"><span class="hist-q">${x.l}</span><span class="abadge av">${x.v}</span></div>`).join('');}
+
+function h2RenderMenu(){
+  document.getElementById('prog-wrap').style.display='none';
+  MB().innerHTML=`
+  <button class="btn-back" onclick="navigate('home')">← Home</button>
+  <div class="mode-grid">
+    <div class="mode-card blue" onclick="h2Start(1)">
+      <div class="mode-icon">🩺</div>
+      <div><div class="mode-title">New Patient Assessment</div>
+      <div class="mode-desc">Initial workup — determine statin intensity and LDL target.</div></div>
+    </div>
+    <div class="mode-card green" onclick="h2Start(2)">
+      <div class="mode-icon">🔄</div>
+      <div><div class="mode-title">Follow-Up Management</div>
+      <div class="mode-desc">Patient already on therapy — assess LDL target and escalate if needed.</div></div>
+    </div>
+    <div class="mode-card teal" onclick="h2Start(3)">
+      <div class="mode-icon">🧪</div>
+      <div><div class="mode-title">HyperTG Follow-Up Only</div>
+      <div class="mode-desc">Focused triglyceride management — risk stratification and treatment.</div></div>
+    </div>
+  </div>`;}
+
+function h2Start(m){h2Mode=m;h2Step=1;h2Render();}
+function h2Render(){
+  if(h2Mode===1)h2NewPatient();
+  else if(h2Mode===2)h2FollowUp();
+  else if(h2Mode===3)h2HyperTG();
+  window.scrollTo({top:0,behavior:'smooth'});}
+
+// ─── H2 Mode 1: New Patient (simplified) ─────────────────
+function h2NewPatient(){
+  setProgress(h2Step,6,true);
+  if(h2Step===1)h2NP1();else if(h2Step===2)h2NP2();else if(h2Step===3)h2NP3();
+  else if(h2Step===4)h2NP4();else if(h2Step===5)h2NP5();else h2NPResults();}
+
+function h2NP1(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">👤</span><span class="cat">Patient Data</span></div>
+  <div class="card-body">
+    <div class="q-text">Enter patient demographics &amp; lipid values</div>
+    <div class="hint green">💡 Age, LDL, HDL and TG are required.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="inp-group" style="grid-column:1/-1"><label>Patient Age (years)</label>
+        <input type="number" id="b-age" placeholder="e.g. 58"></div>
+      <div class="inp-group" style="grid-column:1/-1"><label>LDL (mg/dL)</label>
+        <input type="number" id="b-ldl" placeholder="mg/dL"></div>
+      <div class="inp-group"><label>HDL (mg/dL)</label>
+        <input type="number" id="b-hdl" placeholder="mg/dL"></div>
+      <div class="inp-group"><label>TG (mg/dL)</label>
+        <input type="number" id="b-tg" placeholder="mg/dL"></div>
+    </div>
+    <div class="section-title">Diabetes Mellitus</div>
+    <div class="btn-grp">
+      <button class="btn btn-yes" onclick="h2npDM(true)">✓ Yes</button>
+      <button class="btn btn-no" onclick="h2npDM(false)">✗ No</button>
+    </div>
+  </div></div>`;}
+function h2npDM(v){
+  const age=parseFloat(document.getElementById('b-age').value);
+  const ldl=parseFloat(document.getElementById('b-ldl').value);
+  const hdl=parseFloat(document.getElementById('b-hdl').value);
+  const tg=parseFloat(document.getElementById('b-tg').value);
+  if(!age||!ldl||!hdl||!tg){alert('Please fill in all fields.');return;}
+  Object.assign(h2S,{age,DM:v,LDL:ldl,HDL:hdl,TG:tg});
+  h2PushHist('Age',age+' yrs');h2PushHist('DM',v?'Yes':'No');
+  h2PushHist('LDL',ldl+' mg/dL');h2PushHist('TG',tg+' mg/dL');
+  h2Step=2;h2Render();}
+
+function h2NP2(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">❤️</span><span class="cat">CVD Risk Factors</span></div>
+  <div class="card-body">
+    <div class="q-text">How many CVD risk factors does the patient have?</div>
+    <ul class="rf-list">${['Obesity (BMI ≥ 30)','Current smoker','Hypertension (HTN)','Microalbuminuria','Macroalbuminuria'].map(x=>`<li>${x}</li>`).join('')}</ul>
+    <div class="hint green">💡 Count only currently active factors.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${[0,1,2,3,4,5].map(n=>`<button class="btn btn-outline" style="flex:0 0 auto;min-width:60px" onclick="h2npCVDRF(${n})">${n===5?'5+':n}</button>`).join('')}
+    </div>
+  </div></div>`;}
+function h2npCVDRF(n){h2S.CVDRF=n;h2PushHist('CVD RF',n+(n===5?'+':''));h2Step=3;h2Render();}
+
+function h2NP3(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🫀</span><span class="cat">CVD History</span></div>
+  <div class="card-body">
+    <div class="q-text">Does the patient have any CVD history?</div>
+    <div class="hint green">💡 Stroke, MI, PCI, CABG, angina, PAD, significant coronary stenosis.</div>
+    <div class="btn-grp">
+      <button class="btn btn-yes" onclick="h2npCVD(true)">✓ Yes</button>
+      <button class="btn btn-no" onclick="h2npCVD(false)">✗ No</button>
+    </div>
+  </div></div>`;}
+function h2npCVD(v){h2S.CVD=v;h2S.CVDveryhighrisk=false;h2PushHist('CVD',v?'Yes':'No');h2Step=v?4:5;h2Render();}
+
+function h2NP4(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🔴</span><span class="cat">Risk Stratification</span></div>
+  <div class="card-body">
+    <div class="q-text">Does the patient meet any <b>Very High Risk</b> criteria?</div>
+    <div class="hint green">💡 Recent MI/stroke/PCI/CABG/angina (last 1yr), FH, DM with organ damage, PAD, GFR &lt;30.</div>
+    <div class="btn-grp">
+      <button class="btn btn-yes" onclick="h2npVHR(true)">✓ Yes</button>
+      <button class="btn btn-no" onclick="h2npVHR(false)">✗ No</button>
+    </div>
+  </div></div>`;}
+function h2npVHR(v){h2S.CVDveryhighrisk=v;h2PushHist('Very High Risk',v?'Yes':'No');h2Step=5;h2Render();}
+
+function h2NP5(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">📊</span><span class="cat">ASCVD Score</span></div>
+  <div class="card-body">
+    <div class="q-text">Enter 10-year ASCVD risk score (if available)</div>
+    <div class="hint green">💡 ACC/AHA: tools.acc.org/ASCVD-Risk-Estimator. Skip if unavailable.</div>
+    <div class="inp-group"><label>10-year ASCVD Risk (%)</label>
+      <input type="number" id="b-ascvd" min="0" max="100" step="0.1" placeholder="e.g. 14.5"></div>
+    <div class="btn-grp">
+      <button class="btn btn-primary" onclick="h2npASCVD()">✓ Use Score</button>
+      <button class="btn btn-secondary" onclick="h2npSkipASCVD()">Skip</button>
+    </div>
+  </div></div>`;}
+function h2npASCVD(){const v=parseFloat(document.getElementById('b-ascvd').value);
+  if(isNaN(v)||v<0||v>100){alert('Enter 0–100.');return;}
+  h2S.ASCVD=v;h2PushHist('ASCVD',v+'%');h2Step=6;h2Render();}
+function h2npSkipASCVD(){h2S.ASCVD=null;h2PushHist('ASCVD','Skipped');h2Step=6;h2Render();}
+
+function h2NPResults(){
+  const {si,lc,note}=calcStatin(h2S.age,h2S.DM,h2S.CVDRF,h2S.CVD,h2S.LDL,h2S.ASCVD,h2S.CVDveryhighrisk);
+  const atT=h2S.LDL<=lc;const opts=SI_OPTS[si]||[];
+  MB().innerHTML=`
+    <button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+    <div class="res-card res-${SI_COLOR[si]}">
+      <div class="res-hdr"><div class="big-icon">💊</div>
+      <div class="cat-lbl">Statin Recommendation</div>
+      <h2>${SI_LABEL[si]} — LDL Target &lt; ${lc} mg/dL</h2></div>
+      <div class="res-body">
+        ${note?`<div class="note-box">📝 ${note}</div>`:''}
+        <div class="section-title">Summary</div>
+        <ul><li>Age: ${h2S.age} yrs | DM: ${h2S.DM?'Yes':'No'} | LDL: ${h2S.LDL} | TG: ${h2S.TG} mg/dL</li>
+        <li>LDL Status: ${atT?'✅ At Target':'⚠️ Above Target by '+(h2S.LDL-lc).toFixed(0)+' mg/dL'}</li>
+        ${h2S.ASCVD!==null?`<li>ASCVD Risk: ${h2S.ASCVD}%</li>`:''}</ul>
+        <div class="section-title">Medication Options</div>
+        <ul>${opts.map(o=>`<li>${o}</li>`).join('')}</ul>
+        <div class="section-title">Duration of Therapy</div>
+        <ul><li><b>Lifelong:</b> Diabetes mellitus, Familial Hypercholesterolemia, established CVD</li>
+        <li><b>Time-limited:</b> Secondary causes — until 1 yr after normalizing + underlying cause treated</li></ul>
+        <div class="section-title">Monitoring</div>
+        <ul><li>First follow-up: 4–12 weeks after starting statin</li>
+        <li>Labs: Lipid panel, LFTs, CK if muscle symptoms</li>
+        <li>Complications: Myalgia (5–10%), elevated LFTs (2%), new-onset DM (small risk)</li></ul>
+      </div></div>
+    ${h2S.TG>=150?buildTGCard(h2S.TG,false,false):''}
+    <button class="btn-restart" onclick="h2Reset();h2Start(1)">🔄 New Assessment</button>
+    <button class="btn-home" onclick="h2RenderMenu()">← Menu</button>`;}
+
+// ─── H2 Mode 2: Follow-Up ────────────────────────────────
+function h2FollowUp(){
+  setProgress(h2Step,4,true);
+  if(h2Step===1)h2FU1();else if(h2Step===2)h2FU2();
+  else if(h2Step===3)h2FU3();else h2FUResults();}
+
+function h2FU1(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🧾</span><span class="cat">Current Lab Values</span></div>
+  <div class="card-body">
+    <div class="q-text">Enter the patient's current lipid results</div>
+    <div class="hint green">💡 Values from the most recent follow-up blood test.</div>
+    <div class="inp-group"><label>Current LDL (mg/dL)</label>
+      <input type="number" id="fu-ldl" placeholder="e.g. 88"></div>
+    <div class="inp-group"><label>Current Triglycerides (mg/dL)</label>
+      <input type="number" id="fu-tg" placeholder="e.g. 195"></div>
+    <div class="btn-grp"><button class="btn btn-green" onclick="h2fu1()">Continue →</button></div>
+  </div></div>`;}
+function h2fu1(){
+  const ldl=parseFloat(document.getElementById('fu-ldl').value);
+  const tg=parseFloat(document.getElementById('fu-tg').value);
+  if(isNaN(ldl)||isNaN(tg)){alert('Enter both LDL and TG.');return;}
+  h2S.LDL=ldl;h2S.TG=tg;h2PushHist('Current LDL',ldl+' mg/dL');h2PushHist('Current TG',tg+' mg/dL');
+  h2Step=2;h2Render();}
+
+function h2FU2(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🎯</span><span class="cat">LDL Target</span></div>
+  <div class="card-body">
+    <div class="q-text">What is the LDL target for this patient?</div>
+    <div class="hint green">💡 Very High Risk &lt;55 | High Risk &lt;70 | Moderate &lt;100 | Low &lt;130</div>
+    <div class="inp-group"><label>LDL Target (mg/dL)</label>
+      <input type="number" id="fu-lc" placeholder="e.g. 70">
+      <div class="unit">Common: 55 / 70 / 100 / 130 mg/dL</div></div>
+    <div class="btn-grp"><button class="btn btn-green" onclick="h2fu2()">Continue →</button></div>
+  </div></div>`;}
+function h2fu2(){
+  const lc=parseFloat(document.getElementById('fu-lc').value);
+  if(isNaN(lc)||lc<=0){alert('Enter a valid LDL target.');return;}
+  h2S.LDLcutoff=lc;h2PushHist('LDL Target','<'+lc+' mg/dL');h2Step=3;h2Render();}
+
+function h2FU3(){
+  h2Med=null;
+  const meds=[
+    {l:'Statin — Under Maximum Dosage',s:'Not yet at the highest dose of their statin'},
+    {l:'Statin — Maximum Dosage',s:'Already on the highest dose of their statin'},
+    {l:'Statin + Ezetimibe',s:'Combination therapy — statin and ezetimibe together'},
+    {l:'Statin + Ezetimibe + Bempedoic Acid',s:'Triple oral therapy — maximum oral regimen'},
+    {l:'Ezetimibe Only (Statin Intolerant)',s:'Cannot tolerate statins — ezetimibe monotherapy'}];
+  MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">💊</span><span class="cat">Current Medication</span></div>
+  <div class="card-body">
+    <div class="q-text">What medication is the patient currently taking?</div>
+    <div class="hint green">💡 Select the option that best describes current therapy.</div>
+    ${meds.map((m,i)=>`<div class="med-option" id="m-${i}" onclick="h2selMed(${i})">
+      <div class="med-num">${i+1}</div>
+      <div><div class="med-label">${m.l}</div><div class="med-sub">${m.s}</div></div>
+    </div>`).join('')}
+    <div class="btn-grp" style="margin-top:8px">
+      <button class="btn btn-green" onclick="h2fu3()">Continue →</button>
+    </div>
+  </div></div>`;}
+function h2selMed(i){
+  if(h2Med!==null)document.getElementById('m-'+h2Med).classList.remove('selected');
+  h2Med=i;document.getElementById('m-'+i).classList.add('selected');}
+function h2fu3(){
+  if(h2Med===null){alert('Please select the current medication.');return;}
+  h2S.med=h2Med;
+  const lb=['Statin (sub-max)','Max statin','Statin+Ezetimibe','Statin+Ezet+Bempedoic','Ezetimibe only'];
+  h2PushHist('Medication',lb[h2Med]);h2Step=4;h2Render();}
+
+function h2FUResults(){
+  const atT=h2S.LDL<=h2S.LDLcutoff;
+  const ACTIONS=[
+    {t:'Intensify Statin Therapy',i:'📈',c:'routine',
+      items:['Increase current statin to maximum dose, OR switch to Atorvastatin or Rosuvastatin','Next follow-up: 1–3 months with repeat lipid panel','Labs: LDL, TG, LFTs, CK if muscle symptoms']},
+    {t:'Add Ezetimibe 10 mg Daily',i:'➕',c:'routine',
+      items:['Add Ezetimibe 10 mg daily to current maximum statin','Or use combination pill: Roszet or Liproxstatin','Expected additional LDL reduction: 15–25%','Next follow-up: 1–3 months']},
+    {t:'Add Third-Line Agent',i:'💉',c:'watch',
+      items:['Option A: Bempedoic acid 180 mg daily','Option B: PCSK9 inhibitor — Alirocumab or Evolocumab (preferred if FH or very high risk)','Option C: Bile acid sequestrant — Cholestyramine or Colesevelam','Next follow-up: 1–3 months']},
+    {t:'Add Injectable Therapy',i:'🩺',c:'urgent',
+      items:['PCSK9 inhibitor: Alirocumab or Evolocumab','Inclisiran: 284 mg SC — Day 1, Day 90, then every 6 months','Consider referral to a lipid specialist','Next follow-up: 1–3 months']},
+    {t:'Add Non-Statin Agent (Statin Intolerant)',i:'🔁',c:'watch',
+      items:['Option A: Bempedoic acid 180 mg — lower myopathy risk vs. statin','Option B: PCSK9 inhibitor — no muscle side effects','Option C: Bile acid sequestrant','Consider referral to lipid specialist','Next follow-up: 1–3 months','Periodic reassessment of statin tolerance']}];
+  const a=ACTIONS[h2S.med];
+  const actionCard=atT
+    ?`<div class="res-card res-good"><div class="res-hdr"><div class="big-icon">✅</div>
+      <div class="cat-lbl">LDL Status</div><h2>LDL at Target — ${h2S.LDL} ≤ ${h2S.LDLcutoff} mg/dL</h2></div>
+      <div class="res-body"><div class="success-box">🎉 Target achieved! Continue current therapy unchanged.</div>
+      <ul><li>Continue current medication at same dosage</li>
+      <li>Next follow-up: <b>1 year</b></li>
+      <li>Return sooner if statin complications develop</li>
+      <li>Complications to monitor: Myalgia (5–10%), elevated LFTs (2%), new-onset DM, cognitive effects (rare)</li>
+      </ul></div></div>`
+    :`<div class="res-card res-${a.c}"><div class="res-hdr"><div class="big-icon">${a.i}</div>
+      <div class="cat-lbl">LDL Above Target — Action Required</div><h2>${a.t}</h2></div>
+      <div class="res-body">
+      <div class="alert-box">⚠️ LDL ${h2S.LDL} mg/dL — Target &lt;${h2S.LDLcutoff} mg/dL. ${(h2S.LDL-h2S.LDLcutoff).toFixed(0)} mg/dL above target.</div>
+      <ul>${a.items.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <div class="section-title">Duration of Therapy</div>
+      <ul><li><b>Lifelong:</b> DM, Familial Hypercholesterolemia, established atherosclerotic CVD</li>
+      <li><b>Time-limited:</b> Secondary causes — until 1 yr after normalizing + underlying cause treated</li></ul>
+      </div></div>`;
+  MB().innerHTML=`
+    <button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+    ${actionCard}
+    ${h2S.TG>=150?buildTGCard(h2S.TG,h2S.tgHighRisk||false,true):''}
+    <button class="btn-restart" onclick="h2Reset();h2Start(2)">🔄 New Follow-Up</button>
+    <button class="btn-home" onclick="h2RenderMenu()">← Menu</button>`;}
+
+// ─── H2 Mode 3: HyperTG ──────────────────────────────────
+function h2HyperTG(){
+  setProgress(h2Step,4,true);
+  if(h2Step===1)h2TG1();else if(h2Step===2)h2TG2();
+  else if(h2Step===3)h2TG3();else h2TGResults();}
+
+function h2TG1(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🧪</span><span class="cat">Triglyceride Level</span></div>
+  <div class="card-body">
+    <div class="q-text">Enter the patient's current triglyceride level</div>
+    <div class="hint green">💡 Normal &lt;150 | Borderline 150–199 | High 200–499 | Very High ≥500</div>
+    <div class="inp-group"><label>Triglycerides (mg/dL)</label>
+      <input type="number" id="tg-v" min="0" placeholder="e.g. 380"></div>
+    <div class="btn-grp"><button class="btn btn-teal" onclick="h2tg1()">Continue →</button></div>
+  </div></div>`;}
+function h2tg1(){const v=parseFloat(document.getElementById('tg-v').value);
+  if(isNaN(v)||v<0){alert('Enter a valid TG value.');return;}
+  h2S.TG=v;h2PushHist('TG',v+' mg/dL');h2Step=2;h2Render();}
+
+function h2TG2(){MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🩺</span><span class="cat">High-Risk — Criterion 1</span></div>
+  <div class="card-body">
+    <div class="q-text">Does the patient have <b>Established Atherosclerotic CVD</b>?</div>
+    <div class="hint green">💡 Stroke, TIA, MI, PCI, CABG, Angina, CVA, PAD, or ≥50% coronary stenosis.</div>
+    <div class="btn-grp">
+      <button class="btn btn-yes" onclick="h2tgASCVD(true)">✓ Yes — Established ASCVD</button>
+      <button class="btn btn-no" onclick="h2tgASCVD(false)">✗ No</button>
+    </div>
+  </div></div>`;}
+function h2tgASCVD(v){h2S.tgHighRisk=v;h2PushHist('Established ASCVD',v?'Yes':'No');
+  h2Step=v?4:3;h2Render();}
+
+function h2TG3(){
+  h2RFC={};
+  const dmRF=['Hypertension','Current smoker','Microalbuminuria','Macroalbuminuria','Age ≥ 50 years','GFR < 60 mL/min','Retinopathy'];
+  MB().innerHTML=`<button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+  <div class="card"><div class="card-hdr"><span class="icon">💉</span><span class="cat">High-Risk — Criterion 2</span></div>
+  <div class="card-body">
+    <div class="q-text">Does the patient have <b>DM with ≥ 2 risk factors</b>?</div>
+    <div class="hint green">💡 Confirm diabetes first, then check risk factors. ≥2 = High Risk.</div>
+    <div class="section-title">Does the patient have Diabetes?</div>
+    <div class="btn-grp" style="margin-bottom:18px">
+      <button class="btn btn-yes" onclick="document.getElementById('dm-rf').style.display='block'">✓ Yes</button>
+      <button class="btn btn-no" onclick="h2tgNoDM()">✗ No</button>
+    </div>
+    <div id="dm-rf" style="display:none">
+      <div class="section-title">Select applicable risk factors</div>
+      <div class="chk-list" style="margin-bottom:16px">
+        ${dmRF.map((r,i)=>`<div class="rfc-item" id="r-${i}" onclick="h2togRFC(${i})">
+          <div class="rfc-box" id="rb-${i}"></div>
+          <span class="rfc-label">${r}</span>
+        </div>`).join('')}
+      </div>
+      <div class="btn-grp"><button class="btn btn-teal" onclick="h2dmConf()">Confirm →</button></div>
+    </div>
+  </div></div>`;}
+function h2tgNoDM(){h2S.tgHighRisk=false;h2PushHist('DM-based High Risk','No');h2Step=4;h2Render();}
+function h2togRFC(i){
+  h2RFC[i]=!h2RFC[i];
+  const el=document.getElementById('r-'+i),box=document.getElementById('rb-'+i);
+  if(h2RFC[i]){el.classList.add('checked');box.textContent='✓';}
+  else{el.classList.remove('checked');box.textContent='';}}
+function h2dmConf(){
+  const cnt=Object.values(h2RFC).filter(Boolean).length;
+  h2S.tgHighRisk=cnt>=2;
+  h2PushHist('DM + '+cnt+' RF',cnt>=2?'High Risk ✓':'Not High Risk');
+  h2Step=4;h2Render();}
+
+function h2TGResults(){
+  MB().innerHTML=`
+    <button class="btn-back" onclick="h2RenderMenu()">← Menu</button>
+    ${buildTGCard(h2S.TG,h2S.tgHighRisk,true)}
+    <button class="btn-restart" onclick="h2Reset();h2Start(3)">🔄 New TG Assessment</button>
+    <button class="btn-home" onclick="h2RenderMenu()">← Menu</button>`;}
+
+// ── Boot ──────────────────────────────────────────────────
+renderHome();
+
+</script>
+</body>
+</html>

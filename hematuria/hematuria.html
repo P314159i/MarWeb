@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hematuria Assistant</title>
+<style>
+  :root {
+    --blue:#2563eb; --blue-l:#dbeafe; --blue-d:#1e3a5f;
+    --green:#16a34a; --green-l:#d1fae5;
+    --red:#dc2626;   --red-l:#fee2e2;
+    --yellow:#ca8a04;--yellow-l:#fef9c3;
+    --purple:#7c3aed;--purple-l:#ede9fe;
+    --gray:#6b7280;  --gray-l:#f3f4f6;
+    --border:#e5e7eb;
+    --r:14px; --sh:0 4px 28px rgba(0,0,0,.09);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);
+    min-height:100vh;color:#1f2937;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:24px 16px 80px}
+
+  /* ── Header ── */
+  .hdr{
+    text-align:center;padding:30px 24px 22px;background:#fff;
+    border-radius:var(--r);box-shadow:var(--sh);margin-bottom:22px;
+    border-top:5px solid var(--blue);
+  }
+  .hdr h1{font-size:1.5rem;color:var(--blue-d);margin-bottom:5px}
+  .hdr p{color:var(--gray);font-size:.9rem}
+  .badge{
+    display:inline-block;margin-top:10px;background:var(--blue-l);
+    color:var(--blue);padding:4px 14px;border-radius:99px;
+    font-size:.78rem;font-weight:700
+  }
+
+  /* ── Progress ── */
+  .prog-wrap{margin-bottom:18px}
+  .prog-lbl{display:flex;justify-content:space-between;
+    font-size:.8rem;color:var(--gray);margin-bottom:5px}
+  .prog-track{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+  .prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),#06b6d4);
+    border-radius:99px;transition:width .4s ease}
+
+  /* ── History ── */
+  .hist-item{
+    display:flex;align-items:center;gap:10px;padding:10px 14px;
+    background:#fff;border-radius:8px;margin-bottom:7px;
+    border:1px solid var(--border);font-size:.86rem;
+  }
+  .hist-q{flex:1;color:#374151}
+  .abadge{font-size:.75rem;font-weight:700;padding:3px 10px;
+    border-radius:99px;flex-shrink:0}
+  .ay{background:var(--green-l);color:var(--green)}
+  .an{background:var(--red-l);color:var(--red)}
+
+  /* ── Question card ── */
+  .card{background:#fff;border-radius:var(--r);
+    box-shadow:var(--sh);overflow:hidden;margin-bottom:18px}
+  .card-hdr{
+    padding:14px 22px;background:var(--gray-l);
+    border-bottom:1px solid var(--border);
+    display:flex;align-items:center;gap:10px;
+  }
+  .card-hdr .icon{font-size:1.3rem}
+  .card-hdr .cat{font-size:.75rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.06em;color:var(--gray)}
+  .card-body{padding:26px 22px}
+  .q-text{font-size:1.12rem;font-weight:700;color:var(--blue-d);
+    line-height:1.55;margin-bottom:12px}
+  .hint{
+    background:#f0f9ff;border-left:4px solid #38bdf8;
+    padding:10px 14px;border-radius:6px;font-size:.85rem;
+    color:#0369a1;margin-bottom:22px;display:flex;gap:8px;align-items:flex-start
+  }
+  .btn-grp{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{
+    flex:1;min-width:120px;padding:14px 18px;border:none;
+    border-radius:10px;cursor:pointer;font-size:.98rem;font-weight:700;
+    transition:transform .14s,box-shadow .14s;
+    display:flex;align-items:center;justify-content:center;gap:8px
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.14)}
+  .btn-yes{background:var(--green);color:#fff}
+  .btn-no {background:var(--red);  color:#fff}
+
+  /* ── Result card ── */
+  .res-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+  .res-urgent  .res-hdr{background:#fef2f2;border-bottom:5px solid var(--red)}
+  .res-routine .res-hdr{background:var(--blue-l);border-bottom:5px solid var(--blue)}
+  .res-good    .res-hdr{background:var(--green-l);border-bottom:5px solid var(--green)}
+  .res-watch   .res-hdr{background:var(--purple-l);border-bottom:5px solid var(--purple)}
+  .res-hdr{padding:24px 26px}
+  .res-hdr .big-icon{font-size:2.2rem;margin-bottom:8px}
+  .res-hdr .cat-lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;opacity:.65;margin-bottom:4px}
+  .res-hdr h2{font-size:1.35rem;font-weight:800}
+  .res-urgent  h2{color:var(--red)}
+  .res-routine h2{color:var(--blue)}
+  .res-good    h2{color:var(--green)}
+  .res-watch   h2{color:var(--purple)}
+  .res-body{padding:22px 26px;background:#fff}
+  .res-body ul{list-style:none}
+  .res-body li{
+    padding:10px 0;border-bottom:1px solid var(--border);
+    font-size:.94rem;display:flex;gap:10px;align-items:flex-start
+  }
+  .res-body li:last-child{border-bottom:none}
+  .res-body li::before{content:"→";font-weight:700;flex-shrink:0;margin-top:1px}
+  .res-urgent  li::before{color:var(--red)}
+  .res-routine li::before{color:var(--blue)}
+  .res-good    li::before{color:var(--green)}
+  .res-watch   li::before{color:var(--purple)}
+
+  .btn-restart{
+    display:block;width:100%;margin-top:18px;padding:14px;
+    background:var(--blue);color:#fff;border:none;border-radius:10px;
+    font-size:.98rem;font-weight:700;cursor:pointer
+  }
+  .btn-restart:hover{background:var(--blue-d)}
+  .btn-next{
+    display:block;width:100%;margin-top:10px;padding:12px;
+    background:var(--purple-l);color:var(--purple);
+    border:2px solid var(--purple);border-radius:10px;
+    font-size:.92rem;font-weight:700;cursor:pointer
+  }
+  .btn-next:hover{background:var(--purple);color:#fff}
+  @media(max-width:480px){.q-text{font-size:1rem}.btn{padding:12px 14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div style="font-size:2rem;margin-bottom:8px">🩺</div>
+    <h1>Hematuria Diagnostic Assistant</h1>
+    <p>Step-by-step clinical decision support for hematuria workup</p>
+    <span class="badge">Doctor Assistant · Evidence-Based Algorithm</span>
+  </div>
+
+  <div id="prog-wrap" class="prog-wrap" style="display:none">
+    <div class="prog-lbl">
+      <span>Progress</span><span id="prog-step">Step 1</span>
+    </div>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div id="hist-box"></div>
+  <div id="main-box"></div>
+
+</div>
+<script>
+// ─── Decision Tree ───────────────────────────────────────────────────────────
+const TREE = {
+  start:{
+    id:"start",type:"q",cat:"Initial Assessment",icon:"🔍",
+    text:"Is the patient's urine red, brown, or tea-colored (gross hematuria)?",
+    hint:"Look for any visible discoloration resembling tea, cola, or blood.",
+    yes:"clot", no:"rbc1"
+  },
+
+  // ── Tea-colored path ────────────────────────────────────────────────────
+  clot:{
+    id:"clot",type:"q",cat:"Gross Hematuria",icon:"🩸",
+    text:"Are there visible blood clots in the urine?",
+    hint:"Clots suggest a urologic (lower tract) source rather than a glomerular one.",
+    yes:"r_ctscan", no:"g_urti"
+  },
+  r_ctscan:{
+    id:"r_ctscan",type:"r",cat:"Imaging Required",icon:"🏥",level:"urgent",
+    title:"Refer for CT Scan + Cystoscopy",
+    body:[
+      "Order CT Urogram (CT with contrast) to evaluate the upper urinary tract.",
+      "Schedule Cystoscopy to directly visualize the bladder and urethra.",
+      "Rule out urologic malignancy, stones, or structural lesions.",
+      "Follow-up based on imaging findings."
+    ]
+  },
+
+  // ── Glomerular 6-Q block ────────────────────────────────────────────────
+  g_urti:{
+    id:"g_urti",type:"q",cat:"Glomerular Evaluation",icon:"🦠",
+    text:"Is there a recent history of URTI suggesting IgA Nephropathy (synpharyngitic hematuria)?",
+    hint:"Hematuria concurrent with URTI is a hallmark of IgA nephropathy.",
+    yes:"r_nephro", no:"g_bun"
+  },
+  g_bun:{
+    id:"g_bun",type:"q",cat:"Glomerular Evaluation",icon:"🧪",
+    text:"Is BUN or Creatinine elevated (acute kidney injury / renal insufficiency)?",
+    hint:"Rising BUN/Cr alongside hematuria strongly suggests glomerulonephritis.",
+    yes:"r_nephro", no:"g_edema"
+  },
+  g_edema:{
+    id:"g_edema",type:"q",cat:"Glomerular Evaluation",icon:"💧",
+    text:"Is there new-onset edema (adame jadid andam)?",
+    hint:"Nephritic syndrome presents with edema due to sodium and water retention.",
+    yes:"r_nephro", no:"g_htn"
+  },
+  g_htn:{
+    id:"g_htn",type:"q",cat:"Glomerular Evaluation",icon:"❤️",
+    text:"Is there new-onset hypertension (HTN jadid)?",
+    hint:"New hypertension with hematuria is a red flag for glomerulonephritis.",
+    yes:"r_nephro", no:"g_cast"
+  },
+  g_cast:{
+    id:"g_cast",type:"q",cat:"Glomerular Evaluation",icon:"🔬",
+    text:"Are RBC casts present on urine microscopy?",
+    hint:"RBC casts are pathognomonic of glomerulonephritis — refer immediately if positive.",
+    yes:"r_nephro", no:"g_dys"
+  },
+  g_dys:{
+    id:"g_dys",type:"q",cat:"Glomerular Evaluation",icon:"🔬",
+    text:"Are RBCs dysmorphic (acanthocytes / fragmented) on microscopy?",
+    hint:"Dysmorphic RBCs indicate cells passed through a damaged glomerular basement membrane.",
+    yes:"r_nephro", no:"r_sono_glom"
+  },
+  r_nephro:{
+    id:"r_nephro",type:"r",cat:"Nephrology Referral",icon:"🏥",level:"urgent",
+    title:"Refer to Nephrology",
+    body:[
+      "One or more glomerular red flags are present.",
+      "Arrange urgent Nephrology referral.",
+      "Order: CBC, BMP, urine protein/creatinine ratio, complement C3/C4, ANA, ANCA.",
+      "Consider renal biopsy per nephrologist recommendation.",
+      "Monitor renal function closely while awaiting referral."
+    ]
+  },
+  r_sono_glom:{
+    id:"r_sono_glom",type:"r",cat:"Imaging",icon:"📡",level:"routine",
+    title:"Refer for Sonography",
+    body:[
+      "No glomerular red flags identified.",
+      "Order renal and bladder ultrasound (sonography).",
+      "If sonography is normal → proceed to Ca & Uric Acid workup.",
+      "Schedule follow-up to review imaging results."
+    ],
+    next:"ca_workup", nextLabel:"🧬 Proceed to Ca & Uric Acid Workup →"
+  },
+
+  // ── Asymptomatic / Non–tea-colored path ────────────────────────────────
+  rbc1:{
+    id:"rbc1",type:"q",cat:"RBC Criteria — Criterion 1",icon:"🔬",
+    text:"Is RBC count > 100/hpf or reported as 'many' on urinalysis?",
+    hint:"Criterion 1 for significant microscopic hematuria requiring further evaluation.",
+    yes:"g_urti", no:"rbc2"
+  },
+  rbc2:{
+    id:"rbc2",type:"q",cat:"RBC Criteria — Criterion 2",icon:"📋",
+    text:"Has UA been abnormal ≥ 3 times, each showing ≥ 3 RBC/hpf + Bmd, with symptoms for ≥ 1 month?",
+    hint:"Persistent microscopic hematuria over multiple samples with concurrent symptoms.",
+    yes:"g_urti", no:"fu4w"
+  },
+
+  // ── 4-week follow-up ────────────────────────────────────────────────────
+  fu4w:{
+    id:"fu4w",type:"q",cat:"4-Week Follow-up",icon:"📅",
+    text:"After 4-week follow-up: is the repeat UA still positive for hematuria?",
+    hint:"If the initial UA was incidental/isolated, a 4-week repeat confirms persistence.",
+    yes:"rf1", no:"r_resolved"
+  },
+  r_resolved:{
+    id:"r_resolved",type:"r",cat:"Resolved",icon:"✅",level:"good",
+    title:"Hematuria Resolved — No Further Workup Required",
+    body:[
+      "UA normalized at the 4-week follow-up.",
+      "No further immediate workup is necessary.",
+      "Advise patient to return if symptoms recur or urine discoloration reappears.",
+      "Routine annual UA recommended as standard preventive care."
+    ]
+  },
+
+  // ── Risk factor block (8 factors) ──────────────────────────────────────
+  rf1:{
+    id:"rf1",type:"q",cat:"Risk Factor Assessment",icon:"👤",
+    text:"Is the patient older than 35 years?",
+    hint:"Age > 35 significantly increases risk of urologic malignancy.",
+    yes:"r_full_img", no:"rf2"
+  },
+  rf2:{
+    id:"rf2",type:"q",cat:"Risk Factor Assessment",icon:"🚬",
+    text:"Does the patient have a smoking history?",
+    hint:"Smoking is the #1 risk factor for transitional cell carcinoma of the bladder.",
+    yes:"r_full_img", no:"rf3"
+  },
+  rf3:{
+    id:"rf3",type:"q",cat:"Risk Factor Assessment",icon:"🏭",
+    text:"Is there occupational exposure to chemicals or dyes (printing, rubber, textile industry)?",
+    hint:"Aromatic amine exposure significantly increases bladder cancer risk.",
+    yes:"r_full_img", no:"rf4"
+  },
+  rf4:{
+    id:"rf4",type:"q",cat:"Risk Factor Assessment",icon:"🦠",
+    text:"Does the patient have a history of recurrent UTIs?",
+    hint:"Chronic infection and mucosal irritation can increase malignancy risk.",
+    yes:"r_full_img", no:"rf5"
+  },
+  rf5:{
+    id:"rf5",type:"q",cat:"Risk Factor Assessment",icon:"☢️",
+    text:"Is there a history of prior pelvic radiation (SPH)?",
+    hint:"Radiation cystitis is a significant cause of hematuria post-pelvic radiotherapy.",
+    yes:"r_full_img", no:"rf6"
+  },
+  rf6:{
+    id:"rf6",type:"q",cat:"Risk Factor Assessment",icon:"🔬",
+    text:"Is this microscopic hematuria (not visible to the naked eye)?",
+    hint:"Persistent asymptomatic microscopic hematuria in adults warrants full urologic evaluation.",
+    yes:"r_full_img", no:"rf7"
+  },
+  rf7:{
+    id:"rf7",type:"q",cat:"Risk Factor Assessment",icon:"💊",
+    text:"Is there a prior history of bladder pathology (stones, tumors, or structural abnormalities)?",
+    hint:"Previous bladder pathology increases recurrence and progression risk.",
+    yes:"r_full_img", no:"rf8"
+  },
+  rf8:{
+    id:"rf8",type:"q",cat:"Risk Factor Assessment",icon:"💎",
+    text:"Does the patient have a history of recurrent kidney or ureteral stones?",
+    hint:"Nephrolithiasis is a common cause of hematuria; stones may need imaging and management.",
+    yes:"r_full_img", no:"r_sono_only"
+  },
+  r_full_img:{
+    id:"r_full_img",type:"r",cat:"Full Imaging Pathway",icon:"🏥",level:"urgent",
+    title:"Full Imaging: Sono → CT → Cystoscopy",
+    body:[
+      "One or more risk factors identified — full urologic workup required.",
+      "Step 1 → Sonography: Renal and bladder ultrasound.",
+      "Step 2 → CT Urogram: CT with contrast for upper tract evaluation.",
+      "Step 3 → Cystoscopy: Direct visualization of bladder and urethra.",
+      "After workup: Annual UA + repeat hematuria evaluation yearly."
+    ]
+  },
+  r_sono_only:{
+    id:"r_sono_only",type:"r",cat:"Low-Risk Pathway",icon:"📡",level:"routine",
+    title:"Sonography Only (Low-Risk Patient)",
+    body:[
+      "No significant risk factors identified.",
+      "Order renal and bladder ultrasound (sonography) only.",
+      "If sonography is normal → proceed to 24h Urine Ca + Uric Acid workup.",
+      "Annual UA + yearly hematuria follow-up recommended."
+    ],
+    next:"ca_workup", nextLabel:"🧬 Proceed to Ca & Uric Acid Workup →"
+  },
+
+  // ── Flowchart 4 : Ca & Uric Acid ────────────────────────────────────────
+  ca_workup:{
+    id:"ca_workup",type:"q",cat:"Ca & Uric Acid Workup",icon:"🧬",
+    text:"Are 24h urine Calcium or Uric Acid levels elevated (hypercalciuria / hyperuricosuria)?",
+    hint:"Order 24h urine for Calcium and Uric Acid after a negative sonography result.",
+    yes:"r_metabolic", no:"ca_3m"
+  },
+  r_metabolic:{
+    id:"r_metabolic",type:"r",cat:"Metabolic Cause Found",icon:"✅",level:"good",
+    title:"Treat Metabolic Cause",
+    body:[
+      "Hypercalciuria or Hyperuricosuria identified as cause of hematuria.",
+      "Initiate dietary changes: reduce sodium, animal protein, and oxalate intake.",
+      "Consider thiazide diuretics for hypercalciuria, or allopurinol for hyperuricosuria.",
+      "Annual UA follow-up to confirm resolution."
+    ]
+  },
+  ca_3m:{
+    id:"ca_3m",type:"q",cat:"Ca & Uric Acid Workup",icon:"📅",
+    text:"After repeating UA every 3 months — does hematuria persistently remain positive?",
+    hint:"If Ca and Uric Acid are negative and hematuria continues, consider hereditary causes.",
+    yes:"r_familial", no:"r_annual"
+  },
+  r_familial:{
+    id:"r_familial",type:"r",cat:"Familial Hematuria",icon:"🧬",level:"watch",
+    title:"Likely Familial Hematuria",
+    body:[
+      "Persistent unexplained hematuria after full workup suggests a hereditary etiology.",
+      "Consider Alport Syndrome or Thin Basement Membrane Nephropathy.",
+      "Take family history: hematuria, renal failure, hearing loss, or eye abnormalities.",
+      "Refer to Nephrology for genetic workup and possible renal biopsy.",
+      "Annual UA and blood pressure monitoring."
+    ]
+  },
+  r_annual:{
+    id:"r_annual",type:"r",cat:"Annual Follow-up",icon:"📆",level:"good",
+    title:"Annual UA Follow-up",
+    body:[
+      "Hematuria resolved after metabolic workup.",
+      "Schedule annual urinalysis for ongoing monitoring.",
+      "Advise patient to return promptly if gross hematuria recurs.",
+      "No further immediate intervention required."
+    ]
+  }
+};
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let history = [];  // [{cat, text, answer}]
+let currentId = "start";
+const MAX_STEPS = 14;
+
+function render(){
+  const node = TREE[currentId];
+  // progress
+  if(history.length > 0){
+    document.getElementById("prog-wrap").style.display="block";
+    const pct = Math.min(history.length / MAX_STEPS * 100, 95);
+    document.getElementById("prog-fill").style.width = pct+"%";
+    document.getElementById("prog-step").textContent = "Step "+(history.length+1);
+  }
+  // history
+  let hHtml = "";
+  history.forEach(h=>{
+    hHtml += `<div class="hist-item">
+      <span class="hist-q">${h.text}</span>
+      <span class="abadge ${h.answer==="yes"?"ay":"an"}">${h.answer==="yes"?"✓ Yes":"✗ No"}</span>
+    </div>`;
+  });
+  document.getElementById("hist-box").innerHTML = hHtml;
+
+  // main
+  if(node.type === "q"){
+    document.getElementById("main-box").innerHTML = `
+      <div class="card">
+        <div class="card-hdr">
+          <span class="icon">${node.icon}</span>
+          <span class="cat">${node.cat}</span>
+        </div>
+        <div class="card-body">
+          <div class="q-text">${node.text}</div>
+          <div class="hint">${node.hint}</div>
+          <div class="btn-grp">
+            <button class="btn btn-yes" onclick="answer('yes')">✓ Yes</button>
+            <button class="btn btn-no"  onclick="answer('no')">✗ No</button>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    const lvl = node.level==="watch"?"res-watch":`res-${node.level}`;
+    const items = node.body.map(b=>`<li>${b}</li>`).join("");
+    const nxtBtn = node.next
+      ? `<button class="btn-next" onclick="goTo('${node.next}')">${node.nextLabel}</button>`
+      : "";
+    document.getElementById("main-box").innerHTML = `
+      <div class="res-card ${lvl}">
+        <div class="res-hdr">
+          <div class="big-icon">${node.icon}</div>
+          <div class="cat-lbl">${node.cat}</div>
+          <h2>${node.title}</h2>
+        </div>
+        <div class="res-body">
+          <ul>${items}</ul>
+          ${nxtBtn}
+        </div>
+      </div>
+      <button class="btn-restart" onclick="restart()">↺ Start New Case</button>`;
+  }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function answer(ans){
+  const node = TREE[currentId];
+  history.push({cat:node.cat, text:node.text, answer:ans});
+  currentId = ans==="yes" ? node.yes : node.no;
+  render();
+}
+function goTo(id){ currentId=id; render(); }
+function restart(){ history=[]; currentId="start";
+  document.getElementById("prog-wrap").style.display="none";
+  render(); }
+
+render();
+</script>
+</body>
+</html>

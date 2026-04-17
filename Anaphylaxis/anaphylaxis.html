@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anaphylaxis Emergency Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --bg-elevated: #1a1a1a;
+            --card: #242424;
+            --card-hover: #2e2e2e;
+            --border: #3a3a3a;
+            --fg: #f0f0f0;
+            --fg-muted: #a0a0a0;
+            --accent: #ff4d4d; /* Emergency Red */
+            --accent-dim: rgba(255, 77, 77, 0.15);
+            --warning: #ffb347;
+            --success: #4ade80;
+            --info: #38bdf8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Animated Background - "Pulse" effect for emergency feel */
+        .gradient-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255, 77, 77, 0.1) 0%, transparent 60%);
+        }
+
+        .grid-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .page {
+            display: none;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card-nav {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-nav::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            transform: scaleY(0);
+            transform-origin: bottom;
+            transition: transform 0.3s ease;
+        }
+
+        .card-nav:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-nav:hover::before {
+            transform: scaleY(1);
+        }
+
+        .section-number {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-dim);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--fg);
+        }
+
+        .form-hint {
+            font-size: 0.875rem;
+            color: var(--fg-muted);
+            margin-top: 0.25rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            color: var(--fg);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .radio-group, .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .radio-item, .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .radio-item:hover, .checkbox-item:hover {
+            border-color: var(--accent);
+            background: var(--card);
+        }
+
+        .radio-item input, .checkbox-item input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #ff6666;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 77, 77, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--fg);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--fg-muted);
+            background: var(--card);
+        }
+
+        .btn-back {
+            padding: 0.75rem 1.5rem;
+        }
+
+        .result-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-box.critical {
+            border-left: 4px solid var(--accent);
+            background: rgba(255, 77, 77, 0.05);
+        }
+
+        .result-box.warning {
+            border-left: 4px solid var(--warning);
+            background: rgba(255, 179, 71, 0.05);
+        }
+
+        .result-box.success {
+            border-left: 4px solid var(--success);
+            background: rgba(74, 222, 128, 0.05);
+        }
+
+        .result-box.info {
+            border-left: 4px solid var(--info);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sub-section {
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sub-section-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--fg);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .dose-highlight {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+            margin: 0.5rem 0;
+        }
+
+        .protocol-step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .card-nav {
+                padding: 1.5rem;
+            }
+            .page {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-mesh"></div>
+    <div class="grid-pattern"></div>
+
+    <!-- Landing Page -->
+    <div id="landing" class="page active">
+        <div class="max-w-5xl mx-auto">
+            <header class="text-center mb-16 pt-8">
+                <div class="inline-flex items-center gap-2 mb-6">
+                    <div class="pulse-dot"></div>
+                    <span class="tag">2023 WAO/EAACI Criteria</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                    Anaphylaxis<br>Emergency Protocol
+                </h1>
+                <p class="text-xl text-[var(--fg-muted)] max-w-2xl mx-auto">
+                    Acute diagnosis, weight-based dose calculation, and management protocol assistant.
+                </p>
+            </header>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card-nav" onclick="showPage('step1')" role="button" tabindex="0">
+                    <div class="section-number">1</div>
+                    <h3 class="text-xl font-semibold mb-2">Diagnosis Criteria</h3>
+                    <p class="text-[var(--fg-muted)]">Confirm anaphylaxis based on 2023 WAO/EAACI criteria.</p>
+                </div>
+
+                <div class="card-nav" onclick="showPage('step2')" role="button" tabindex="0">
+                    <div class="section-number">2</div>
+                    <h3 class="text-xl font-semibold mb-2">Management Protocol</h3>
+                    <p class="text-[var(--fg-muted)]">Weight-based dosing, positioning, and immediate interventions.</p>
+                </div>
+
+                <div class="card-nav" onclick="showPage('step3')" role="button" tabindex="0">
+                    <div class="section-number">3</div>
+                    <h3 class="text-xl font-semibold mb-2">Disposition & Discharge</h3>
+                    <p class="text-[var(--fg-muted)]">Admission decision logic and patient discharge education.</p>
+                </div>
+            </div>
+
+            <footer class="text-center mt-16 pb-8 text-[var(--fg-muted)] text-sm">
+                <p>Emergency Clinical Decision Support Tool</p>
+                <p class="mt-2">For Healthcare Professional Use Only</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Step 1: Diagnosis Criteria -->
+    <div id="step1" class="page">
+        <div class="max-w-3xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Step 1</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">Confirm Anaphylaxis Criteria</h1>
+                <p class="text-[var(--fg-muted)]">2023 WAO/EAACI Criteria Assessment</p>
+            </header>
+
+            <div class="result-box critical mb-6">
+                <h3 class="font-semibold text-lg mb-2">Diagnostic Criteria Logic</h3>
+                <p class="text-sm mb-1"><strong>REQUIRED:</strong> Acute onset of illness</p>
+                <p class="text-sm mb-1"><strong>PLUS:</strong> Skin/mucosal involvement + EITHER Respiratory OR Cardiovascular compromise</p>
+                <p class="text-sm"><strong>OR:</strong> Involvement of ≥2 organ systems after likely allergen exposure.</p>
+            </div>
+
+            <form id="criteriaForm" onsubmit="return checkCriteria(event)">
+                <div class="sub-section">
+                    <h4 class="sub-section-title">System Involvement</h4>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="c_skin">
+                            <div>
+                                <span class="font-medium">Skin/Mucosal Symptoms</span>
+                                <p class="text-sm text-[var(--fg-muted)]">Urticaria, flushing, angioedema</p>
+                            </div>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="c_resp">
+                            <div>
+                                <span class="font-medium">Respiratory Compromise</span>
+                                <p class="text-sm text-[var(--fg-muted)]">Dyspnea, wheeze, stridor, SpO2 &lt;92%</p>
+                            </div>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="c_cardio">
+                            <div>
+                                <span class="font-medium">Cardiovascular Compromise</span>
+                                <p class="text-sm text-[var(--fg-muted)]">Hypotension, syncope, arrhythmia, shock</p>
+                            </div>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="c_other">
+                            <div>
+                                <span class="font-medium">Other System (GI/CNS)</span>
+                                <p class="text-sm text-[var(--fg-muted)]">GI: vomiting/diarrhea; CNS: dizziness/collapse</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full">
+                    Check Criteria
+                </button>
+            </form>
+
+            <div id="criteriaResult" class="hidden mt-6"></div>
+        </div>
+    </div>
+
+    <!-- Step 2: Management Protocol -->
+    <div id="step2" class="page">
+        <div class="max-w-4xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Step 2</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">Emergency Management</h1>
+                <p class="text-[var(--fg-muted)]">Dose Calculation and Protocol Generation</p>
+            </header>
+
+            <form id="protocolForm" onsubmit="return generateProtocol(event)">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="sub-section">
+                        <h4 class="sub-section-title">Patient Data</h4>
+                        <div class="form-group">
+                            <label class="form-label">Age (years)</label>
+                            <input type="number" class="form-input" id="p_age" min="0" max="120" required placeholder="e.g., 35">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-input" id="p_weight" min="0" step="0.1" required placeholder="e.g., 70">
+                        </div>
+                    </div>
+
+                    <div class="sub-section">
+                        <h4 class="sub-section-title">Clinical Context</h4>
+                        <div class="form-group">
+                            <label class="form-label">Is the patient on a beta-blocker?</label>
+                            <div class="radio-group">
+                                <label class="radio-item">
+                                    <input type="radio" name="beta_blocker" value="no" checked>
+                                    <span>No</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="beta_blocker" value="yes">
+                                    <span>Yes</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Severe presenting features?</label>
+                            <p class="form-hint mb-2">Hypotension, shock, airway obstruction, arrest</p>
+                            <div class="radio-group">
+                                <label class="radio-item">
+                                    <input type="radio" name="severe" value="no" checked>
+                                    <span>No</span>
+                                </label>
+                                <label class="radio-item">
+                                    <input type="radio" name="severe" value="yes">
+                                    <span>Yes</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Likely Trigger</h4>
+                    <div class="form-group">
+                        <select class="form-select" id="p_trigger">
+                            <option value="unknown">Unknown / Idiopathic</option>
+                            <option value="food">Food</option>
+                            <option value="drug">Drug / Medication</option>
+                            <option value="insect">Insect Sting</option>
+                            <option value="latex">Latex</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full mt-4">
+                    Generate Protocol
+                </button>
+            </form>
+
+            <div id="protocolResult" class="hidden mt-8"></div>
+        </div>
+    </div>
+
+    <!-- Step 3: Disposition -->
+    <div id="step3" class="page">
+        <div class="max-w-4xl mx-auto">
+            <button class="btn btn-secondary btn-back mb-8" onclick="showPage('landing')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Menu
+            </button>
+
+            <header class="mb-8">
+                <span class="tag">Step 3</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-4 mb-2">Disposition & Discharge</h1>
+                <p class="text-[var(--fg-muted)]">Admission Decision and Patient Education</p>
+            </header>
+
+            <form id="dispoForm" onsubmit="return generateDisposition(event)">
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Current Status</h4>
+                    <div class="form-group">
+                        <label class="form-label">How many IM epinephrine doses given so far?</label>
+                        <input type="number" class="form-input" id="d_epi_doses" min="0" required placeholder="e.g., 1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hours since symptoms fully resolved?</label>
+                        <input type="number" class="form-input" id="d_resolved_time" min="0" step="0.5" required placeholder="Enter 0 if still symptomatic">
+                        <p class="form-hint">If still symptomatic, enter 0</p>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">Risk Factors</h4>
+                    <div class="form-group">
+                        <label class="form-label">Is the patient on a beta-blocker?</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="d_beta" value="no" checked><span>No</span></label>
+                            <label class="radio-item"><input type="radio" name="d_beta" value="yes"><span>Yes</span></label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Severe presentation (hypotension, shock, airway obstruction, arrest)?</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="d_severe" value="no" checked><span>No</span></label>
+                            <label class="radio-item"><input type="radio" name="d_severe" value="yes"><span>Yes</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sub-section">
+                    <h4 class="sub-section-title">For Discharge Education</h4>
+                    <div class="form-group">
+                        <label class="form-label">Patient Age (for auto-injector sizing)</label>
+                        <input type="number" class="form-input" id="d_age" min="0" placeholder="Enter age in years">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-full mt-4">
+                    Determine Disposition
+                </button>
+            </form>
+
+            <div id="dispoResult" class="hidden mt-8"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // Navigation & Helpers
+        // ==========================================
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function getRadio(name) {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            return el ? el.value : null;
+        }
+
+        function getVal(id) {
+            return document.getElementById(id).value;
+        }
+
+        function getFloat(id) {
+            return parseFloat(document.getElementById(id).value) || 0;
+        }
+
+        function getInt(id) {
+            return parseInt(document.getElementById(id).value) || 0;
+        }
+
+        // ==========================================
+        // Step 1: Criteria Check
+        // ==========================================
+        function checkCriteria(e) {
+            e.preventDefault();
+            const skin = document.getElementById('c_skin').checked;
+            const resp = document.getElementById('c_resp').checked;
+            const cardio = document.getElementById('c_cardio').checked;
+            const other = document.getElementById('c_other').checked;
+
+            const systems = [skin, resp, cardio, other].filter(Boolean).length;
+            const met = (skin && (resp || cardio)) || (systems >= 2);
+
+            const resEl = document.getElementById('criteriaResult');
+            resEl.classList.remove('hidden');
+
+            if (met) {
+                resEl.innerHTML = `
+                    <div class="result-box critical">
+                        <h3 class="text-xl font-bold text-[var(--accent)]">ANAPHYLAXIS CRITERIA MET</h3>
+                        <p class="mt-2 text-lg">INITIATE EMERGENCY PROTOCOL IMMEDIATELY.</p>
+                        <button class="btn btn-primary mt-6" onclick="showPage('step2')">
+                            Proceed to Management Protocol
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+            } else {
+                resEl.innerHTML = `
+                    <div class="result-box warning">
+                        <h3 class="text-xl font-bold text-[var(--warning)]">Criteria Not Clearly Met</h3>
+                        <p class="mt-2">Re-evaluate or consider alternative diagnoses.</p>
+                        <p class="text-sm text-[var(--fg-muted)] mt-4">Systems involved: ${systems}</p>
+                    </div>
+                `;
+            }
+            return false;
+        }
+
+        // ==========================================
+        // Step 2: Management Protocol
+        // ==========================================
+        function generateProtocol(e) {
+            e.preventDefault();
+            const age = getInt('p_age');
+            const weight = getFloat('p_weight');
+            const beta = getRadio('beta_blocker');
+            const severe = getRadio('severe');
+            const trigger = getVal('p_trigger');
+
+            const isAdult = age >= 12 || weight >= 40;
+            const isChild = !isAdult;
+
+            const doses = {};
+
+            // 1. Epinephrine
+            let epi_mg = weight * 0.01;
+            if (isAdult) epi_mg = Math.min(epi_mg, 0.5);
+            else epi_mg = Math.round(epi_mg * 1000) / 1000;
+
+            doses.epi_mg = epi_mg.toFixed(3);
+            doses.epi_ml = epi_mg.toFixed(3); // 1:1000
+
+            // 2. Glucagon
+            if (beta === 'yes') {
+                doses.glucagon = weight < 20 ? "0.5 mg" : "1.0 mg";
+                doses.glucagon_inf = "1–5 mg in 100 mL D5W @ 1–5 mcg/min (titrate to BP)";
+            }
+
+            // 3. Fluids
+            let fluid = 30 * weight;
+            fluid = Math.min(fluid, 2000);
+            doses.fluid = fluid;
+
+            // 4. H1 Blocker
+            if (isAdult) {
+                doses.h1 = "Diphenhydramine 25–50 mg IV slow push OR Clemastine 10 mg IV";
+            } else {
+                doses.h1 = "Diphenhydramine 1 mg/kg IV (max 25–50 mg)";
+            }
+
+            // 5. H2 Blocker
+            if (isAdult) {
+                doses.h2 = "Famotidine 20 mg IV (or Ranitidine 50 mg IV – if available and not contraindicated)";
+            } else {
+                doses.h2 = "Famotidine 0.25 mg/kg IV (max 20 mg)";
+            }
+
+            // 6. Steroid
+            if (isAdult) {
+                doses.steroid = "Hydrocortisone 100–500 mg IV (or Methylprednisolone 40–125 mg IV)";
+            } else {
+                doses.steroid = "Hydrocortisone 1–2 mg/kg IV (max 100 mg)";
+            }
+
+            // 7. SABA
+            if (age >= 6) {
+                doses.saba = "Albuterol (Salbutamol) 2–4 puffs (90 mcg/puff) via MDI+spacer q20min ×3 doses";
+            } else {
+                doses.saba = "Albuterol 2 puffs via spacer; if <2 y, use nebulized 2.5 mg";
+            }
+
+            // Render Protocol
+            const html = `
+                <div class="result-box critical mb-6">
+                    <h3 class="text-xl font-bold mb-2">EMERGENCY ANAPHYLAXIS MANAGEMENT PROTOCOL</h3>
+                    <p class="text-sm">Patient: ${age} y, ${weight} kg | Beta-blocker: ${beta === 'yes' ? 'YES' : 'No'}</p>
+                </div>
+
+                <div class="result-box info">
+                    <h4 class="font-semibold text-lg mb-3">IMMEDIATE ACTIONS – DO NOT DELAY</h4>
+
+                    <div class="protocol-step">
+                        <div class="step-number">1</div>
+                        <div>
+                            <strong>CALL FOR HELP</strong>
+                            <p class="text-sm text-[var(--fg-muted)]">Code/Crash team if severe.</p>
+                        </div>
+                    </div>
+
+                    <div class="protocol-step">
+                        <div class="step-number">2</div>
+                        <div>
+                            <strong>POSITIONING</strong>
+                            <ul class="list-disc pl-5 text-sm text-[var(--fg-muted)] mt-1">
+                                <li>Hypotension/shock: Supine with legs elevated 30° (improves venous return).</li>
+                                <li>Severe respiratory distress: Allow semi-upright/sitting to ease breathing.</li>
+                                <li class="text-[var(--accent)]">NEVER let the patient stand or walk.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="protocol-step">
+                        <div class="step-number">3</div>
+                        <div>
+                            <strong>AIRWAY & OXYGEN</strong>
+                            <p class="text-sm text-[var(--fg-muted)]">High-flow O₂ via mask (target SpO₂ ≥ 94%). Prepare airway kit at bedside.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-box critical">
+                    <h4 class="font-semibold text-lg mb-3">EPINEPHRINE – THE LIFE-SAVING DRUG</h4>
+                    <p class="text-sm text-[var(--fg-muted)] mb-2">First-line, IM route preferred</p>
+
+                    <div class="bg-[var(--bg)] p-4 rounded-lg border border-[var(--border)]">
+                        <p class="text-sm font-medium">DOSE:</p>
+                        <p class="dose-highlight">${doses.epi_mg} mg (${doses.epi_ml} mL) of 1:1000 IM</p>
+                        <p class="text-sm">→ Anterolateral thigh (vastus lateralis).</p>
+                    </div>
+
+                    <p class="mt-3"><strong>If no response:</strong> REPEAT the SAME DOSE every 5–15 minutes.</p>
+                    <p class="text-sm text-[var(--fg-muted)] mt-1">If cardiac arrest or refractory shock: Switch to IV/IO epinephrine 1:10,000 (0.1 mg/kg bolus, titrate to effect).</p>
+                </div>
+
+                ${beta === 'yes' ? `
+                <div class="result-box warning">
+                    <h4 class="font-semibold text-lg mb-3">BETA-BLOCKER PRESENT → REFRACTORY PROTOCOL</h4>
+                    <p class="font-medium">Glucagon ${doses.glucagon} IV/IM immediately.</p>
+                    <p class="text-sm">Follow with infusion: ${doses.glucagon_inf}</p>
+                    <p class="text-sm text-[var(--fg-muted)] mt-2">Consider high-dose epinephrine and vasopressors (norepinephrine) if needed.</p>
+                </div>
+                ` : ''}
+
+                <div class="result-box info">
+                    <h4 class="font-semibold text-lg mb-3">IV ACCESS & FLUID RESUSCITATION</h4>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li>Establish 2 large-bore IVs (14–16G) or IO access.</li>
+                        <li>Rapid crystalloid bolus: <strong>${doses.fluid} mL</strong> NS or balanced crystalloid</li>
+                        <li class="text-sm text-[var(--fg-muted)]">Repeat boluses (30 mL/kg) for hypotension; target MAP ≥ 65 mmHg.</li>
+                    </ul>
+                </div>
+
+                <div class="result-box">
+                    <h4 class="font-semibold text-lg mb-3">ADJUNCTIVE PHARMACOTHERAPY</h4>
+                    <p class="text-sm text-[var(--fg-muted)] mb-3">Give AFTER epinephrine & fluids</p>
+
+                    <div class="space-y-4">
+                        <div class="p-3 bg-[var(--bg)] rounded border-l-4 border-[var(--fg-muted)]">
+                            <p class="font-medium">H1-blocker (IV):</p>
+                            <p class="text-sm">${doses.h1}</p>
+                            <p class="text-xs text-[var(--fg-muted)]">– helps urticaria/itch, not BP.</p>
+                        </div>
+
+                        <div class="p-3 bg-[var(--bg)] rounded border-l-4 border-[var(--fg-muted)]">
+                            <p class="font-medium">H2-blocker (IV):</p>
+                            <p class="text-sm">${doses.h2}</p>
+                            <p class="text-xs text-[var(--fg-muted)]">– adjunct, may reduce relapse.</p>
+                        </div>
+
+                        <div class="p-3 bg-[var(--bg)] rounded border-l-4 border-[var(--fg-muted)]">
+                            <p class="font-medium">Corticosteroid (single IV dose):</p>
+                            <p class="text-sm">${doses.steroid}</p>
+                            <p class="text-xs text-[var(--fg-muted)]">NOT for acute rescue, but may reduce late phase.</p>
+                        </div>
+
+                        <div class="p-3 bg-[var(--bg)] rounded border-l-4 border-[var(--fg-muted)]">
+                            <p class="font-medium">Bronchospasm:</p>
+                            <p class="text-sm">${doses.saba}</p>
+                            <p class="text-xs text-[var(--fg-muted)]">If severe/refractory: Consider IV magnesium sulfate (25–50 mg/kg, max 2g).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-box">
+                    <h4 class="font-semibold text-lg mb-3">MONITORING</h4>
+                    <ul class="list-disc pl-5 text-sm space-y-1">
+                        <li>Continuous cardiac monitoring, pulse oximetry, BP q5–15 min until stable.</li>
+                        <li>Repeat VBG/ABG if hypoxic, acidotic, or altered mental status.</li>
+                        <li>Labs (optional): CBC, BMP, lactate, tryptase (draw within 1–2 h of onset).</li>
+                    </ul>
+                </div>
+
+                <button class="btn btn-primary w-full mt-6" onclick="showPage('step3')">
+                    Proceed to Disposition
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            `;
+
+            document.getElementById('protocolResult').innerHTML = html;
+            document.getElementById('protocolResult').classList.remove('hidden');
+            return false;
+        }
+
+        // ==========================================
+        // Step 3: Disposition
+        // ==========================================
+        function generateDisposition(e) {
+            e.preventDefault();
+
+            const epiDoses = getInt('d_epi_doses');
+            const resolvedTime = getFloat('d_resolved_time');
+            const beta = getRadio('d_beta');
+            const severe = getRadio('d_severe');
+            const age = getInt('d_age');
+
+            let highRisk = false;
+            let reasons = [];
+
+            if (epiDoses >= 2) {
+                highRisk = true;
+                reasons.push("Required multiple epinephrine doses");
+            }
+            if (severe === 'yes') {
+                highRisk = true;
+                reasons.push("Severe presentation (shock/airway)");
+            }
+            if (beta === 'yes') {
+                highRisk = true;
+                reasons.push("On beta-blocker (refractory risk)");
+            }
+            if (resolvedTime < 6) {
+                highRisk = true;
+                reasons.push("Symptoms resolved <6 hours ago");
+            }
+
+            let html = '';
+
+            // Disposition Result
+            if (highRisk) {
+                html += `
+                    <div class="result-box critical">
+                        <h3 class="text-xl font-bold text-[var(--accent)]">ADMIT to Hospital</h3>
+                        <p class="mt-2">Observation unit or ICU if unstable.</p>
+                        <p class="text-sm text-[var(--fg-muted)] mt-3"><strong>Reasons:</strong> ${reasons.join('; ')}.</p>
+                        <p class="text-sm mt-2">Monitor for biphasic reaction (usually within 24 hours).</p>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="result-box success">
+                        <h3 class="text-xl font-bold text-[var(--success)]">LOW RISK – Candidate for Discharge</h3>
+                        <p class="mt-2">After 6–8 hours observation.</p>
+                        <p class="text-sm text-[var(--fg-muted)] mt-3">Conditions met: Single epi dose, resolved >6h, no severe features, no beta-blocker.</p>
+                    </div>
+                `;
+            }
+
+            // Admission Criteria Reference
+            html += `
+                <div class="result-box">
+                    <h4 class="font-semibold mb-3">ADMISSION CRITERIA (Reference)</h4>
+                    <p class="text-sm font-medium">ADMIT to ICU/OBSERVATION if ANY of the following:</p>
+                    <ul class="list-disc pl-5 text-sm text-[var(--fg-muted)] mt-2 space-y-1">
+                        <li>Required ≥2 doses of epinephrine OR continuous infusion.</li>
+                        <li>Hypotension, shock, airway compromise, or respiratory arrest.</li>
+                        <li>Beta-blocker use (higher risk of refractory anaphylaxis).</li>
+                        <li>Biphasic reaction risk factors (severe initial reaction, delayed epinephrine).</li>
+                        <li>Ongoing symptoms after 4–6 hours.</li>
+                        <li>Significant comorbidities (cardiac, asthma, mastocytosis).</li>
+                    </ul>
+                    <p class="text-sm font-medium mt-4">SAFE DISCHARGE criteria (minimum 4–8 h observation, preferably 6–12 h):</p>
+                    <ul class="list-disc pl-5 text-sm text-[var(--fg-muted)] mt-2 space-y-1">
+                        <li>All symptoms resolved for ≥6 hours.</li>
+                        <li>Single epinephrine dose only, no recurrence.</li>
+                        <li>No beta-blocker use, no severe features, no comorbidities.</li>
+                        <li>Patient educated and equipped with epinephrine auto-injector.</li>
+                    </ul>
+                </div>
+            `;
+
+            // Discharge Instructions
+            html += `
+                <div class="result-box info mt-6">
+                    <h4 class="font-semibold text-lg mb-3">DISCHARGE PLAN & PATIENT EDUCATION</h4>
+
+                    <div class="mb-6">
+                        <h5 class="font-semibold text-[var(--accent)]">1. PRESCRIPTION – Self-injectable Epinephrine</h5>
+                        <p class="text-sm mt-1"><strong>MUST be prescribed before any other drug.</strong></p>
+                        <ul class="list-disc pl-5 text-sm text-[var(--fg-muted)] mt-2">
+                            <li>Adult (≥30 kg): <strong>0.3 mg IM</strong> auto-injector (EpiPen 0.3 mg or equivalent).</li>
+                            <li>Child (<30 kg): <strong>0.15 mg IM</strong> auto-injector (EpiPen Jr or equivalent).</li>
+                            <li>Prescribe <strong>2 auto-injectors</strong> (accidental injection, second dose if needed).</li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-6">
+                        <h5 class="font-semibold">2. ORAL MEDICATIONS for 48–72 hours</h5>
+                        <p class="text-sm text-[var(--fg-muted)]">To reduce late-phase symptoms.</p>
+                        <ul class="list-disc pl-5 text-sm text-[var(--fg-muted)] mt-2">
+                            <li>H1-blocker: Diphenhydramine 25–50 mg PO q6–8h OR Cetirizine 10–20 mg daily.</li>
+                            <li>Corticosteroid taper (optional, common practice):
+                                <ul class="list-disc pl-5 mt-1">
+                                    <li>Prednisone 30–40 mg PO daily × 3 days OR</li>
+                                    <li>Methylprednisolone 20–32 mg PO daily × 3 days.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="mb-6">
+                        <h5 class="font-semibold">3. ACTION PLAN</h5>
+                        <p class="text-sm text-[var(--fg-muted)] mb-2">Teach the patient/caregiver:</p>
+                        <ul class="list-disc pl-5 text-sm space-y-2">
+                            <li><strong>RECOGNIZE:</strong> Sudden hives, throat tightness, wheeze, dizziness, vomiting, collapse.</li>
+                            <li><strong>INJECT:</strong> Epinephrine IM immediately – do NOT wait, do NOT call doctor first.</li>
+                            <li><strong>CALL:</strong> EMS (911/112) AFTER injecting, even if they feel better.</li>
+                            <li><strong>LAY:</strong> Supine with legs raised (or sitting if breathing hard).</li>
+                            <li><strong>REPEAT:</strong> If no improvement in 5–15 min, give second auto-injector.</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h5 class="font-semibold">4. FOLLOW-UP</h5>
+                        <ul class="list-disc pl-5 text-sm text-[var(--fg-muted)] mt-2">
+                            <li>Allergy referral within 1–2 weeks to identify trigger & avoid future exposure.</li>
+                            <li>Medical alert bracelet/necklace stating 'Anaphylaxis – Carry Epinephrine'.</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('dispoResult').innerHTML = html;
+            document.getElementById('dispoResult').classList.remove('hidden');
+            return false;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Keyboard nav for cards
+            document.querySelectorAll('.card-nav').forEach(card => {
+                card.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        card.click();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

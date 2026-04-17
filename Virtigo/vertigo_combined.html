@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vertigo Clinical Tool</title>
+<style>
+/* ── SHARED ── */
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f0f4ff;color:#222;padding:20px;max-width:700px;margin:auto}
+
+/* ── HOME ── */
+#home{display:block}
+.home-title{text-align:center;color:#1e40af;font-size:1.6rem;font-weight:800;margin-bottom:6px}
+.home-sub{text-align:center;color:#6b7280;font-size:.85rem;margin-bottom:32px}
+.home-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.home-card{background:#fff;border-radius:14px;padding:28px 20px;text-align:center;cursor:pointer;border:2px solid #e2e8f0;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:all .2s}
+.home-card:hover{border-color:#1e40af;box-shadow:0 4px 20px rgba(30,64,175,.15);transform:translateY(-2px)}
+.home-card .icon{font-size:2.4rem;margin-bottom:12px}
+.home-card h2{color:#1e40af;font-size:1.05rem;margin-bottom:8px}
+.home-card p{color:#6b7280;font-size:.82rem;line-height:1.5}
+.back-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;border:2px solid #e2e8f0;border-radius:8px;cursor:pointer;font-weight:600;color:#6b7280;font-size:.85rem;margin-bottom:16px;transition:all .15s}
+.back-btn:hover{border-color:#1e40af;color:#1e40af}
+
+/* ── PART 1 styles ── */
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#f0f4ff;color:#222;padding:20px;max-width:680px;margin:auto}
+h1{text-align:center;color:#1e40af;margin-bottom:4px;font-size:1.4rem}
+.sub{text-align:center;color:#888;font-size:.82rem;margin-bottom:22px}
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.step-label{font-size:.72rem;font-weight:700;text-transform:uppercase;color:#6b7280;margin-bottom:8px;letter-spacing:.05em}
+.question{font-weight:600;font-size:.95rem;margin-bottom:12px;line-height:1.5;color:#1e293b}
+.hint{font-size:.78rem;color:#6b7280;margin-bottom:12px;font-style:italic;line-height:1.4}
+.yn{display:flex;gap:10px;margin-bottom:6px}
+.yn button,.choice-btn{padding:10px 20px;border:2px solid #ddd;border-radius:8px;cursor:pointer;font-weight:600;background:#fff;color:#555;font-size:.9rem;transition:all .15s}
+.yn button:hover{border-color:#1e40af;color:#1e40af}
+.yn button.yes{background:#16a34a;border-color:#16a34a;color:#fff}
+.yn button.no{background:#f3f4f6;border-color:#ccc;color:#444}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice-btn{text-align:left;padding:11px 16px;width:100%}
+.choice-btn:hover{border-color:#1e40af;color:#1e40af}
+.choice-btn.sel{background:#1e40af;border-color:#1e40af;color:#fff}
+.hidden{display:none}
+.result{border-radius:10px;padding:18px;margin-top:4px;line-height:1.6}
+.result h2{font-size:1.05rem;margin-bottom:10px}
+.result li{margin:6px 0;font-size:.9rem;padding-left:14px;position:relative;list-style:none}
+.result li::before{content:"→";position:absolute;left:0;color:inherit;font-weight:700}
+.r-bppv{background:#d1fae5;border-left:5px solid #16a34a;color:#14532d}
+.r-menieres{background:#dbeafe;border-left:5px solid #2563eb;color:#1e3a5f}
+.r-neuritis{background:#fef9c3;border-left:5px solid #ca8a04;color:#713f12}
+.r-labyrinthitis{background:#ffedd5;border-left:5px solid #ea580c;color:#7c2d12}
+.r-toxin{background:#f3e8ff;border-left:5px solid #9333ea;color:#581c87}
+.r-central{background:#fee2e2;border-left:5px solid #dc2626;color:#7f1d1d}
+.r-pseudo{background:#f0fdf4;border-left:5px solid #86efac;color:#166534}
+.r-atypical{background:#f8fafc;border-left:5px solid #94a3b8;color:#334155}
+.r-pppd{background:#faf5ff;border-left:5px solid #a855f7;color:#581c87}
+.alert-central{background:#fee2e2;border:2px solid #dc2626;border-radius:10px;padding:18px;margin-top:4px}
+.alert-central h2{color:#dc2626;font-size:1.1rem;margin-bottom:8px}
+.alert-central p{font-size:.9rem;line-height:1.6;color:#7f1d1d}
+.disclaimer{background:#f1f5f9;border-radius:8px;padding:12px 16px;margin-top:16px;font-size:.78rem;color:#64748b;line-height:1.5;border-left:3px solid #94a3b8}
+.btn-reset{width:100%;padding:11px;background:#1e40af;color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:16px}
+.btn-reset:hover{background:#1d4ed8}
+.progress{display:flex;gap:4px;margin-bottom:18px;flex-wrap:wrap}
+.prog-dot{width:10px;height:10px;border-radius:50%;background:#e2e8f0;transition:background .3s}
+.prog-dot.done{background:#1e40af}
+.prog-dot.active{background:#60a5fa}
+
+
+/* ── PART 2 extra styles (non-conflicting) ── */
+.phase-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700;margin-bottom:10px}
+.badge-central{background:#fee2e2;color:#dc2626}
+.badge-specific{background:#dbeafe;color:#1e40af}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.cond-btn{padding:13px;border:2px solid #ddd;border-radius:10px;cursor:pointer;font-weight:600;background:#fff;color:#444;text-align:center;font-size:.88rem}
+.cond-btn:hover,.cond-btn.sel{border-color:#1e40af;background:#eff6ff;color:#1e40af}
+.r-orange{background:#ffedd5;border-left:5px solid #ea580c;color:#7c2d12}
+.r-purple{background:#f3e8ff;border-left:5px solid #9333ea;color:#581c87}
+.r-grey{background:#f1f5f9;border-left:5px solid #94a3b8;color:#334155}
+.alert-central{background:#fee2e2;border:2px solid #dc2626;border-radius:10px;padding:18px}
+.alert-central h2{color:#dc2626;margin-bottom:8px;font-size:1.05rem}
+.alert-central p{font-size:.9rem;line-height:1.6;color:#7f1d1d}
+.note{background:#fef9c3;border-left:4px solid #ca8a04;padding:10px 14px;border-radius:6px;font-size:.83rem;margin:10px 0;color:#713f12}
+.choices{display:flex;flex-direction:column;gap:8px}
+.cbtn{padding:11px 16px;border:2px solid #ddd;border-radius:8px;cursor:pointer;font-weight:600;background:#fff;color:#444;text-align:left;font-size:.88rem}
+.cbtn:hover{border-color:#1e40af;color:#1e40af}
+.cbtn.sel{background:#1e40af;border-color:#1e40af;color:#fff}
+</style>
+</head>
+<body>
+
+<!-- ══════════ HOME ══════════ -->
+<div id="home">
+  <div class="home-title"> Approach to Vertigo</div>
+  <p class="home-sub"> </p>
+  <div class="home-cards">
+    <div class="home-card" onclick="goTo('p1')">
+      <div class="icon">📋</div>
+      <h2>Part 1<br>History Taking</h2>
+      <p>Classify Vertigo and Rule out DDXS </p>
+    </div>
+    <div class="home-card" onclick="goTo('p2')">
+      <div class="icon">🔍</div>
+      <h2>Part 2<br>Physical Exam</h2>
+      <p>Guided physical examination for Vertigo classification</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PART 1 ══════════ -->
+<div id="p1" style="display:none">
+  <button class="back-btn" onclick="goHome()">← Back to Home</button>
+  <h1>🫨 Vertigo Triage Assistant</h1>
+  <p class="sub">History Taking · Part 1 · For Healthcare Providers</p>
+  <div class="prog" id="progress"></div>
+  <div id="app"></div>
+</div>
+
+<!-- ══════════ PART 2 ══════════ -->
+<div id="p2" style="display:none">
+  <button class="back-btn" onclick="goHome()">← Back to Home</button>
+  <h1>   Vertigo Physical Exam</h1>
+  <p class="sub">Physical Examination Guide · Part 2 · For Healthcare Providers</p>
+  <div class="prog" id="prog"></div>
+  <div id="app2"></div>
+</div>
+
+<script>
+// ── NAVIGATION ──
+function goTo(id){
+  document.getElementById('home').style.display='none';
+  document.getElementById('p1').style.display='none';
+  document.getElementById('p2').style.display='none';
+  document.getElementById(id).style.display='block';
+  if(id==='p1'){resetP1();renderP1();}
+  if(id==='p2'){resetP2();renderP2();}
+}
+function goHome(){
+  document.getElementById('home').style.display='block';
+  document.getElementById('p1').style.display='none';
+  document.getElementById('p2').style.display='none';
+}
+
+// ════════════════════════════════
+// PART 1 — HISTORY TAKING
+// ════════════════════════════════
+
+const S={};
+
+let step=0;
+
+const STEPS=[
+  // 0: TRUE VERTIGO
+  {id:'true_vertigo',type:'yn',label:'Step 1 — True Vertigo vs Pseudo Vertigo',
+   q:'Does the patient feel a definite sensation of spinning — either themselves spinning or the room spinning around them?',
+   hint:'Distinguish true rotational vertigo from vague dizziness, lightheadedness, or imbalance (pseudo vertigo).'},
+
+  // 1: RED FLAGS (one block, evaluated together)
+  {id:'rf_sudden',type:'yn',label:'Step 2 — Central Vertigo Red Flags (1/8)',
+   q:'Did the vertigo start suddenly, peaking within seconds to minutes?',
+   hint:'Sudden onset suggests vascular cause (stroke, TIA). Answer each red flag carefully.'},
+  {id:'rf_continuous',type:'yn',label:'Step 2 — Central Vertigo Red Flags (2/8)',
+   q:'Is the vertigo continuous and severe — not brief or positional?'},
+  {id:'rf_diplopia',type:'yn',label:'Step 2 — Central Vertigo Red Flags (3/8)',
+   q:'Is there double vision, slurred speech, or difficulty swallowing?'},
+  {id:'rf_weakness',type:'yn',label:'Step 2 — Central Vertigo Red Flags (4/8)',
+   q:'Is there weakness, numbness, or loss of coordination in the arms or legs?'},
+  {id:'rf_gait',type:'yn',label:'Step 2 — Central Vertigo Red Flags (5/8)',
+   q:'Is the patient unable to walk or very unsteady even when NOT spinning?'},
+  {id:'rf_headache',type:'yn',label:'Step 2 — Central Vertigo Red Flags (6/8)',
+   q:'Is there a severe, unusual headache or neck pain?'},
+  {id:'rf_consciousness',type:'yn',label:'Step 2 — Central Vertigo Red Flags (7/8)',
+   q:'Is there altered consciousness, confusion, or memory problems?'},
+  {id:'rf_trauma',type:'yn',label:'Step 2 — Central Vertigo Red Flags (8/8)',
+   q:'Was there recent head or neck trauma?'},
+
+  // 2: DURATION
+  {id:'duration',type:'choice',label:'Step 3 — Episode Duration',
+   q:'How long does each episode of spinning typically last?',
+   options:[
+     {k:'1',v:'Seconds (< 1 minute, then stops completely)'},
+     {k:'2',v:'Minutes to hours (20 min – a few hours, then resolves)'},
+     {k:'3',v:'Hours to days (continuous, lasting > 24 h or most of day)'},
+     {k:'4',v:'Days or longer (persistent, not improving over days)'}
+   ]},
+
+  // 3: ASSOCIATED SYMPTOMS
+  {id:'positional',type:'yn',label:'Step 3 — Associated Symptoms (1/5)',
+   q:'Is the spinning triggered by specific head movements?',
+   hint:'E.g., rolling over in bed, looking up, bending forward.'},
+  {id:'hearing_loss',type:'yn',label:'Step 3 — Associated Symptoms (2/5)',
+   q:'Is there hearing loss (in one or both ears) during episodes?'},
+  {id:'tinnitus',type:'yn',label:'Step 3 — Associated Symptoms (3/5)',
+   q:'Is there ringing in the ear or a full/plugged ear feeling (tinnitus/aural fullness)?'},
+  {id:'viral',type:'yn',label:'Step 3 — Associated Symptoms (4/5)',
+   q:'Did a cold, flu, or viral illness occur in the 1–2 weeks before onset?'},
+  {id:'toxin',type:'yn',label:'Step 3 — Associated Symptoms (5/5)',
+   q:'Was there recent exposure to ototoxic agents?',
+   hint:'E.g., aminoglycosides (gentamicin, streptomycin), loop diuretics (furosemide), high-dose aspirin, alcohol binge, solvents, or certain chemotherapy drugs.'},
+];
+
+function totalSteps(){
+  if(S.true_vertigo===false) return 1;
+  if(centralPos()) return centralPos()+1;
+  return STEPS.length;
+}
+
+function centralPos(){
+  const rfKeys=['rf_sudden','rf_continuous','rf_diplopia','rf_weakness','rf_gait','rf_headache','rf_consciousness','rf_trauma'];
+  for(let i=0;i<rfKeys.length;i++){
+    if(S[rfKeys[i]]===true) return STEPS.findIndex(s=>s.id===rfKeys[i])+1;
+  }
+  return 0;
+}
+
+function renderProgress(){
+  const total=STEPS.length;
+  const dots=document.getElementById('progress');
+  dots.innerHTML='';
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='prog-dot'+(i<step?' done':i===step?' active':'');
+    dots.appendChild(d);
+  }
+}
+
+function renderP1(){
+  renderProgress();
+  // Check terminal states
+  if(S.true_vertigo===false){showPseudo1();return;}
+  if(step>=1&&step<=8){
+    const rfKeys=['rf_sudden','rf_continuous','rf_diplopia','rf_weakness','rf_gait','rf_headache','rf_consciousness','rf_trauma'];
+    const done=rfKeys.filter(k=>S[k]!==undefined);
+    if(done.some(k=>S[k]===true)){showCentral1();return;}
+    if(done.length===8){step=9;renderP1();return;}
+  }
+  if(step>=STEPS.length){showDiagnosis1();return;}
+  renderStep1(STEPS[step]);
+}
+
+function renderStep1(s){
+  let html=`<div class="card"><div class="step-label">${s.label}</div>`;
+  html+=`<div class="question">${s.q}</div>`;
+  if(s.hint) html+=`<div class="hint">${s.hint}</div>`;
+  if(s.type==='yn'){
+    html+=`<div class="yn">
+      <button id="btn-yes" onclick="answer('${s.id}',true)">✅ Yes</button>
+      <button id="btn-no" onclick="answer('${s.id}',false)">❌ No</button>
+    </div>`;
+  } else {
+    html+='<div class="choices">';
+    s.options.forEach(o=>{
+      html+=`<button class="choice-btn" onclick="choose('${s.id}','${o.k}')">${o.k}. ${o.v}</button>`;
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  document.getElementById('app').innerHTML=html;
+}
+
+function answer(id,val){
+  S[id]=val;
+  step++;
+  renderP1();
+}
+
+function choose(id,val){
+  S[id]=val;
+  step++;
+  renderP1();
+}
+
+function showPseudo1(){
+  document.getElementById('app').innerHTML=`
+  <div class="result r-pseudo">
+    <h2>🟢 Likely PSEUDO VERTIGO (Non-Vestibular Dizziness)</h2>
+    <ul>
+      <li>No true rotational spinning — this is NOT vestibular vertigo.</li>
+      <li>Common causes: orthostatic hypotension, dehydration, anemia, anxiety/panic disorder, visual dizziness, early balance disorders.</li>
+      <li>Check orthostatic BP (lying → standing): drop ≥ 20 mmHg SBP suggests orthostatic hypotension.</li>
+      <li>Review medications (antihypertensives, diuretics, sedatives).</li>
+      <li>Basic labs: CBC, BMP, glucose, thyroid if not recent.</li>
+      <li>Next step: General medical evaluation; no vestibular workup needed at this stage.</li>
+    </ul>
+  </div>
+  ${disclaimer()}
+  <button class="btn-reset" onclick="resetP1()">🔄 Start Over</button>`;
+}
+
+function showCentral1(){
+  document.getElementById('app').innerHTML=`
+  <div class="alert-central">
+    <h2>🚨 HIGH CONCERN FOR CENTRAL VERTIGO</h2>
+    <p>Possible stroke, TIA, or posterior fossa lesion.<br><br>
+    <strong>→ SEND TO EMERGENCY DEPARTMENT IMMEDIATELY.</strong><br>
+    → Do NOT allow patient to drive.<br>
+    → Call emergency services if needed.<br>
+    → Do NOT proceed with peripheral vertigo workup until central cause is excluded.<br><br>
+    Urgent imaging: <strong>MRI brain with DWI</strong> (CT misses posterior fossa infarcts).<br>
+    Neurology consultation immediately.</p>
+  </div>
+  ${disclaimer()}
+  <button class="btn-reset" onclick="resetP1()">🔄 Start Over</button>`;
+}
+
+function showDiagnosis1(){
+  const d=S.duration, pos=S.positional, hl=S.hearing_loss, tin=S.tinnitus, vir=S.viral, tox=S.toxin;
+  let cls='r-atypical', title='', items=[];
+
+  if(d==='1'){
+    if(pos&&!hl){
+      cls='r-bppv';
+      title='🟢 Benign Paroxysmal Positional Vertigo (BPPV) — Peripheral';
+      items=['Very brief episodes (seconds), triggered by specific head positions.','No hearing loss — distinguishes from Menière's.','Most common cause of peripheral vertigo.','<strong>Next step:</strong> Perform Dix-Hallpike maneuver (affected side).','<strong>Treatment:</strong> Canalith repositioning — Epley or Semont maneuver.','Advise patient: avoid rapid head movements temporarily; most resolve in days–weeks.'];
+    } else {
+      cls='r-atypical';
+      title='⚠️ Atypical Brief Vertigo — Not Classic BPPV';
+      items=['Seconds-duration vertigo that is NOT positional OR has hearing loss is atypical for BPPV.','Consider: horizontal canal BPPV, central positional vertigo.','<strong>Next step:</strong> ENT/Neurology referral; vestibular testing (vHIT, VEMP).'];
+    }
+  } else if(d==='2'){
+    if(hl&&tin){
+      cls='r-menieres';
+      title='🔵 Ménière's Disease — Peripheral';
+      items=['Classic triad: episodic vertigo (20 min–hours) + fluctuating hearing loss + tinnitus/aural fullness.','Attacks are spontaneous, not positional.','<strong>Next step:</strong> ENT referral; audiogram to document fluctuant sensorineural hearing loss.','<strong>Acute treatment:</strong> Vestibular suppressants (meclizine, diazepam) during attacks.','<strong>Long-term:</strong> Low-salt diet (< 2 g/day), avoid caffeine, alcohol; consider diuretics (hydrochlorothiazide) or betahistine.'];
+    } else {
+      cls='r-atypical';
+      title='⚠️ Episodic Vertigo — No Classic Ménière's Pattern';
+      items=['Minutes-to-hours vertigo without the full Ménière's triad.','If migraine history: consider <strong>Vestibular Migraine</strong> (most common cause of episodic vertigo in young women).','<strong>Next step:</strong> Detailed history, headache diary, ENT/Neurology evaluation.'];
+    }
+  } else if(d==='3'){
+    if(vir){
+      if(hl){
+        cls='r-labyrinthitis';
+        title='🟠 Labyrinthitis — Peripheral';
+        items=['Continuous vertigo (hours–days) after viral illness + hearing loss = Labyrinthitis.','Inner ear inflammation involving both vestibular AND cochlear components.','<strong>Treatment:</strong> Short-term vestibular suppressants if severe (meclizine, diazepam — avoid > 3 days).','Corticosteroids (prednisone) if within 3 days of onset.','IV fluids if unable to tolerate oral. Antiemetics (ondansetron) as needed.','<strong>Recovery:</strong> Vestibular rehabilitation exercises once acute phase resolves.'];
+      } else {
+        cls='r-neuritis';
+        title='🟡 Vestibular Neuritis — Peripheral';
+        items=['Continuous vertigo (hours–days) after viral illness, NO hearing loss = Vestibular Neuritis.','Inflammation of the vestibular nerve only — cochlea spared.','<strong>Treatment:</strong> Same as Labyrinthitis (suppressants short-term, corticosteroids if early, hydration).','<strong>Key point:</strong> Hearing is normal — if hearing loss develops, reclassify as Labyrinthitis.','Recovery: days to weeks; vestibular rehabilitation accelerates compensation.'];
+      }
+    } else if(tox){
+      cls='r-toxin';
+      title='🟣 Toxin-Induced Vertigo (Possible — Duration fits persistent effect)';
+      items=['Ototoxic exposure + continuous vertigo = Toxin-induced.','<strong>Stop the offending agent immediately.</strong>','Common agents: aminoglycosides, loop diuretics, high-dose aspirin, cisplatin, alcohol.','<strong>Next step:</strong> ENT referral, audiogram, vestibular function tests.','Vestibular rehabilitation once acute phase passes.'];
+    } else {
+      cls='r-atypical';
+      title='⚠️ Continuous Vertigo Without Clear Cause';
+      items=[hl?'Hearing loss present → Consider Labyrinthitis (viral prodrome may have been subtle).':'No hearing loss → Consider Vestibular Neuritis (viral prodrome sometimes missed).','<strong>Next step:</strong> ENT evaluation; MRI if any atypical features develop.'];
+    }
+  } else if(d==='4'){
+    if(tox){
+      cls='r-toxin';
+      title='🟣 Toxin-Induced Vertigo — Peripheral';
+      items=['Persistent vertigo + ototoxic exposure confirms Toxin-Induced Vertigo.','<strong>Stop the offending agent immediately.</strong>','<strong>Next step:</strong> ENT referral, audiogram, full vestibular testing (vHIT, VEMP, rotary chair).','Vestibular rehabilitation once acute toxin effects stabilize.'];
+    } else {
+      cls='r-pppd';
+      title='🔮 Persistent Vertigo — Consider PPPD or Ongoing Pathology';
+      items=['Persistent vertigo lasting many days is atypical for acute neuritis/labyrinthitis (which improve within days–weeks).','Consider: <strong>Persistent Postural-Perceptual Dizziness (PPPD)</strong>, ongoing low-grade inflammation, or central cause not captured by history alone.','<strong>Next step:</strong> Full ENT/Neurology workup: hearing tests, vHIT, VEMP, and MRI brain if any doubt.','Screen for anxiety/depression — strongly associated with PPPD.'];
+    }
+  }
+
+  document.getElementById('app').innerHTML=`
+  <div class="result ${cls}">
+    <h2>${title}</h2>
+    <ul>${items.map(i=>'<li>'+i+'</li>').join('')}</ul>
+  </div>
+  ${disclaimer()}
+  <button class="btn-reset" onclick="resetP1()">🔄 Start Over</button>`;
+}
+
+function disclaimer(){
+  return `<div class="disclaimer">⚠️ <strong>Disclaimer:</strong> This tool is for educational and structured history-taking purposes only. It does NOT replace physical examination, audiometry, vestibular function tests, or neuroimaging when indicated. Clinical judgment by a qualified healthcare professional is essential for final diagnosis and management.</div>`;
+}
+
+function resetP1(){
+  Object.keys(S).forEach(k=>delete S[k]);
+  step=0;
+  renderP1();
+}
+
+renderP1();
+
+
+// ════════════════════════════════
+// PART 2 — PHYSICAL EXAM
+// ════════════════════════════════
+
+let phase='select'; // select → central → specific → result
+
+// ─── CENTRAL SCREEN STEPS ───
+const CENTRAL=[
+  {id:'c_dysarthria',label:'Central Screen (1/5)',q:'Is there dysarthria (slurred speech) or dysphagia (trouble swallowing)?'},
+  {id:'c_weakness',label:'Central Screen (2/5)',q:'Is there weakness, numbness, or asymmetry in face or limbs?'},
+  {id:'c_ataxia',label:'Central Screen (3/5)',q:'Is there ataxia or inability to walk straight even when NOT spinning?'},
+  {id:'c_headache',label:'Central Screen (4/5)',q:'Is there a severe, unusual headache or neck pain?'},
+  {id:'c_consciousness',label:'Central Screen (5/5)',q:'Is there altered consciousness, confusion, or memory issues?'},
+  {id:'c_nystagmus',label:'Nystagmus Assessment',q:'Is there spontaneous nystagmus (eye beating) while the patient sits upright and looks straight ahead?'},
+  // direction asked only if nystagmus = yes
+  {id:'c_nyst_dir',label:'Nystagmus Direction',type:'choice',q:'What is the direction of the spontaneous nystagmus?',
+   opts:[{k:'1',v:'Horizontal (side-to-side) – may have slight torsion'},
+         {k:'2',v:'Vertical (up-down or down-up)'},
+         {k:'3',v:'Purely torsional (rotary)'},
+         {k:'4',v:'Bidirectional (changes direction with gaze)'},
+         {k:'5',v:'Not sure / cannot characterize'}]},
+  {id:'c_hints_acute',label:'HINTS Exam — Indication',q:'Is this an acute, continuous vertigo episode (not positional, not brief)? Perform HINTS if yes.',
+   hint:'HINTS = Head Impulse + Nystagmus type + Test of Skew — gold standard for acute vestibular syndrome.'},
+  {id:'c_hit',label:'HINTS — Head Impulse Test',q:'Head Impulse Test: When rapidly turning the head ~10-20° toward the slow-phase side, are there catch-up saccades (corrective quick eye movements)?',
+   hint:'Abnormal (corrective saccades present) → CENTRAL cause. Normal (no saccades) → peripheral.'},
+  {id:'c_skew',label:'HINTS — Test of Skew',q:'Test of Skew: Is there vertical misalignment of the eyes (one eye higher) that reverses with cover-uncover?',
+   hint:'Any skew deviation → CENTRAL cause likely.'},
+  {id:'c_romberg',label:'Balance Testing (1/2)',q:'Romberg test: With feet together and eyes closed, is the patient unstable or falling?'},
+  {id:'c_gait',label:'Balance Testing (2/2)',q:'Tandem gait: Does the patient veer to one side or fail heel-to-toe walking?'},
+];
+
+// ─── CONDITION-SPECIFIC STEPS ───
+const SPECIFIC={
+  pseudo:[
+    {id:'p_nystagmus',label:'Pseudo Vertigo Exam (1/4)',q:'Is there any spontaneous nystagmus on exam (even subtle)?',
+     hint:'Any nystagmus → reclassify as true vestibular pathology.'},
+    {id:'p_ortho',label:'Pseudo Vertigo Exam (2/4)',q:'Orthostatic BP: Is there a drop of ≥20 mmHg SBP or ≥10 mmHg DBP with symptoms (lightheadedness) on standing?'},
+    {id:'p_anxiety',label:'Pseudo Vertigo Exam (3/4)',q:'Are there signs of hyperventilation (tingling, carpopedal spasm), tremor, or obvious anxiety/panic features?'},
+    {id:'p_neuro',label:'Pseudo Vertigo Exam (4/4)',q:'Is the full neurologic exam normal (cranial nerves, strength, sensation, coordination)?'},
+  ],
+  bppv:[
+    {id:'b_dh_done',label:'BPPV Exam (1/5)',q:'Was the Dix-Hallpike maneuver performed (head turned 45°, rapidly laid back)?',
+     hint:'Turn head 45° to one side, lower patient rapidly to supine with head hanging 20° below table. Repeat to other side.'},
+    {id:'b_dh_pos',label:'BPPV Exam (2/5)',q:'Upon Dix-Hallpike, does rotatory nystagmus (torsional, beating toward the downward ear) appear after a short latency?'},
+    {id:'b_latency',label:'BPPV Exam (3/5)',q:'Was there latency? (Nystagmus did NOT appear immediately, but after 1–5 seconds?)'},
+    {id:'b_fatig',label:'BPPV Exam (4/5)',q:'Does the nystagmus weaken or disappear upon repeated positioning (fatigability)?'},
+    {id:'b_dur',label:'BPPV Exam (5/5)',q:'Does the nystagmus last < 60 seconds and then stop, with NO spontaneous nystagmus when sitting upright?'},
+  ],
+  menieres:[
+    {id:'m_hl',label:"Menière's Exam (1/5)",q:"Is there subjective hearing loss during this episode (patient reports)?"},
+    {id:'m_weber',label:"Menière's Exam (2/5)",q:'Tuning fork Weber (512 Hz): Does sound lateralize to the affected (bad) ear?',
+     hint:"In Menière's, Weber lateralizes toward the bad ear during attack (sensorineural pattern)."},
+    {id:'m_rinne',label:"Menière's Exam (3/5)",q:'Rinne test: Is bone conduction better than air conduction on the affected side (abnormal Rinne)?'},
+    {id:'m_tinnitus',label:"Menière's Exam (4/5)",q:'Does the patient confirm tinnitus or aural fullness in the same ear?'},
+    {id:'m_nyst',label:"Menière's Exam (5/5)",q:'If examined during an acute attack: is there spontaneous horizontal unidirectional nystagmus?',
+     hint:'Nystagmus may be absent between attacks — diagnosis relies on history + fluctuant hearing loss.'},
+  ],
+  labyrinthitis:[
+    {id:'l_nyst',label:'Labyrinthitis Exam (1/4)',q:'Is there spontaneous nystagmus (horizontal-torsional, unidirectional) on exam?',
+     hint:'Should be present in acute phase. Absence in severe vertigo → re-evaluate.'},
+    {id:'l_hl',label:'Labyrinthitis Exam (2/4)',q:'Is there sensorineural hearing loss on the affected side (whisper test or tuning fork)?',
+     hint:'Hearing loss distinguishes Labyrinthitis from Vestibular Neuritis.'},
+    {id:'l_hit',label:'Labyrinthitis Exam (3/4) — HINTS HIT',q:'Head Impulse Test: Are there catch-up saccades toward the side of the slow phase?',
+     hint:'Abnormal HIT → CENTRAL cause — stop and arrange emergency imaging.'},
+    {id:'l_skew',label:'Labyrinthitis Exam (4/4) — HINTS Skew',q:'Test of Skew: Any vertical eye misalignment?'},
+  ],
+  neuritis:[
+    {id:'n_nyst',label:'Vestibular Neuritis Exam (1/4)',q:'Is there spontaneous nystagmus (horizontal-torsional, unidirectional) on exam?',
+     hint:'Should be present in acute neuritis. Absence → re-evaluate.'},
+    {id:'n_hearing',label:'Vestibular Neuritis Exam (2/4)',q:'Is hearing NORMAL on the affected side (whisper test or tuning fork)?',
+     hint:'Normal hearing distinguishes Vestibular Neuritis from Labyrinthitis.'},
+    {id:'n_hit',label:'Vestibular Neuritis Exam (3/4) — HINTS HIT',q:'Head Impulse Test: Are there catch-up saccades?',
+     hint:'Abnormal HIT → CENTRAL cause — stop and arrange emergency imaging.'},
+    {id:'n_skew',label:'Vestibular Neuritis Exam (4/4) — HINTS Skew',q:'Test of Skew: Any vertical eye misalignment?'},
+  ],
+  toxin:[
+    {id:'t_exp',label:'Toxin-Induced Exam (1/3)',q:'Confirm: has the patient had recent exposure to known ototoxins?',
+     hint:'Aminoglycosides, loop diuretics, high-dose aspirin, cisplatin, alcohol binge, solvents.'},
+    {id:'t_nyst',label:'Toxin-Induced Exam (2/3)',q:'Is there gaze-evoked nystagmus or downbeat nystagmus on exam?',
+     hint:'Bilateral or symmetric pattern suggests toxic bilateral vestibular loss.'},
+    {id:'t_bilateral',label:'Toxin-Induced Exam (3/3)',q:'Does the patient have bilateral balance impairment (oscillopsia, wide-based gait, falls in dark)?',
+     hint:'Bilateral vestibular loss is characteristic of aminoglycoside toxicity.'},
+  ],
+};
+
+let cond=null;
+let cIdx=0; // central step index
+let sIdx=0; // specific step index
+let centralPassed=false;
+
+function pDots(){
+  const p=document.getElementById('prog');p.innerHTML='';
+  const total=CENTRAL.length+(cond&&SPECIFIC[cond]?SPECIFIC[cond].length:0);
+  const done=(phase==='select'?0:phase==='central'?cIdx:phase==='specific'?CENTRAL.length+sIdx:total);
+  for(let i=0;i<Math.min(total,20);i++){
+    const d=document.createElement('div');
+    d.className='pd'+(i<done?' done':i===done?' active':'');
+    p.appendChild(d);
+  }
+}
+
+function renderP2(){
+  pDots();
+  if(phase==='select') renderSelect();
+  else if(phase==='central') renderCentral();
+  else if(phase==='specific') renderSpecific();
+  else if(phase==='result') renderResult();
+}
+
+function renderSelect(){
+  document.getElementById('app2').innerHTML=`
+  <div class="card">
+    <div class="step-label">Step 1 — Select Condition to Examine For</div>
+    <div class="q">Based on history, which condition are you evaluating?</div>
+    <div class="hint">The mandatory central vertigo screen will run first regardless of selection.</div>
+    <div class="cond-grid">
+      <button class="cond-btn" onclick="pickCond('pseudo')">🟢 Pseudo Vertigo</button>
+      <button class="cond-btn" onclick="pickCond('bppv')">🔵 BPPV</button>
+      <button class="cond-btn" onclick="pickCond('menieres')">🟡 Menière's Disease</button>
+      <button class="cond-btn" onclick="pickCond('labyrinthitis')">🟠 Labyrinthitis</button>
+      <button class="cond-btn" onclick="pickCond('neuritis')">🟡 Vestibular Neuritis</button>
+      <button class="cond-btn" onclick="pickCond('toxin')">🟣 Toxin-Induced</button>
+    </div>
+  </div>`;
+}
+
+function pickCond(c){
+  cond=c;
+  if(c==='pseudo'){phase='specific';sIdx=0;}
+  else{phase='central';cIdx=0;}
+  renderP2();
+}
+
+function renderCentral(){
+  // Skip c_nyst_dir if no nystagmus
+  let steps=[...CENTRAL];
+  if(!S.c_nystagmus) steps=steps.filter(s=>s.id!=='c_nyst_dir');
+  // Skip HINTS steps if not acute continuous
+  if(S.c_hints_acute===false) steps=steps.filter(s=>!['c_hit','c_skew'].includes(s.id));
+
+  const active=steps[cIdx];
+  if(!active){centralPassed=true;phase='specific';sIdx=0;renderP2();return;}
+
+  let html=`<div class="card"><span class="phase-badge badge-central">🔴 Central Screen — Mandatory</span>
+  <div class="step-label">${active.label}</div>
+  <div class="q">${active.q}</div>`;
+  if(active.hint) html+=`<div class="hint">${active.hint}</div>`;
+
+  if(active.type==='choice'){
+    html+='<div class="choices">';
+    active.opts.forEach(o=>{html+=`<button class="cbtn" onclick="chooseC('${active.id}','${o.k}')">${o.k}. ${o.v}</button>`;});
+    html+='</div>';
+  } else {
+    html+=`<div class="yn"><button onclick="ansC('${active.id}',true)">✅ Yes</button><button onclick="ansC('${active.id}',false)">❌ No</button></div>`;
+  }
+  html+='</div>';
+  document.getElementById('app2').innerHTML=html;
+}
+
+function ansC(id,val){
+  S[id]=val;
+  // Check red flags
+  const redFlags=['c_dysarthria','c_weakness','c_ataxia','c_headache','c_consciousness'];
+  if(redFlags.includes(id)&&val){phase='result';renderP2();return;}
+  if(id==='c_nyst_dir'&&['2','3','4'].includes(val)){phase='result';renderP2();return;}
+  if(id==='c_hit'&&val){phase='result';renderP2();return;}
+  if(id==='c_skew'&&val){phase='result';renderP2();return;}
+  cIdx++;renderP2();
+}
+function chooseC(id,val){S[id]=val;ansC(id,val);}
+
+function renderSpecific(){
+  const steps=SPECIFIC[cond]||[];
+  // BPPV: skip after dh_done=false
+  if(cond==='bppv'&&S.b_dh_done===false){phase='result';renderP2();return;}
+  if(cond==='bppv'&&S.b_dh_pos===false){phase='result';renderP2();return;}
+  // Lab/Neuritis: stop if HIT or skew positive → central
+  if((cond==='labyrinthitis'||cond==='neuritis')&&(S.l_hit||S.n_hit||S.l_skew||S.n_skew)){phase='result';renderP2();return;}
+
+  const active=steps[sIdx];
+  if(!active){phase='result';renderP2();return;}
+
+  let html=`<div class="card"><span class="phase-badge badge-specific">🔵 Condition-Specific Exam</span>
+  <div class="step-label">${active.label}</div>
+  <div class="q">${active.q}</div>`;
+  if(active.hint) html+=`<div class="hint">${active.hint}</div>`;
+  html+=`<div class="yn"><button onclick="ansS(true)">✅ Yes</button><button onclick="ansS(false)">❌ No</button></div>`;
+  html+='</div>';
+  document.getElementById('app2').innerHTML=html;
+}
+
+function ansS(val){
+  const steps=SPECIFIC[cond]||[];
+  S[steps[sIdx].id]=val;
+  sIdx++;renderP2();
+}
+
+function renderResult(){
+  // Check if any central red flag triggered
+  const centralRF=['c_dysarthria','c_weakness','c_ataxia','c_headache','c_consciousness'].some(k=>S[k]);
+  const nystDir=['2','3','4'].includes(S.c_nyst_dir);
+  const hitCentral=S.c_hit||S.l_hit||S.n_hit;
+  const skewCentral=S.c_skew||S.l_skew||S.n_skew;
+
+  if(centralRF||nystDir||hitCentral||skewCentral){
+    const reason=centralRF?'Neurologic red flag detected on exam':
+                 nystDir?'Central-pattern nystagmus (vertical/torsional/bidirectional)':
+                 hitCentral?'Abnormal Head Impulse Test (HINTS)':
+                 'Skew deviation (HINTS)';
+    document.getElementById('app2').innerHTML=`
+    <div class="alert-central">
+      <h2>🚨 CENTRAL VERTIGO DETECTED — EMERGENCY</h2>
+      <p><strong>Reason: ${reason}</strong><br><br>
+      → <strong>STOP peripheral vertigo workup immediately.</strong><br>
+      → Arrange <strong>urgent MRI brain with DWI</strong> (CT misses posterior fossa).<br>
+      → <strong>Urgent neurology consultation.</strong><br>
+      → Do NOT perform Epley or any repositioning maneuver.<br>
+      → Monitor vitals, establish IV access, keep NPO.</p>
+    </div>
+    ${disc()}<button class="btn-reset" onclick="resetP2()">🔄 Start Over</button>`;
+    return;
+  }
+
+  let html='';
+
+  if(cond==='pseudo'){
+    if(S.p_nystagmus){
+      html=`<div class="result r-warn"><h2>⚠️ Nystagmus Found — Reclassify as True Vestibular Pathology</h2>
+      <ul><li>Pseudo vertigo is excluded when nystagmus is present on exam.</li>
+      <li>Return to Part 1 (History) and re-evaluate as true peripheral vertigo.</li>
+      <li>Consider BPPV, Vestibular Neuritis, or Labyrinthitis depending on history.</li></ul></div>`;
+    } else {
+      const ortho=S.p_ortho,anx=S.p_anxiety,neuro=S.p_neuro;
+      html=`<div class="result r-ok"><h2>✅ Exam Consistent with PSEUDO VERTIGO</h2>
+      <ul><li>No nystagmus — true vestibular pathology excluded on exam.</li>
+      ${ortho?'<li>Orthostatic hypotension present → volume depletion, antihypertensive effect, or autonomic dysfunction.</li>':''}
+      ${anx?'<li>Anxiety/hyperventilation features → consider PPPD or panic disorder.</li>':''}
+      ${!neuro?'<li>⚠️ Neurologic abnormalities found — investigate further despite no nystagmus.</li>':'<li>Neurologic exam normal — reassuring.</li>'}
+      <li><strong>Next step:</strong> Address orthostatic cause, hydration, anxiety management, review medications, basic labs (CBC, BMP, glucose, TSH).</li></ul></div>`;
+    }
+  }
+
+  else if(cond==='bppv'){
+    if(S.b_dh_done===false){
+      html=`<div class="result r-warn"><h2>⚠️ Dix-Hallpike Not Performed</h2>
+      <ul><li>Cannot confirm BPPV without Dix-Hallpike.</li>
+      <li>Perform Dix-Hallpike (head 45°, rapid supine) on both sides before concluding.</li>
+      <li>If patient cannot tolerate: try side-lying test as alternative.</li></ul></div>`;
+    } else if(S.b_dh_pos===false){
+      html=`<div class="result r-warn"><h2>❌ Dix-Hallpike Negative — BPPV Unlikely (Posterior Canal)</h2>
+      <ul><li>Consider Supine Roll Test (head roll to each side while supine) → if positive: horizontal canal BPPV.</li>
+      <li>If all positional tests negative: consider central positional vertigo.</li>
+      <li><strong>Do NOT perform Epley if Dix-Hallpike negative.</strong></li>
+      <li>Refer to ENT/Neurology if persistent.</li></ul></div>`;
+    } else if(S.b_latency&&S.b_fatig&&S.b_dur){
+      html=`<div class="result r-ok"><h2>✅ Classic BPPV Confirmed (Posterior Canal)</h2>
+      <ul><li>Rotatory nystagmus with latency (1–5 sec), fatigability, and duration &lt;60 sec — classic posterior canal BPPV.</li>
+      <li><strong>Treat now:</strong> Epley maneuver (head 45° to affected side → supine → roll to opposite side → sit up).</li>
+      <li>Alternative: Semont maneuver.</li>
+      <li>Success rate of Epley: ~80–90% in one session.</li>
+      <li>Advise: avoid rapid head movements for 24–48 h; sleep semi-upright first night.</li>
+      <li>Follow up in 1–2 weeks; recurrence rate ~15–30%/year.</li></ul></div>`;
+    } else {
+      html=`<div class="result r-warn"><h2>⚠️ Atypical Positional Nystagmus</h2>
+      <ul><li>Does not meet all classic BPPV criteria — could be central positional vertigo or atypical BPPV.</li>
+      <li><strong>Do NOT perform Epley blindly.</strong></li>
+      <li>Consider MRI if central features suspected; ENT/Neurology referral.</li></ul></div>`;
+    }
+  }
+
+  else if(cond==='menieres'){
+    const hl=S.m_hl,tin=S.m_tinnitus;
+    if(hl&&tin){
+      html=`<div class="result r-info"><h2>✅ Exam Supports Menière's Disease</h2>
+      <ul><li>Unilateral hearing loss + tinnitus/aural fullness during episode — consistent with Menière's.</li>
+      ${S.m_weber?'<li>Weber lateralizes to affected ear — sensorineural pattern confirmed.</li>':''}
+      ${S.m_nyst?'<li>Spontaneous nystagmus present during attack — typical unidirectional horizontal pattern.</li>':'<li>No nystagmus between attacks — normal (nystagmus only occurs during active attack).</li>'}
+      <li><strong>Next step:</strong> ENT referral; audiogram to confirm fluctuant sensorineural hearing loss.</li>
+      <li><strong>Acute:</strong> Vestibular suppressants (meclizine, diazepam) — short-term only.</li>
+      <li><strong>Long-term:</strong> Low-salt diet (&lt;2 g/day), avoid caffeine/alcohol; consider hydrochlorothiazide or betahistine.</li></ul></div>`;
+    } else {
+      html=`<div class="result r-warn"><h2>❌ Atypical — Does Not Fully Support Menière's</h2>
+      <ul><li>Full Menière's triad (vertigo + hearing loss + tinnitus) not confirmed on exam.</li>
+      <li>Consider Vestibular Migraine if migraine history present.</li>
+      <li><strong>Next step:</strong> ENT referral; audiogram; detailed trigger diary.</li></ul></div>`;
+    }
+  }
+
+  else if(cond==='labyrinthitis'){
+    if(S.l_nyst&&S.l_hl){
+      html=`<div class="result r-orange"><h2>✅ Exam Consistent with Labyrinthitis</h2>
+      <ul><li>Spontaneous nystagmus + sensorineural hearing loss — peripheral (cochlear + vestibular involvement).</li>
+      <li>HINTS normal (no catch-up saccades, no skew) — central cause excluded.</li>
+      ${S.c_romberg||S.c_gait?'<li>Balance impairment present — consistent with acute vestibular loss.</li>':''}
+      <li><strong>Acute treatment:</strong> Vestibular suppressants if severe (meclizine, diazepam — avoid &gt;3 days).</li>
+      <li>Corticosteroids (prednisone) if within 3 days of onset.</li>
+      <li>Antiemetics (ondansetron) as needed; IV fluids if unable to tolerate oral.</li>
+      <li><strong>Recovery:</strong> Vestibular rehabilitation exercises once acute phase resolves (days–weeks).</li></ul></div>`;
+    } else if(!S.l_hl){
+      html=`<div class="result r-warn"><h2>⚠️ No Hearing Loss — Reclassify as Vestibular Neuritis</h2>
+      <ul><li>Hearing normal → cochlea spared → this is Vestibular Neuritis, not Labyrinthitis.</li>
+      <li>Re-run exam as Vestibular Neuritis.</li></ul></div>`;
+    } else {
+      html=`<div class="result r-warn"><h2>⚠️ No Spontaneous Nystagmus — Re-evaluate</h2>
+      <ul><li>Nystagmus should be present in acute labyrinthitis.</li>
+      <li>If vertigo is severe and no nystagmus: consider central cause, re-examine carefully.</li></ul></div>`;
+    }
+  }
+
+  else if(cond==='neuritis'){
+    if(S.n_nyst&&S.n_hearing){
+      html=`<div class="result r-warn" style="background:#fef9c3;border-color:#ca8a04;color:#713f12"><h2>✅ Exam Consistent with Vestibular Neuritis</h2>
+      <ul><li>Spontaneous unidirectional nystagmus + NORMAL hearing — peripheral (vestibular nerve only).</li>
+      <li>HINTS normal — central cause excluded on exam.</li>
+      ${S.c_romberg||S.c_gait?'<li>Balance impairment present — consistent with unilateral vestibular loss.</li>':''}
+      <li><strong>Acute treatment:</strong> Vestibular suppressants short-term (meclizine, diazepam — max 3 days).</li>
+      <li>Corticosteroids (prednisone) if within 3 days of onset may speed recovery.</li>
+      <li>Hydration; antiemetics as needed.</li>
+      <li><strong>Recovery:</strong> Days to weeks; vestibular rehabilitation accelerates central compensation.</li></ul></div>`;
+    } else if(!S.n_hearing){
+      html=`<div class="result r-warn"><h2>⚠️ Hearing Loss Found — Reclassify as Labyrinthitis</h2>
+      <ul><li>Hearing loss present → cochlear involvement → this is Labyrinthitis, not Vestibular Neuritis.</li></ul></div>`;
+    } else {
+      html=`<div class="result r-warn"><h2>⚠️ No Spontaneous Nystagmus — Re-evaluate</h2>
+      <ul><li>Nystagmus should be present in acute vestibular neuritis.</li>
+      <li>Absent nystagmus may suggest sub-acute phase or central cause.</li></ul></div>`;
+    }
+  }
+
+  else if(cond==='toxin'){
+    const exp=S.t_exp,nyst=S.t_nyst,bilat=S.t_bilateral;
+    if(exp){
+      html=`<div class="result r-purple"><h2>🟣 Exam Supports Toxin-Induced Vestibular Damage</h2>
+      <ul><li>Confirmed ototoxin exposure + vestibular signs = Toxin-Induced.</li>
+      ${nyst?'<li>Gaze-evoked or downbeat nystagmus present — consistent with toxic vestibular damage.</li>':''}
+      ${bilat?'<li>Bilateral balance impairment (oscillopsia, wide-based gait) — characteristic of aminoglycoside bilateral toxicity.</li>':''}
+      <li><strong>Stop the offending agent immediately.</strong></li>
+      <li><strong>Next step:</strong> ENT referral, audiogram, full vestibular function tests (vHIT, VEMP, rotary chair).</li>
+      <li>Vestibular rehabilitation once acute toxic effects stabilize.</li>
+      <li>Monitor for additional hearing loss (may be progressive).</li></ul></div>`;
+    } else {
+      html=`<div class="result r-warn"><h2>⚠️ No Clear Ototoxin Exposure — Consider Other Diagnoses</h2>
+      <ul><li>Without confirmed ototoxin exposure, toxin-induced vertigo is unlikely.</li>
+      <li>Reconsider BPPV, Vestibular Neuritis, or central cause.</li></ul></div>`;
+    }
+  }
+
+  // Romberg/gait note for central-safe cases
+  if(cond!=='pseudo'&&!centralRF&&!nystDir&&!hitCentral&&!skewCentral){
+    if(S.c_romberg||S.c_gait){
+      html+=`<div class="note">📋 Balance: Romberg/gait impairment present — consistent with vestibular loss. Central causes excluded by screen above.</div>`;
+    }
+    if(S.c_hints_acute===false){
+      html+=`<div class="note">📋 HINTS not performed (non-acute episode). If episode becomes acute/continuous, repeat HINTS.</div>`;
+    }
+    if(S.c_nystagmus===false){
+      html+=`<div class="note">📋 No spontaneous nystagmus — may be inter-ictal (between attacks) or compensated phase.</div>`;
+    }
+  }
+
+  document.getElementById('app2').innerHTML=html+disc()+`<button class="btn-reset" onclick="resetP2()">🔄 Start Over</button>`;
+}
+
+function disc(){
+  return`<div class="disc">⚠️ <strong>Disclaimer:</strong> This tool is for educational and structured physical examination purposes only. It does NOT replace clinical judgment, formal audiometry, vestibular function testing, or neuroimaging when clinically indicated.</div>`;
+}
+
+function resetP2(){
+  Object.keys(S).forEach(k=>delete S[k]);
+  cond=null;cIdx=0;sIdx=0;centralPassed=false;phase='select';renderP2();
+}
+
+renderP2();
+
+</script>
+</body>
+</html>

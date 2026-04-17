@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🦴 Low Back Pain Evaluator</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4ff;color:#1a1a2e;min-height:100vh;padding:20px;}
+  h1{text-align:center;color:#2c3e8c;font-size:1.5em;margin-bottom:4px;}
+  .subtitle{text-align:center;color:#888;font-size:0.82em;margin-bottom:22px;}
+
+  .card{background:#fff;border-radius:16px;box-shadow:0 2px 18px rgba(44,62,140,0.10);max-width:680px;margin:0 auto 18px auto;padding:26px 30px;}
+  .section{display:none;}.section.active{display:block;}
+  .step-label{font-size:0.72em;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2c3e8c;margin-bottom:8px;}
+  .section-title{font-size:1.12em;font-weight:700;color:#1a1a2e;margin-bottom:16px;}
+  .note{background:#eef2ff;border-left:4px solid #7c93e0;padding:10px 14px;border-radius:6px;font-size:0.84em;color:#444;margin-bottom:14px;line-height:1.5;}
+  .note.red{background:#fff0f0;border-left-color:#e53935;color:#555;}
+  .note.orange{background:#fff8e1;border-left-color:#fb8c00;color:#555;}
+  .note.green{background:#f0fff4;border-left-color:#43a047;color:#444;}
+
+  /* Progress */
+  .progress-wrap{max-width:680px;margin:0 auto 16px auto;}
+  .progress-bar-bg{background:#dde4f5;border-radius:6px;height:6px;}
+  .progress-bar-fill{background:#2c3e8c;height:6px;border-radius:6px;transition:width 0.3s;}
+  .progress-text{font-size:0.73em;color:#2c3e8c;text-align:right;margin-top:4px;}
+
+  /* Dropdowns & selects */
+  label.field-label{display:block;font-size:0.85em;font-weight:600;color:#555;margin-bottom:5px;}
+  select{width:100%;padding:9px 12px;border:1.5px solid #c0caee;border-radius:8px;font-size:0.92em;margin-bottom:14px;outline:none;background:#fafbff;color:#222;}
+  select:focus{border-color:#2c3e8c;}
+
+  /* Sub-section labels */
+  .sub-label{font-size:0.78em;font-weight:700;color:#2c3e8c;letter-spacing:0.5px;text-transform:uppercase;margin:14px 0 8px 0;}
+
+  /* Toggle button groups (location, timing, aggravating) */
+  .toggle-group{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
+  .toggle-btn{padding:6px 14px;border:1.5px solid #c0caee;border-radius:20px;background:#fafbff;cursor:pointer;font-size:0.84em;color:#555;transition:all 0.14s;}
+  .toggle-btn.selected{background:#2c3e8c;border-color:#2c3e8c;color:#fff;font-weight:600;}
+
+  /* YN rows */
+  .yn-section{margin-bottom:6px;}
+  .yn-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f2ff;}
+  .yn-row:last-child{border-bottom:none;}
+  .yn-label{flex:1;font-size:0.87em;color:#333;line-height:1.4;}
+  .yn-label .sub{font-size:0.8em;color:#999;display:block;margin-top:2px;}
+  .yn-btn-group{display:flex;gap:5px;flex-shrink:0;}
+  .yn-btn{padding:5px 13px;border:1.5px solid #c0caee;border-radius:18px;background:#fff;cursor:pointer;font-size:0.8em;font-weight:600;color:#888;transition:all 0.14s;}
+  .yn-btn.pos.selected,.yn-btn.yes.selected{background:#e53935;border-color:#e53935;color:#fff;}
+  .yn-btn.neg.selected,.yn-btn.no.selected{background:#e8eaf6;border-color:#9fa8da;color:#3949ab;}
+
+  /* NAV */
+  .nav-row{display:flex;gap:12px;margin-top:22px;justify-content:flex-end;}
+  .btn{padding:10px 26px;border-radius:22px;border:none;font-size:0.92em;font-weight:700;cursor:pointer;transition:all 0.15s;}
+  .btn-primary{background:#2c3e8c;color:#fff;}.btn-primary:hover{background:#1a2870;}
+  .btn-secondary{background:#dde4f5;color:#2c3e8c;}.btn-secondary:hover{background:#c8d3f0;}
+  .btn-restart{background:#dde4f5;color:#2c3e8c;margin-top:16px;width:100%;padding:12px;border-radius:22px;border:none;font-size:0.92em;font-weight:700;cursor:pointer;}
+
+  /* DDx probability bars */
+  .ddx-item{margin-bottom:12px;}
+  .ddx-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .ddx-name{font-size:0.88em;font-weight:700;color:#1a1a2e;}
+  .ddx-pct{font-size:0.85em;font-weight:700;color:#2c3e8c;}
+  .ddx-bar-bg{background:#eef0fa;border-radius:6px;height:10px;}
+  .ddx-bar-fill{height:10px;border-radius:6px;transition:width 0.6s;}
+
+  /* Urgency banner */
+  .urgency-banner{border-radius:12px;padding:16px 20px;margin-bottom:16px;text-align:center;}
+  .urgency-banner.emergent{background:#ffebee;border:2px solid #e53935;}
+  .urgency-banner.urgent{background:#fff8e1;border:2px solid #fb8c00;}
+  .urgency-banner.routine{background:#f0fff4;border:2px solid #43a047;}
+  .urgency-banner .ub-title{font-size:1.3em;font-weight:700;margin-bottom:6px;}
+  .urgency-banner .ub-sub{font-size:0.85em;color:#666;}
+  .emergent .ub-title{color:#c62828;}
+  .urgent .ub-title{color:#e65100;}
+  .routine .ub-title{color:#2e7d32;}
+
+  /* Red flag counter */
+  .rf-counter{display:flex;align-items:center;gap:12px;background:#fff8f8;border:1.5px solid #ffcdd2;border-radius:10px;padding:12px 16px;margin-bottom:14px;}
+  .rf-number{font-size:2em;font-weight:700;color:#e53935;min-width:40px;text-align:center;}
+  .rf-label{font-size:0.85em;color:#555;line-height:1.4;}
+
+  /* Recommendations */
+  .rec-block{background:#f8f9ff;border-radius:10px;border:1.5px solid #c0caee;padding:14px 16px;margin-bottom:12px;font-size:0.87em;line-height:1.6;}
+  .rec-title{font-weight:700;color:#2c3e8c;margin-bottom:8px;font-size:0.95em;}
+  ul.rec{list-style:none;padding:0;}
+  ul.rec li{padding:3px 0 3px 16px;position:relative;color:#333;}
+  ul.rec li::before{content:"▸";position:absolute;left:0;color:#2c3e8c;}
+
+  @media(max-width:500px){
+    .card{padding:18px 16px;}
+    .toggle-group{gap:5px;}
+  }
+</style>
+</head>
+<body>
+
+<h1>🦴 Low Back Pain Evaluator</h1>
+<p class="subtitle">Manual of Medicine · StatPearls · UpToDate-aligned · Educational use only</p>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-text" id="progressText">Not started</div>
+</div>
+
+<!-- SEC 0: START -->
+<div class="section active" id="sec0">
+  <div class="card">
+    <div class="step-label">Welcome</div>
+    <div class="section-title">Low Back Pain Evaluation Assistant</div>
+    <div class="note">
+      Guides through <strong>history → differential diagnosis → physical exam → red flags → next steps</strong>.<br><br>
+      The algorithm updates a DDx probability score after each step and classifies urgency as Routine, Urgent, or Emergent.
+    </div>
+    <div class="nav-row"><button class="btn btn-primary" onclick="goTo('sec1')">Start Evaluation →</button></div>
+  </div>
+</div>
+
+<!-- SEC 1: PAIN CHARACTERISTICS -->
+<div class="section" id="sec1">
+  <div class="card">
+    <div class="step-label">Step 1a of 3</div>
+    <div class="section-title">📋 Pain Characteristics</div>
+
+    <label class="field-label">Onset</label>
+    <select id="onset">
+      <option value="">— Select —</option>
+      <option value="sudden">Sudden</option>
+      <option value="tearing">Tearing / ripping</option>
+      <option value="gradual">Gradual</option>
+    </select>
+
+    <label class="field-label">Severity</label>
+    <select id="severity">
+      <option value="">— Select —</option>
+      <option value="mild">Mild</option>
+      <option value="moderate">Moderate</option>
+      <option value="severe">Severe</option>
+      <option value="intractable">Intractable</option>
+    </select>
+
+    <div class="sub-label">Location / Radiation <span style="color:#aaa;font-weight:400;text-transform:none;">(select all that apply)</span></div>
+    <div class="toggle-group" id="tgl-location">
+      <button class="toggle-btn" data-val="localized" onclick="toggleBtn(this,'location')">Localized back</button>
+      <button class="toggle-btn" data-val="buttock" onclick="toggleBtn(this,'location')">Buttock</button>
+      <button class="toggle-btn" data-val="leg" onclick="toggleBtn(this,'location')">Leg (below knee)</button>
+      <button class="toggle-btn" data-val="saddle" onclick="toggleBtn(this,'location')">Saddle area</button>
+    </div>
+
+    <div class="sub-label">Timing <span style="color:#aaa;font-weight:400;text-transform:none;">(select all that apply)</span></div>
+    <div class="toggle-group" id="tgl-timing">
+      <button class="toggle-btn" data-val="constant" onclick="toggleBtn(this,'timing')">Constant</button>
+      <button class="toggle-btn" data-val="intermittent" onclick="toggleBtn(this,'timing')">Intermittent</button>
+      <button class="toggle-btn" data-val="night" onclick="toggleBtn(this,'timing')">Night pain</button>
+      <button class="toggle-btn" data-val="wakes" onclick="toggleBtn(this,'timing')">Wakes from sleep</button>
+    </div>
+
+    <div class="sub-label">Aggravating factors <span style="color:#aaa;font-weight:400;text-transform:none;">(select all that apply)</span></div>
+    <div class="toggle-group" id="tgl-aggravating">
+      <button class="toggle-btn" data-val="movement" onclick="toggleBtn(this,'aggravating')">Movement</button>
+      <button class="toggle-btn" data-val="extension" onclick="toggleBtn(this,'aggravating')">Extension</button>
+      <button class="toggle-btn" data-val="flexion" onclick="toggleBtn(this,'aggravating')">Flexion</button>
+    </div>
+
+    <div class="sub-label">Relieving factors</div>
+    <div class="toggle-group" id="tgl-relieving">
+      <button class="toggle-btn" data-val="rest" onclick="toggleBtn(this,'relieving')">Rest</button>
+      <button class="toggle-btn" data-val="movement" onclick="toggleBtn(this,'relieving')">Movement/walking</button>
+      <button class="toggle-btn" data-val="none" onclick="toggleBtn(this,'relieving')">None</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo('sec0')">← Back</button>
+      <button class="btn btn-primary" onclick="goTo('sec2')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEC 2: RED FLAG HISTORY -->
+<div class="section" id="sec2">
+  <div class="card">
+    <div class="step-label">Step 1b of 3</div>
+    <div class="section-title">🚩 Red Flag History</div>
+    <div class="note red">Answer each item carefully. Red flags determine urgency classification.</div>
+
+    <div class="yn-section">
+      <div class="yn-row">
+        <span class="yn-label">Age &gt;50 years?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_age',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_age',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">History of cancer?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_cancer',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_cancer',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Unexplained weight loss?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_wtloss',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_wtloss',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Fever or IV drug use (IVDU)?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_fever',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_fever',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Recent trauma or known osteoporosis?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_trauma',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_trauma',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Bowel or bladder changes?<span class="sub">new incontinence, retention, or dysfunction</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_bowel',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_bowel',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Saddle area anesthesia / numbness?<span class="sub">inner thighs, perineum, genitals</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_saddle',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_saddle',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Progressive weakness or foot drop?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_weakness',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_weakness',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">HTN, Marfan syndrome, or cocaine use?<span class="sub">AAA risk factors</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'rf_htn',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'rf_htn',false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo('sec1')">← Back</button>
+      <button class="btn btn-primary" onclick="goTo('sec3')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEC 3: PHYSICAL EXAM -->
+<div class="section" id="sec3">
+  <div class="card">
+    <div class="step-label">Step 2 of 3</div>
+    <div class="section-title">🔬 Physical Examination</div>
+
+    <div class="sub-label">Neurological Tests</div>
+    <div class="yn-section">
+      <div class="yn-row">
+        <span class="yn-label">Straight Leg Raise (SLR) 30–70°?<span class="sub">positive = pain radiates below knee, suggests radiculopathy</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn pos" onclick="setYN(this,'ex_slr',true)">Pos</button>
+          <button class="yn-btn neg" onclick="setYN(this,'ex_slr',false)">Neg</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Crossed SLR positive?<span class="sub">more specific for disc herniation</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn pos" onclick="setYN(this,'ex_crossed_slr',true)">Pos</button>
+          <button class="yn-btn neg" onclick="setYN(this,'ex_crossed_slr',false)">Neg</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Reduced reflexes (patellar / Achilles)?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'ex_reflexes',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'ex_reflexes',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Motor weakness — foot drop or toe extension weakness?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'ex_weakness',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'ex_weakness',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Sensory loss (dermatomal or saddle distribution)?</span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'ex_sensory',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'ex_sensory',false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-label">Structural &amp; Vascular</div>
+    <div class="yn-section">
+      <div class="yn-row">
+        <span class="yn-label">Spinous process point tenderness?<span class="sub">suggests fracture or infection</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'ex_tenderness',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'ex_tenderness',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Pulse deficit or limb ischemia?<span class="sub">AAA indicator</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'ex_pulse',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'ex_pulse',false)">No</button>
+        </div>
+      </div>
+      <div class="yn-row">
+        <span class="yn-label">Rectal tone decreased on PR exam?<span class="sub">Cauda Equina indicator</span></span>
+        <div class="yn-btn-group">
+          <button class="yn-btn yes" onclick="setYN(this,'ex_rectal',true)">Yes</button>
+          <button class="yn-btn no"  onclick="setYN(this,'ex_rectal',false)">No</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" onclick="goTo('sec2')">← Back</button>
+      <button class="btn btn-primary" onclick="runEvaluation()">🔍 Generate Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- SEC 4: RESULTS -->
+<div class="section" id="sec4">
+  <div class="card">
+    <div class="step-label">Results — Step 3 of 3</div>
+    <div class="section-title">📊 Evaluation Report</div>
+    <div id="resultsContent"></div>
+    <button class="btn btn-restart" onclick="restart()">↺ New Evaluation</button>
+  </div>
+</div>
+
+<script>
+const yn = {};
+const toggleSel = { location:[], timing:[], aggravating:[], relieving:[] };
+
+function goTo(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const steps = {sec0:0,sec1:25,sec2:50,sec3:75,sec4:100};
+  document.getElementById('progressFill').style.width = (steps[id]||0) + '%';
+  const labels = {sec0:'Not started',sec1:'Step 1a of 3',sec2:'Step 1b of 3',sec3:'Step 2 of 3',sec4:'Complete'};
+  document.getElementById('progressText').textContent = labels[id] || '';
+  window.scrollTo(0,0);
+}
+
+function setYN(btn, key, val) {
+  yn[key] = val;
+  btn.parentElement.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function toggleBtn(btn, group) {
+  const val = btn.dataset.val;
+  const idx = toggleSel[group].indexOf(val);
+  if (idx >= 0) { toggleSel[group].splice(idx,1); btn.classList.remove('selected'); }
+  else          { toggleSel[group].push(val); btn.classList.add('selected'); }
+}
+
+function has(group, val) { return toggleSel[group].includes(val); }
+
+function restart() {
+  Object.keys(yn).forEach(k => delete yn[k]);
+  Object.keys(toggleSel).forEach(k => toggleSel[k] = []);
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+  goTo('sec0');
+}
+
+function runEvaluation() {
+  // ── Collect inputs ──
+  const onset    = document.getElementById('onset').value;
+  const severity = document.getElementById('severity').value;
+
+  const rf_age     = yn['rf_age']     || false;
+  const rf_cancer  = yn['rf_cancer']  || false;
+  const rf_wtloss  = yn['rf_wtloss']  || false;
+  const rf_fever   = yn['rf_fever']   || false;
+  const rf_trauma  = yn['rf_trauma']  || false;
+  const rf_bowel   = yn['rf_bowel']   || false;
+  const rf_saddle  = yn['rf_saddle']  || false;
+  const rf_weakness= yn['rf_weakness']|| false;
+  const rf_htn     = yn['rf_htn']     || false;
+
+  const ex_slr        = yn['ex_slr']        || false;
+  const ex_crossed_slr= yn['ex_crossed_slr']|| false;
+  const ex_reflexes   = yn['ex_reflexes']   || false;
+  const ex_weakness   = yn['ex_weakness']   || false;
+  const ex_sensory    = yn['ex_sensory']    || false;
+  const ex_tenderness = yn['ex_tenderness'] || false;
+  const ex_pulse      = yn['ex_pulse']      || false;
+  const ex_rectal     = yn['ex_rectal']     || false;
+
+  // ── DDx calculation ──
+  const ddx = { mechanical:0, radiculopathy:0, cauda_equina:0, infection:0, fracture:0, cancer:0, aaa:0, other:0 };
+
+  ddx.mechanical = 0.8;
+
+  if (has('location','leg') || has('location','saddle')) ddx.radiculopathy += 0.6;
+  if (ex_slr)           ddx.radiculopathy += 0.4;
+  if (ex_crossed_slr)   ddx.radiculopathy += 0.3;
+  if (ex_reflexes)      ddx.radiculopathy += 0.2;
+
+  if (rf_bowel || rf_saddle) ddx.cauda_equina = 1.0;
+  if (ex_rectal && ex_sensory) ddx.cauda_equina = Math.min(1.0, ddx.cauda_equina + 0.7);
+
+  if (rf_fever || has('timing','night') || has('timing','wakes')) ddx.infection += 0.7;
+  if (ex_tenderness) { ddx.infection += 0.2; ddx.fracture += 0.3; }
+
+  if (rf_trauma) ddx.fracture += 0.8;
+
+  const canc_flags = [rf_age, rf_cancer, rf_wtloss].filter(Boolean).length;
+  if (canc_flags >= 1) ddx.cancer += 0.3 + (canc_flags * 0.2);
+
+  if (onset === 'sudden' || onset === 'tearing' || rf_htn) ddx.aaa += 0.8;
+  if (ex_pulse) ddx.aaa += 0.5;
+
+  // If heavy radiculopathy evidence, reduce mechanical
+  if (ddx.radiculopathy > 0.5) ddx.mechanical = Math.max(0.2, ddx.mechanical - 0.4);
+
+  // Cap at 1.0
+  Object.keys(ddx).forEach(k => ddx[k] = Math.min(1.0, ddx[k]));
+
+  // ── Red flag count ──
+  const rfList = [
+    { flag: rf_bowel,    label: 'Bowel/bladder changes' },
+    { flag: rf_saddle,   label: 'Saddle anesthesia' },
+    { flag: rf_weakness, label: 'Progressive weakness / foot drop' },
+    { flag: rf_age,      label: 'Age >50' },
+    { flag: rf_cancer,   label: 'History of cancer' },
+    { flag: rf_wtloss,   label: 'Unexplained weight loss' },
+    { flag: rf_fever,    label: 'Fever / IVDU' },
+    { flag: rf_trauma,   label: 'Recent trauma / osteoporosis' },
+    { flag: rf_htn,      label: 'HTN / Marfan / cocaine' },
+  ];
+  const activeFlags = rfList.filter(r => r.flag);
+  const rfCount = activeFlags.length;
+  const caudaHigh = ddx.cauda_equina >= 0.5;
+
+  // ── Urgency ──
+  let urgency;
+  if (rfCount >= 2 || caudaHigh) urgency = 'emergent';
+  else if (rfCount === 1)         urgency = 'urgent';
+  else                            urgency = 'routine';
+
+  // ── Top DDx ──
+  const sorted = Object.entries(ddx).sort((a,b) => b[1]-a[1]);
+  const topKey  = sorted[0][0];
+
+  // ── Build HTML ──
+  let html = '';
+
+  // Urgency banner
+  const urgencyMeta = {
+    emergent: { cls:'emergent', icon:'🚨', title:'EMERGENT EVALUATION REQUIRED', sub:'Immediate action needed — do not delay' },
+    urgent:   { cls:'urgent',   icon:'⚠️', title:'URGENT EVALUATION',             sub:'Same-day imaging and specialist referral' },
+    routine:  { cls:'routine',  icon:'✅', title:'ROUTINE MANAGEMENT',             sub:'No high-risk red flags identified' },
+  };
+  const um = urgencyMeta[urgency];
+  html += `<div class="urgency-banner ${um.cls}">
+    <div class="ub-title">${um.icon} ${um.title}</div>
+    <div class="ub-sub">${um.sub}</div>
+  </div>`;
+
+  // Red flag summary
+  html += `<div class="rf-counter">
+    <div class="rf-number">${rfCount}</div>
+    <div class="rf-label"><strong>Red flag${rfCount!==1?'s':''} detected</strong> out of 9<br>
+    ${activeFlags.length ? activeFlags.map(f=>'<span style="color:#e53935;">▸ '+f.label+'</span>').join('<br>') : '<span style="color:#43a047;">None identified</span>'}
+    </div>
+  </div>`;
+
+  // Urgency-specific action
+  if (urgency === 'emergent') {
+    html += `<div class="note red">
+      ${caudaHigh ? '<strong>⚠ Cauda Equina Syndrome suspected → MRI STAT + Neurosurgery referral IMMEDIATELY.</strong><br>' : ''}
+      ${ddx.aaa > 0.5 ? '⚠ AAA suspected → CT angiography STAT + vascular surgery.<br>' : ''}
+      ${ddx.infection > 0.5 ? '⚠ Spinal infection suspected → MRI + CBC/ESR/CRP/blood cultures + ID consult.<br>' : ''}
+      ${ddx.fracture > 0.5 ? '⚠ Fracture suspected → X-ray ± CT spine.<br>' : ''}
+      ${ddx.cancer > 0.5 ? '⚠ Malignancy suspected → MRI + tumour markers + oncology referral.<br>' : ''}
+      <strong>Admit / ED transfer NOW.</strong>
+    </div>`;
+  } else if (urgency === 'urgent') {
+    html += `<div class="note orange"><strong>Single red flag:</strong> Urgent MRI (preferred), labs (CBC, ESR, CRP), specialist referral within 24–48 h.</div>`;
+  }
+
+  // DDx bars
+  html += `<div class="rec-block"><div class="rec-title">🎯 Differential Diagnosis</div>`;
+  const ddxLabels = {
+    mechanical:'Mechanical / Non-specific LBP', radiculopathy:'Radiculopathy / Disc herniation',
+    cauda_equina:'Cauda Equina Syndrome', infection:'Spinal Infection (discitis/osteomyelitis)',
+    fracture:'Vertebral Fracture', cancer:'Malignancy / Metastasis',
+    aaa:'Aortic Aneurysm (AAA)', other:'Other'
+  };
+  const barColors = {
+    mechanical:'#2c3e8c', radiculopathy:'#7c6eb5', cauda_equina:'#e53935',
+    infection:'#d84315', fracture:'#6d4c41', cancer:'#880e4f',
+    aaa:'#b71c1c', other:'#546e7a'
+  };
+  sorted.forEach(([key, prob]) => {
+    if (prob < 0.05) return;
+    const pct = Math.round(prob * 100);
+    html += `<div class="ddx-item">
+      <div class="ddx-header">
+        <span class="ddx-name">${ddxLabels[key]}</span>
+        <span class="ddx-pct">${pct}%</span>
+      </div>
+      <div class="ddx-bar-bg"><div class="ddx-bar-fill" style="width:${pct}%;background:${barColors[key]};"></div></div>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Recommendations
+  const recs = {
+    mechanical: {
+      title: '📌 Mechanical LBP — Management',
+      items: [
+        'Education: reassure that most resolve in 4–6 weeks; encourage activity.',
+        'First-line analgesia: NSAIDs (ibuprofen, naproxen) or acetaminophen.',
+        'Avoid prolonged bed rest.',
+        'Physiotherapy if symptoms persist >4 weeks.',
+        'Consider psychosocial factors (yellow flags) if chronicity develops.',
+      ]
+    },
+    radiculopathy: {
+      title: '📌 Radiculopathy — Management',
+      items: [
+        'Conservative: NSAIDs, physiotherapy, 4–6 week trial.',
+        'Consider gabapentin/pregabalin for neuropathic component.',
+        'If motor deficit, progressive symptoms, or no improvement → MRI lumbar spine.',
+        'Pain management specialist or neurosurgery referral if refractory.',
+        'Epidural steroid injection may be considered for severe radicular pain.',
+      ]
+    },
+    cauda_equina: {
+      title: '🚨 Cauda Equina Syndrome — Emergent',
+      items: [
+        'MRI lumbar spine STAT (within hours).',
+        'Neurosurgery referral IMMEDIATELY.',
+        'Surgical decompression ideally within 24–48 h of symptom onset.',
+        'Do NOT discharge; admit directly.',
+      ]
+    },
+    infection: {
+      title: '🚨 Spinal Infection — Management',
+      items: [
+        'MRI with contrast (most sensitive).',
+        'Blood cultures × 2 before antibiotics if haemodynamically stable.',
+        'CBC, ESR, CRP, procalcitonin.',
+        'ID / spine surgery consultation.',
+        'Empirical antibiotics after cultures: cover Staph (e.g., flucloxacillin/vancomycin if MRSA risk).',
+      ]
+    },
+    fracture: {
+      title: '📌 Vertebral Fracture — Management',
+      items: [
+        'X-ray lumbar/thoracic spine first-line.',
+        'CT spine if X-ray inconclusive or high suspicion.',
+        'DXA scan if osteoporotic fracture suspected.',
+        'Spine surgery consult if neurological compromise.',
+        'Osteoporosis management if indicated.',
+      ]
+    },
+    cancer: {
+      title: '🚨 Malignancy — Management',
+      items: [
+        'MRI full spine (most sensitive for metastases).',
+        'CBC, ESR, CRP, LDH, PSA (men), serum electrophoresis.',
+        'CT chest/abdomen/pelvis if primary unknown.',
+        'Oncology referral.',
+        'Bone-modifying agent if skeletal metastases confirmed.',
+      ]
+    },
+    aaa: {
+      title: '🚨 Aortic Aneurysm (AAA) — Emergent',
+      items: [
+        'CT angiography abdomen/pelvis STAT.',
+        'Vascular surgery emergency referral.',
+        'IV access × 2, type & cross-match, prepare for theatre.',
+        'Do NOT give anticoagulants empirically.',
+      ]
+    },
+  };
+
+  const rec = recs[topKey] || recs['mechanical'];
+  html += `<div class="rec-block">
+    <div class="rec-title">${rec.title}</div>
+    <ul class="rec">${rec.items.map(i=>'<li>'+i+'</li>').join('')}</ul>
+  </div>`;
+
+  // Physical exam summary if significant
+  const examFindings = [];
+  if (ex_slr)         examFindings.push('Positive SLR');
+  if (ex_crossed_slr) examFindings.push('Positive crossed SLR');
+  if (ex_reflexes)    examFindings.push('Reduced reflexes');
+  if (ex_weakness)    examFindings.push('Motor weakness');
+  if (ex_sensory)     examFindings.push('Sensory loss');
+  if (ex_tenderness)  examFindings.push('Spinous process tenderness');
+  if (ex_pulse)       examFindings.push('Pulse deficit');
+  if (ex_rectal)      examFindings.push('Decreased rectal tone');
+  if (examFindings.length) {
+    html += `<div class="note"><strong>Exam findings noted:</strong> ${examFindings.join(', ')}.</div>`;
+  }
+
+  html += `<div class="note" style="font-size:0.8em;color:#aaa;background:#f8f9ff;border-left-color:#c0caee;">
+    This tool is educational. Always apply clinical judgment and consult current UpToDate / local guidelines.
+  </div>`;
+
+  document.getElementById('resultsContent').innerHTML = html;
+  goTo('sec4');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seizure Toolkit — Workup &amp; Decision Tools</title>
+<style>
+
+:root{
+  --blue:#2563eb;--blue-l:#dbeafe;--blue-d:#1e3a5f;
+  --green:#16a34a;--green-l:#d1fae5;
+  --red:#dc2626;--red-l:#fee2e2;--red-d:#7f1d1d;
+  --yellow:#ca8a04;--yellow-l:#fef9c3;
+  --purple:#7c3aed;--purple-l:#ede9fe;
+  --orange:#ea580c;--orange-l:#ffedd5;
+  --teal:#0891b2;--teal-l:#cffafe;
+  --gray:#6b7280;--gray-l:#f3f4f6;
+  --border:#e5e7eb;--r:14px;--sh:0 4px 28px rgba(0,0,0,.09);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:linear-gradient(135deg,#fff1f2 0%,#eff6ff 100%);min-height:100vh;color:#1f2937}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 80px}
+.hdr{text-align:center;padding:28px 24px 20px;background:#fff;border-radius:var(--r);
+  box-shadow:var(--sh);margin-bottom:20px;border-top:5px solid var(--red)}
+.hdr h1{font-size:1.45rem;color:var(--red-d);margin-bottom:4px}
+.hdr p{color:var(--gray);font-size:.88rem}
+.badge{display:inline-block;margin-top:8px;background:var(--red-l);color:var(--red);
+  padding:4px 14px;border-radius:99px;font-size:.77rem;font-weight:700}
+.disclaimer{background:#fffbeb;border:1px solid #fcd34d;border-left:4px solid var(--yellow);
+  border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:.83rem;color:#78350f;
+  display:flex;gap:10px;align-items:flex-start}
+.prog-wrap{margin-bottom:16px}
+.prog-lbl{display:flex;justify-content:space-between;font-size:.79rem;color:var(--gray);margin-bottom:4px}
+.prog-track{height:7px;background:var(--border);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--orange));
+  border-radius:99px;transition:width .4s ease}
+.hist-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;
+  border-radius:7px;margin-bottom:6px;border:1px solid var(--border);font-size:.84rem}
+.hist-q{flex:1;color:#374151}
+.abadge{font-size:.74rem;font-weight:700;padding:2px 9px;border-radius:99px;flex-shrink:0;
+  background:var(--red-l);color:var(--red)}
+/* Tool cards on home */
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:480px){.tool-grid{grid-template-columns:1fr}}
+.tool-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:20px 18px;
+  cursor:pointer;transition:.18s;border-top:4px solid var(--border)}
+.tool-card:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.16)}
+.tool-card.t1{border-top-color:var(--blue)}.tool-card.t2{border-top-color:var(--green)}
+.tool-card.t3{border-top-color:var(--purple)}.tool-card.t4{border-top-color:var(--orange)}
+.tc-icon{font-size:1.9rem;margin-bottom:8px}
+.tc-title{font-size:.95rem;font-weight:700;color:var(--blue-d);margin-bottom:4px}
+.tc-desc{font-size:.8rem;color:var(--gray);line-height:1.4}
+/* Card */
+.card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;margin-bottom:16px}
+.card-hdr{padding:13px 20px;background:var(--gray-l);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px}
+.card-hdr .icon{font-size:1.2rem}
+.card-hdr .cat{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gray)}
+.card-body{padding:22px 20px}
+.q-text{font-size:1.05rem;font-weight:700;color:var(--blue-d);line-height:1.5;margin-bottom:10px}
+.hint{padding:9px 13px;border-radius:6px;font-size:.83rem;margin-bottom:18px;
+  display:flex;gap:8px;align-items:flex-start;border-left:4px solid}
+.hint-red{background:#fef2f2;border-color:var(--red);color:var(--red-d)}
+.hint-blue{background:#f0f9ff;border-color:#38bdf8;color:#0369a1}
+.hint-yellow{background:var(--yellow-l);border-color:var(--yellow);color:#78350f}
+.hint-green{background:var(--green-l);border-color:var(--green);color:#14532d}
+.hint-purple{background:var(--purple-l);border-color:var(--purple);color:#4c1d95}
+/* Buttons */
+.btn-grp{display:flex;gap:10px;flex-wrap:wrap}
+.btn{flex:1;min-width:90px;padding:13px 16px;border:none;border-radius:9px;cursor:pointer;
+  font-size:.92rem;font-weight:700;transition:transform .14s,box-shadow .14s;
+  display:flex;align-items:center;justify-content:center;gap:7px;line-height:1.3;text-align:center}
+.btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.13)}
+.btn-yes{background:var(--green);color:#fff}.btn-no{background:var(--red);color:#fff}
+.btn-primary{background:var(--blue);color:#fff}.btn-red{background:var(--red);color:#fff}
+.btn-orange{background:var(--orange);color:#fff}.btn-purple{background:var(--purple);color:#fff}
+.btn-secondary{background:var(--purple-l);color:var(--purple);border:2px solid var(--purple)}
+.btn-secondary:hover{background:var(--purple);color:#fff}
+.btn-back{display:flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--border);
+  color:var(--gray);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:.84rem;
+  font-weight:600;transition:.15s;margin-bottom:14px}
+.btn-back:hover{border-color:var(--red);color:var(--red)}
+/* Inputs */
+.inp-group{margin-bottom:14px}
+.inp-group label{display:block;font-size:.86rem;font-weight:600;color:var(--blue-d);margin-bottom:5px}
+.inp-group input{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.98rem;outline:none;transition:border-color .2s}
+.inp-group input:focus{border-color:var(--red)}
+/* Checklist items (toggle yes/no) */
+.chk-item{padding:12px 14px;background:#fff;border:1.5px solid var(--border);
+  border-radius:9px;margin-bottom:8px;display:flex;justify-content:space-between;
+  align-items:flex-start;gap:12px;transition:.15s}
+.chk-item.selected-yes{border-color:var(--green);background:var(--green-l)}
+.chk-item.selected-no{border-color:var(--border);background:var(--gray-l)}
+.chk-label{font-size:.89rem;font-weight:600;color:#1f2937;flex:1;padding-top:2px}
+.chk-sub{font-size:.78rem;color:var(--gray);margin-top:2px;font-weight:400}
+.chk-btns{display:flex;gap:6px;flex-shrink:0}
+.chk-btn{padding:5px 13px;border:1.5px solid var(--border);border-radius:7px;
+  cursor:pointer;font-size:.82rem;font-weight:700;background:#fff;transition:.15s}
+.chk-btn.y:hover,.chk-btn.y.active{background:var(--green);border-color:var(--green);color:#fff}
+.chk-btn.n:hover,.chk-btn.n.active{background:var(--gray);border-color:var(--gray);color:#fff}
+/* Section title */
+.sec-title{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--gray);margin:16px 0 8px;padding-bottom:3px;border-bottom:1px solid var(--border)}
+/* Result cards */
+.res-card{border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);margin-bottom:14px}
+.res-urgent .res-hdr{background:#fef2f2;border-bottom:5px solid var(--red)}
+.res-routine .res-hdr{background:var(--blue-l);border-bottom:5px solid var(--blue)}
+.res-good .res-hdr{background:var(--green-l);border-bottom:5px solid var(--green)}
+.res-watch .res-hdr{background:var(--yellow-l);border-bottom:5px solid var(--yellow)}
+.res-info .res-hdr{background:var(--purple-l);border-bottom:5px solid var(--purple)}
+.res-orange .res-hdr{background:var(--orange-l);border-bottom:5px solid var(--orange)}
+.res-hdr{padding:18px 22px}
+.res-hdr .big-icon{font-size:1.9rem;margin-bottom:5px}
+.res-hdr .cat-lbl{font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.65;margin-bottom:3px}
+.res-hdr h2{font-size:1.15rem;font-weight:800}
+.res-urgent h2{color:var(--red)}.res-routine h2{color:var(--blue)}
+.res-good h2{color:var(--green)}.res-watch h2{color:var(--yellow)}
+.res-info h2{color:var(--purple)}.res-orange h2{color:var(--orange)}
+.res-body{padding:18px 22px;background:#fff}
+.res-body ul{list-style:none}
+.res-body li{padding:7px 0;border-bottom:1px solid var(--border);font-size:.9rem;
+  display:flex;gap:9px;align-items:flex-start}
+.res-body li:last-child{border-bottom:none}
+.res-body li::before{content:"→";font-weight:700;flex-shrink:0;margin-top:1px}
+.res-urgent li::before{color:var(--red)}.res-routine li::before{color:var(--blue)}
+.res-good li::before{color:var(--green)}.res-watch li::before{color:var(--yellow)}
+.res-info li::before{color:var(--purple)}.res-orange li::before{color:var(--orange)}
+.note-box{background:var(--yellow-l);border:1px solid #fcd34d;border-radius:8px;
+  padding:11px 14px;font-size:.84rem;color:#78350f;margin-bottom:10px}
+.alert-box{background:var(--red-l);border:1px solid #fca5a5;border-radius:8px;
+  padding:11px 14px;font-size:.84rem;color:var(--red-d);margin-bottom:10px}
+.success-box{background:var(--green-l);border:1px solid #86efac;border-radius:8px;
+  padding:11px 14px;font-size:.84rem;color:#14532d;margin-bottom:10px}
+/* Score bar */
+.score-bar-wrap{margin-bottom:10px}
+.score-bar-label{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:4px}
+.score-bar-track{height:18px;background:var(--border);border-radius:99px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:99px;transition:width .5s ease;display:flex;align-items:center;padding-left:8px;font-size:.72rem;font-weight:700;color:#fff}
+.bar-blue{background:var(--blue)}.bar-orange{background:var(--orange)}
+.bar-purple{background:var(--purple)}.bar-teal{background:var(--teal)}
+/* Risk factor toggle */
+.rf-item{padding:10px 14px;background:#fff;border:1.5px solid var(--border);
+  border-radius:9px;margin-bottom:7px;display:flex;justify-content:space-between;
+  align-items:flex-start;gap:10px;transition:.15s;cursor:pointer}
+.rf-item.active{border-color:var(--orange);background:var(--orange-l)}
+.rf-label{font-size:.88rem;font-weight:600;color:#1f2937;flex:1}
+.rf-sub{font-size:.77rem;color:var(--gray);margin-top:2px;font-weight:400}
+.rf-weight{font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:99px;
+  flex-shrink:0;background:var(--gray-l);color:var(--gray)}
+.rf-item.active .rf-weight{background:var(--orange-l);color:var(--orange)}
+.btn-restart{display:block;width:100%;margin-top:12px;padding:13px;background:var(--red);
+  color:#fff;border:none;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer}
+.btn-restart:hover{background:var(--red-d)}
+.score-pill{display:inline-block;padding:4px 12px;border-radius:99px;font-size:.82rem;font-weight:700}
+.pill-red{background:var(--red-l);color:var(--red)}
+.pill-orange{background:var(--orange-l);color:var(--orange)}
+.pill-yellow{background:var(--yellow-l);color:var(--yellow)}
+.pill-green{background:var(--green-l);color:var(--green)}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <div style="font-size:2.2rem;margin-bottom:7px">🧠</div>
+    <h1>Seizure Toolkit</h1>
+    <p>CT &amp; EEG Indications · Post-Seizure Control · Differential Diagnosis · AED Decision</p>
+    <span class="badge">Doctor Assistant · 4 Clinical Tools</span>
+  </div>
+
+  <div class="disclaimer">
+    <span style="font-size:1.2rem;flex-shrink:0">⚠️</span>
+    <div><b>Clinical Disclaimer</b> — For use by licensed medical professionals only.
+    All recommendations are algorithmic guidance and do not replace clinical judgment.
+    Always verify against current guidelines and individual patient context.</div>
+  </div>
+
+  <div id="prog-wrap" class="prog-wrap" style="display:none">
+    <div class="prog-lbl"><span>Progress</span><span id="prog-step">Step 1</span></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0"></div></div>
+  </div>
+
+  <div id="hist-box"></div>
+  <div id="main-box"></div>
+
+</div>
+<script>
+
+let APP='home';
+function MB(){return document.getElementById('main-box');}
+function HB(){return document.getElementById('hist-box');}
+function SP(c,t){document.getElementById('prog-wrap').style.display='block';
+  document.getElementById('prog-fill').style.width=Math.min((c-1)/t*100,95)+'%';
+  document.getElementById('prog-step').textContent='Step '+c;}
+function scrollT(){window.scrollTo({top:0,behavior:'smooth'});}
+function nav(p){APP=p;HB().innerHTML='';document.getElementById('prog-wrap').style.display='none';
+  if(p==='home')renderHome();else if(p==='ct')ctReset();
+  else if(p==='check')checkReset();else if(p==='diff')diffReset();else aedReset();
+  scrollT();}
+
+// ═══════════════ HOME ═══════════════
+function renderHome(){
+  document.getElementById('prog-wrap').style.display='none';
+  MB().innerHTML=`
+  <div class="tool-grid">
+    <div class="tool-card t1" onclick="nav('ct')">
+      <div class="tc-icon">🩻</div>
+      <div class="tc-title">CT &amp; EEG Indications</div>
+      <div class="tc-desc">Determine if imaging and EEG are indicated based on clinical criteria.</div>
+    </div>
+    <div class="tool-card t2" onclick="nav('check')">
+      <div class="tc-icon">✅</div>
+      <div class="tc-title">Post-Seizure Control Check</div>
+      <div class="tc-desc">Assess seizure control status — Babinski, consciousness, pupils, motor activity.</div>
+    </div>
+    <div class="tool-card t3" onclick="nav('diff')">
+      <div class="tc-icon">🔍</div>
+      <div class="tc-title">Differential Diagnosis</div>
+      <div class="tc-desc">Distinguish Seizure, Syncope, PNES, and Basilar Migraine from clinical history.</div>
+    </div>
+    <div class="tool-card t4" onclick="nav('aed')">
+      <div class="tc-icon">💊</div>
+      <div class="tc-title">AED Decision Tool</div>
+      <div class="tc-desc">Decide whether to start anticonvulsant therapy after a first unprovoked seizure.</div>
+    </div>
+  </div>`;}
+
+// ═══════════════ TOOL 1: CT & EEG ═══════════════
+const CT_Qs=[
+  {k:'pattern',l:'Seizure pattern has changed',s:'Different type, new features, changed behaviour'},
+  {k:'duration',l:'Seizure duration significantly changed',s:'Notably longer or shorter than before'},
+  {k:'first',l:'First-time seizure — no prior history',s:'Never had a seizure before'},
+  {k:'age40',l:'Patient age ≥ 40 years',s:'Age is an independent CT indication'},
+  {k:'anticoag',l:'On anticoagulants (warfarin, NOAC)',s:'Increased bleeding risk'},
+  {k:'fever',l:'Fever present',s:'Possible CNS infection — meningitis, encephalitis'},
+  {k:'trauma',l:'Seizure occurred after head trauma',s:'Post-traumatic seizure'},
+  {k:'focal',l:'Focal neurologic deficit',s:'Weakness, numbness, speech deficit, vision change'},
+  {k:'headache',l:'Headache — not typical of postictal state',s:'Persistent, severe, or thunderclap headache'},
+];
+const EEG_Qs=[
+  {k:'firstunprov',l:'First unprovoked seizure',s:'Always warrant EEG evaluation'},
+  {k:'classify',l:'Need to classify seizure type',s:'Focal vs generalised'},
+  {k:'altms',l:'Unexplained altered mental status',s:'Confusion, encephalopathy without clear cause'},
+  {k:'ncse',l:'Suspected non-convulsive status epilepticus (NCSE)',s:'Subtle seizures, altered consciousness post-ictally'},
+  {k:'changedpat',l:'Known epilepsy with changed seizure pattern',s:'Breakthrough seizures, new type'},
+  {k:'pnes',l:'Suspected PNES (psychogenic non-epileptic seizures)',s:'Events not responding to treatment'},
+  {k:'preAED',l:'Planning to discontinue anti-epileptic drugs',s:'Pre-AED discontinuation assessment'},
+  {k:'presurg',l:'Pre-surgical evaluation for refractory epilepsy',s:'Localization of seizure focus'},
+  {k:'syndrome',l:'Suspected specific epilepsy syndrome',s:'Absence, JME, Dravet, etc.'},
+  {k:'postacute',l:'Post-acute symptomatic seizure follow-up',s:'After stroke, TBI, infection'},
+  {k:'neonatal',l:'Neonatal or young infant seizure',s:'Age < 1 year'},
+  {k:'devdelay',l:'Developmental delay with seizures',s:'Possible underlying epileptic encephalopathy'},
+];
+let ctA={}, eegA={};
+function ctReset(){ctA={};eegA={};
+  MB().innerHTML=`<button class="btn-back" onclick="nav('home')">← Home</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🩻</span><span class="cat">CT Scan Indications</span></div>
+  <div class="card-body">
+    <div class="q-text">Select all CT scan indications that apply</div>
+    <div class="hint hint-blue">💡 Any single YES = CT indicated. Leave at NO if not applicable.</div>
+    ${CT_Qs.map((q,i)=>`<div class="chk-item" id="ct-${i}">
+      <div><div class="chk-label">${q.l}</div><div class="chk-sub">${q.s}</div></div>
+      <div class="chk-btns">
+        <button class="chk-btn y" id="cty-${i}" onclick="ctTog('${q.k}',${i},true)">Yes</button>
+        <button class="chk-btn n active" id="ctn-${i}" onclick="ctTog('${q.k}',${i},false)">No</button>
+      </div></div>`).join('')}
+    <div class="btn-grp" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="renderEEGQ()">Next: EEG Indications →</button>
+    </div>
+  </div></div>`;scrollT();}
+function ctTog(k,i,v){
+  ctA[k]=v;
+  document.getElementById('cty-'+i).className='chk-btn y'+(v?' active':'');
+  document.getElementById('ctn-'+i).className='chk-btn n'+(!v?' active':'');
+  document.getElementById('ct-'+i).className='chk-item'+(v?' selected-yes':'');}
+function renderEEGQ(){
+  MB().innerHTML=`<button class="btn-back" onclick="ctReset()">← Back</button>
+  <div class="card"><div class="card-hdr"><span class="icon">📡</span><span class="cat">EEG Indications</span></div>
+  <div class="card-body">
+    <div class="q-text">Select all EEG indications that apply</div>
+    <div class="hint hint-blue">💡 Some indications warrant URGENT EEG within 1–2 hours.</div>
+    ${EEG_Qs.map((q,i)=>`<div class="chk-item" id="eeg-${i}">
+      <div><div class="chk-label">${q.l}</div><div class="chk-sub">${q.s}</div></div>
+      <div class="chk-btns">
+        <button class="chk-btn y" id="eegy-${i}" onclick="eegTog('${q.k}',${i},true)">Yes</button>
+        <button class="chk-btn n active" id="eegn-${i}" onclick="eegTog('${q.k}',${i},false)">No</button>
+      </div></div>`).join('')}
+    <div class="btn-grp" style="margin-top:16px">
+      <button class="btn btn-primary" onclick="renderCTEEGResults()">Get Results →</button>
+    </div>
+  </div></div>`;scrollT();}
+function eegTog(k,i,v){
+  eegA[k]=v;
+  document.getElementById('eegy-'+i).className='chk-btn y'+(v?' active':'');
+  document.getElementById('eegn-'+i).className='chk-btn n'+(!v?' active':'');
+  document.getElementById('eeg-'+i).className='chk-item'+(v?' selected-yes':'');}
+function renderCTEEGResults(){
+  const ctPos=CT_Qs.filter(q=>ctA[q.k]===true);
+  const ctInd=ctPos.length>0;
+  const urgentEEG=['altms','ncse'];
+  const eegPos=EEG_Qs.filter(q=>eegA[q.k]===true);
+  const eegInd=eegPos.length>0;
+  const eegUrgent=eegInd&&urgentEEG.some(k=>eegA[k]===true);
+  MB().innerHTML=`
+  <button class="btn-back" onclick="renderEEGQ()">← Back</button>
+  <div class="res-card res-${ctInd?'urgent':'good'}">
+    <div class="res-hdr"><div class="big-icon">${ctInd?'🩻':'✅'}</div>
+    <div class="cat-lbl">CT Brain Scan</div>
+    <h2>${ctInd?`CT INDICATED — ${ctPos.length} positive indicator${ctPos.length>1?'s':''}`:'CT Not Routinely Indicated'}</h2></div>
+    <div class="res-body">
+      ${ctInd?`<div class="alert-box">🚨 Order non-contrast Brain CT${ctPos.some(q=>['first','focal','headache','fever'].includes(q.k))?'<b> within 1 hour</b>':' within 24 hours'}.</div>
+      <div class="sec-title">Positive Indications</div>
+      <ul>${ctPos.map(q=>`<li>${q.l}</li>`).join('')}</ul>
+      <div class="sec-title">Differentials to Exclude</div>
+      <ul><li>Intracranial hemorrhage</li><li>Space-occupying lesion (tumor, abscess)</li>
+      <li>Cerebral infarction</li><li>Traumatic brain injury</li><li>Cerebral edema</li></ul>
+      <div class="sec-title">If CT Negative</div>
+      <ul><li>Consider MRI brain — higher sensitivity for cortical lesions</li></ul>`
+      :`<div class="success-box">✅ No high-risk indicators present. CT may be deferred.</div>
+      <ul><li>Known epilepsy with typical seizure pattern</li>
+      <li>Normal neurological exam — no focal deficits</li>
+      <li>Consider MRI as outpatient for better sensitivity</li></ul>`}
+    </div></div>
+  <div class="res-card res-${eegUrgent?'urgent':eegInd?'routine':'good'}">
+    <div class="res-hdr"><div class="big-icon">📡</div>
+    <div class="cat-lbl">EEG</div>
+    <h2>${eegUrgent?'URGENT EEG — Within 1–2 Hours':eegInd?`ROUTINE EEG — ${eegPos.length} indication${eegPos.length>1?'s':''}`:'EEG Not Routinely Indicated'}</h2></div>
+    <div class="res-body">
+      ${eegUrgent?`<div class="alert-box">🚨 STAT EEG — Suspected NCSE or unexplained altered mental status. Continuous EEG monitoring may be required.</div>`:''}
+      ${eegInd&&!eegUrgent?`<div class="note-box">📋 Routine EEG — ideally within 24–72 hours. Sleep-deprived EEG increases yield.</div>`:''}
+      ${eegInd?`<div class="sec-title">Positive Indications</div>
+      <ul>${eegPos.map(q=>`<li>${q.l}</li>`).join('')}</ul>
+      <div class="sec-title">EEG Can Detect</div>
+      <ul><li>Epileptiform discharges (spikes, sharp waves)</li>
+      <li>Focal vs generalised abnormalities</li>
+      <li>Subclinical seizures / Non-convulsive status</li>
+      <li>Specific epilepsy syndromes</li></ul>`
+      :`<ul><li>No clear EEG indication based on current criteria</li>
+      <li>Consider EEG if seizures recur or diagnosis is uncertain</li></ul>`}
+    </div></div>
+  ${ctInd||eegInd?`<div class="res-card res-info">
+    <div class="res-hdr"><div class="big-icon">📋</div>
+    <div class="cat-lbl">Additional Workup</div><h2>If Both CT &amp; EEG Are Negative</h2></div>
+    <div class="res-body"><ul>
+      <li>MRI brain (higher sensitivity — consider epilepsy protocol)</li>
+      <li>Video-EEG monitoring if events persist</li>
+      <li>Outpatient neurology follow-up</li>
+      <li>Labs if not done: CBC, Na, K, Ca, Mg, Glucose, BUN, Cr, LFTs, tox screen</li>
+    </ul></div></div>`:''}
+  <button class="btn-restart" onclick="nav('home')">← Back to Home</button>`;}
+
+// ═══════════════ TOOL 2: POST-SEIZURE CHECK ═══════════════
+let chS={},chStep=1;
+function checkReset(){chS={};chStep=1;chRender();}
+function chRender(){SP(chStep,5);
+  if(chStep===1)chS1();else if(chStep===2)chS2();else if(chStep===3)chS3();
+  else if(chStep===4)chS4();else chResults();}
+function chS1(){MB().innerHTML=`<button class="btn-back" onclick="nav('home')">← Home</button>
+  <div class="card"><div class="card-hdr"><span class="icon">⏱️</span><span class="cat">Time Since Seizure</span></div>
+  <div class="card-body">
+    <div class="q-text">How many minutes since the last observed seizure activity?</div>
+    <div class="hint hint-blue">💡 Enter time in minutes (e.g. 10, 25, 60). Use best estimate.</div>
+    <div class="inp-group"><label>Minutes since last seizure</label>
+      <input type="number" id="ch-min" min="0" placeholder="e.g. 20"></div>
+    <div class="btn-grp"><button class="btn btn-red" onclick="chNext1()">Continue →</button></div>
+  </div></div>`;scrollT();}
+function chNext1(){const m=parseFloat(document.getElementById('ch-min').value);
+  if(isNaN(m)||m<0){alert('Enter a valid number.');return;}
+  chS.min=m;chStep=2;chRender();}
+function chS2(){MB().innerHTML=`<button class="btn-back" onclick="chS1()">← Back</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🦶</span><span class="cat">Babinski Sign</span></div>
+  <div class="card-body">
+    <div class="q-text">What is the result of the <b>Babinski (plantar reflex)</b> test?</div>
+    <div class="hint hint-blue">💡 Negative = toes flex downward (normal). Positive = great toe extends upward, other toes fan out (abnormal).</div>
+    <div class="btn-grp">
+      <button class="btn btn-red" onclick="chBab('positive')">⚡ Positive (Abnormal)</button>
+      <button class="btn btn-yes" onclick="chBab('negative')">✓ Negative (Normal)</button>
+    </div>
+  </div></div>`;scrollT();}
+function chBab(v){chS.bab=v;chStep=3;chRender();}
+function chS3(){MB().innerHTML=`<button class="btn-back" onclick="chS2()">← Back</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🧠</span><span class="cat">Level of Consciousness</span></div>
+  <div class="card-body">
+    <div class="q-text">What is the patient's <b>level of consciousness</b>?</div>
+    <div class="hint hint-blue">💡 Full = alert, oriented, follows commands. Not Full = confused, lethargic, or obtunded.</div>
+    <div class="btn-grp">
+      <button class="btn btn-yes" onclick="chCons('full')">✓ Full — Alert &amp; Oriented</button>
+      <button class="btn btn-orange" onclick="chCons('impaired')">⚠️ Not Full — Impaired</button>
+    </div>
+  </div></div>`;scrollT();}
+function chCons(v){chS.cons=v;chStep=4;chRender();}
+function chS4(){MB().innerHTML=`<button class="btn-back" onclick="chS3()">← Back</button>
+  <div class="card"><div class="card-hdr"><span class="icon">👁️</span><span class="cat">Additional Clinical Signs</span></div>
+  <div class="card-body">
+    <div class="q-text">Check for ongoing seizure signs</div>
+    <div class="hint hint-red">🚨 Any YES here is urgent — possible ongoing seizure activity.</div>
+    <div class="sec-title">Pupils</div>
+    <div class="btn-grp" style="margin-bottom:14px">
+      <button class="btn btn-yes" id="pu-y" onclick="chSign('pupils',true)">✓ Reactive to Light</button>
+      <button class="btn btn-red" id="pu-n" onclick="chSign('pupils',false)">✗ Non-Reactive</button>
+    </div>
+    <div class="sec-title">Ongoing Motor Activity (twitching, jerking)</div>
+    <div class="btn-grp" style="margin-bottom:14px">
+      <button class="btn btn-red" id="mo-y" onclick="chSign('motor',true)">⚡ Yes — Present</button>
+      <button class="btn btn-yes" id="mo-n" onclick="chSign('motor',false)">✓ No — Absent</button>
+    </div>
+    <div class="sec-title">Eye Deviation or Nystagmus</div>
+    <div class="btn-grp" style="margin-bottom:16px">
+      <button class="btn btn-red" id="ey-y" onclick="chSign('eyes',true)">⚡ Yes — Present</button>
+      <button class="btn btn-yes" id="ey-n" onclick="chSign('eyes',false)">✓ No — Absent</button>
+    </div>
+    <div class="btn-grp"><button class="btn btn-red" onclick="chGetResults()">Get Assessment →</button></div>
+  </div></div>`;
+  if(chS.pupils!==undefined){document.getElementById('pu-y').className='chk-btn y'+(chS.pupils?' active':'');document.getElementById('pu-n').className='chk-btn n'+(!chS.pupils?' active':'');}
+  scrollT();}
+function chSign(k,v){chS[k]=v;
+  const pfx=k==='pupils'?'pu':k==='motor'?'mo':'ey';
+  document.getElementById(pfx+'-y').className='btn '+(v?'btn-red':'btn-yes')+(v?' active':'');
+  document.getElementById(pfx+'-n').className='btn '+(v?'btn-yes':'btn-red')+(!v?' active':'');}
+function chGetResults(){
+  if(chS.pupils===undefined||chS.motor===undefined||chS.eyes===undefined){alert('Please answer all three sign questions.');return;}
+  chStep=5;chRender();}
+function chResults(){
+  const {min,bab,cons,pupils,motor,eyes}=chS;
+  let status,col,icon,title,body='';
+  if(motor||eyes){
+    status='URGENT — Possible Ongoing Seizure';col='urgent';icon='🚨';title='Ongoing Seizure Activity Detected';
+    body=`<div class="alert-box">🚨 ${motor?'Ongoing motor activity':'Eye deviation/nystagmus'} detected — active seizure likely.</div>
+    <ul><li>Continue/start benzodiazepine if not already given</li>
+    <li>Consider second-line anticonvulsant</li>
+    <li>Prepare for possible intubation</li>
+    <li>Order STAT EEG — consider continuous monitoring</li></ul>`;}
+  else if(!pupils){
+    col='urgent';icon='🚨';title='Non-Reactive Pupils — Immediate Evaluation';
+    body=`<div class="alert-box">🚨 Non-reactive pupils require immediate evaluation — possible raised ICP, herniation, or drug toxicity.</div>
+    <ul><li>Urgent CT head immediately</li>
+    <li>Consider neurology or neurosurgery consultation</li>
+    <li>Monitor GCS closely</li></ul>`;}
+  else if(cons==='full'&&bab==='negative'){
+    col='good';icon='✅';title='Seizure Appears Controlled';
+    body=`<div class="success-box">✅ No signs of ongoing seizure. Consciousness is full and Babinski is negative.</div>
+    <ul><li>Continue monitoring for 4–6 hours</li>
+    <li>Complete workup — labs, imaging as indicated</li>
+    <li>Consider EEG before discharge if first seizure</li>
+    <li>Neurology consultation as needed</li></ul>`;}
+  else if(cons==='full'&&bab==='positive'){
+    col='watch';icon='⚠️';title='Seizure Likely Controlled — Monitor Babinski';
+    body=`<div class="note-box">⚠️ Full consciousness but positive Babinski — may be postictal (transient, resolves within 30 min) or structural.</div>
+    <ul><li>Recheck Babinski in 15–30 minutes</li>
+    <li>If persists >30 min → CT/MRI imaging</li>
+    <li>Detailed neurological exam for focal deficits</li>
+    <li>Continue monitoring for 4–6 hours</li></ul>`;}
+  else if(cons==='impaired'&&bab==='negative'&&min<30){
+    col='routine';icon='⏳';title='Postictal State — Continue Monitoring';
+    body=`<div class="note-box">⏳ Altered consciousness with negative Babinski at ${min.toFixed(0)} min — likely normal postictal state.</div>
+    <ul><li>Postictal confusion typically resolves within 10–30 minutes</li>
+    <li>Monitor consciousness every 5–10 minutes</li>
+    <li>Reassess in 15–20 minutes</li>
+    <li>If no improvement by 30 min → consider EEG for NCSE</li></ul>`;}
+  else if(cons==='impaired'&&bab==='negative'&&min>=30){
+    col='urgent';icon='⚠️';title='Prolonged Postictal State — Evaluate for NCSE';
+    body=`<div class="alert-box">⚠️ Altered consciousness persisting ${min.toFixed(0)} minutes — prolonged postictal or NCSE.</div>
+    <div class="sec-title">Differential</div>
+    <ul><li>Non-convulsive status epilepticus (NCSE)</li>
+    <li>Toxic-metabolic encephalopathy</li>
+    <li>Hypoxic-ischemic injury</li></ul>
+    <div class="sec-title">Actions</div>
+    <ul><li>URGENT EEG to rule out NCSE</li>
+    <li>If EEG unavailable → consider empirical benzodiazepine</li>
+    <li>Re-check glucose and electrolytes</li>
+    <li>Imaging if not already done</li></ul>`;}
+  else{
+    col='urgent';icon='🚨';title='Concerning Findings — STAT EEG Required';
+    body=`<div class="alert-box">🚨 Impaired consciousness with positive Babinski — NCSE or structural lesion cannot be excluded.</div>
+    <ul><li>STAT EEG to evaluate for NCSE</li>
+    <li>CT or MRI brain urgently</li>
+    <li>Detailed neurological exam</li>
+    <li>Consider empirical treatment if EEG is delayed</li>
+    <li>ICU monitoring may be required</li></ul>`;}
+  MB().innerHTML=`
+  <button class="btn-back" onclick="nav('home')">← Home</button>
+  <div class="res-card res-${col}">
+    <div class="res-hdr"><div class="big-icon">${icon}</div>
+    <div class="cat-lbl">Seizure Control Assessment</div>
+    <h2>${title}</h2></div>
+    <div class="res-body">
+      <div class="sec-title">Clinical Summary</div>
+      <ul><li>Time since seizure: <b>${min.toFixed(0)} minutes</b></li>
+      <li>Babinski sign: <b>${bab.charAt(0).toUpperCase()+bab.slice(1)}</b></li>
+      <li>Consciousness: <b>${cons==='full'?'Full — alert &amp; oriented':'Impaired — not full'}</b></li>
+      <li>Pupils: <b>${pupils?'Reactive':'Non-reactive'}</b></li>
+      <li>Motor activity: <b>${motor?'Present ⚠️':'Absent ✓'}</b></li>
+      <li>Eye deviation: <b>${eyes?'Present ⚠️':'Absent ✓'}</b></li></ul>
+      ${body}
+      <div class="sec-title">Monitoring Schedule</div>
+      <ul><li>Every ${col==='good'?'10':'5'} min — Vitals, SpO₂, level of consciousness</li>
+      <li>At 15 min — Repeat neurological exam, recheck Babinski</li>
+      <li>At 30 min — Full reassessment, consider EEG if not improving</li>
+      <li>At 1 hour — Reassess for further workup or discharge readiness</li></ul>
+      <div class="sec-title">Postictal vs NCSE — Quick Reference</div>
+      <ul><li><b>Postictal:</b> Gradual improvement; duration usually 30–60 min; EEG shows slow, disorganized pattern</li>
+      <li><b>NCSE:</b> No improvement; consciousness does not clear; EEG shows epileptiform activity</li>
+      <li><b>Distinguishing clue:</b> Response to benzodiazepine — dramatic improvement suggests NCSE</li></ul>
+    </div></div>
+  <button class="btn-restart" onclick="nav('home')">← Back to Home</button>`;}
+
+// ═══════════════ TOOL 3: DIFFERENTIAL DIAGNOSIS ═══════════════
+const DIFF_Qs={
+  pre:[
+    {k:'lightheaded',l:'Lightheadedness / dizziness before event',s:'Seizure:-, Syncope:+3, PNES:-, BM:-'},
+    {k:'nausea',l:'Nausea or sweating before event',s:'Seizure:-, Syncope:+2, PNES:-, BM:-'},
+    {k:'palpitations',l:'Palpitations before event',s:'Seizure:-, Syncope:+2, PNES:-, BM:-'},
+    {k:'visaura',l:'Visual aura (flashing lights, visual loss)',s:'Seizure:-, Syncope:-, PNES:-, BM:+2'},
+    {k:'bsaura',l:'Brainstem symptoms (vertigo, diplopia, ataxia)',s:'Seizure:-, Syncope:-, PNES:-, BM:+4'},
+    {k:'olfaura',l:'Olfactory aura (strange smell)',s:'Seizure:+2, Syncope:-, PNES:-, BM:-'},
+    {k:'epiaura',l:'Epigastric rising sensation',s:'Seizure:+2, Syncope:-, PNES:-, BM:-'},
+    {k:'stress',l:'Event occurred during emotional stress',s:'Seizure:-, Syncope:-, PNES:+3, BM:-'},
+    {k:'standing',l:'Event occurred while standing / shortly after',s:'Seizure:-, Syncope:+3, PNES:-, BM:-'},
+  ],
+  during:[
+    {k:'brief',l:'Event was very brief (< 1 minute)',s:'Seizure:-, Syncope:+2, PNES:-, BM:-'},
+    {k:'unconscious',l:'Patient was unresponsive / unconscious',s:'Seizure:+1, Syncope:+1, PNES:-, BM:+−'},
+    {k:'tonicclonic',l:'Rhythmic tonic-clonic movements',s:'Seizure:+2, Syncope:-, PNES:-, BM:-'},
+    {k:'variable',l:'Variable, asynchronous, or side-to-side movements',s:'Seizure:-, Syncope:-, PNES:+3, BM:-'},
+    {k:'pelvic',l:'Pelvic thrusting during event',s:'Seizure:-, Syncope:-, PNES:+2, BM:-'},
+    {k:'eyesclosed',l:'Eyes were CLOSED during event',s:'Seizure:-, Syncope:-, PNES:+3, BM:-'},
+    {k:'eyedev',l:'Forced eye deviation to one side',s:'Seizure:+2, Syncope:-, PNES:-, BM:-'},
+    {k:'bitelat',l:'Lateral tongue bite (side of tongue)',s:'Seizure:+3, Syncope:-, PNES:-, BM:-'},
+    {k:'bitetip',l:'Tongue tip bite',s:'Seizure:-, Syncope:+2, PNES:+1, BM:-'},
+    {k:'incon',l:'Urinary incontinence',s:'Seizure:+2, Syncope:-, PNES:-, BM:-'},
+    {k:'cryout',l:'Patient cried out at start of event',s:'Seizure:+1, Syncope:-, PNES:-, BM:-'},
+    {k:'injury',l:'Injuries during the event',s:'Seizure:+1, Syncope:-, PNES:-, BM:-'},
+    {k:'resist',l:'Patient resisted eye opening or examination',s:'Seizure:-, Syncope:-, PNES:+3, BM:-'},
+    {k:'preserved',l:'Awareness was partially preserved',s:'Seizure:-, Syncope:-, PNES:+2, BM:-'},
+  ],
+  post:[
+    {k:'pictal',l:'Postictal confusion after event',s:'Seizure:+2, Syncope:−, PNES:−, BM:−'},
+    {k:'pict5',l:'Postictal state lasted > 5 minutes',s:'Seizure:+2, Syncope:-, PNES:-, BM:-'},
+    {k:'headache',l:'Significant headache followed the event',s:'Seizure:-, Syncope:-, PNES:-, BM:+3'},
+    {k:'rapid',l:'Rapid recovery within minutes (no confusion)',s:'Seizure:-, Syncope:+3, PNES:+1, BM:-'},
+    {k:'fatigue',l:'Significant fatigue or sleepiness after',s:'Seizure:+1, Syncope:-, PNES:-, BM:-'},
+  ],
+  hx:[
+    {k:'migraine',l:'Personal or family history of migraine',s:'Seizure:-, Syncope:-, PNES:-, BM:+2'},
+    {k:'psych',l:'History of psychiatric illness (depression, anxiety, PTSD)',s:'Seizure:-, Syncope:-, PNES:+2, BM:-'},
+    {k:'cardiac',l:'History of cardiac disease or arrhythmia',s:'Seizure:-, Syncope:+2, PNES:-, BM:-'},
+    {k:'similar',l:'Similar events have occurred multiple times',s:'All diagnoses: possible'},
+  ]
+};
+let diffA={};
+function diffReset(){
+  diffA={};
+  let html=`<button class="btn-back" onclick="nav('home')">← Home</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🔍</span><span class="cat">Differential Diagnosis</span></div>
+  <div class="card-body">
+    <div class="q-text">Answer all clinical history questions — then click Analyze</div>
+    <div class="hint hint-purple">💡 Answer based on witness account and patient history. Defaults to NO. Toggle YES for positive findings.</div>
+    <div class="sec-title">Pre-Event Symptoms</div>`;
+  DIFF_Qs.pre.forEach((q,i)=>html+=makeToggle(q,'pre',i));
+  html+=`<div class="sec-title">During the Event</div>`;
+  DIFF_Qs.during.forEach((q,i)=>html+=makeToggle(q,'during',i));
+  html+=`<div class="sec-title">Post-Event Findings</div>`;
+  DIFF_Qs.post.forEach((q,i)=>html+=makeToggle(q,'post',i));
+  html+=`<div class="sec-title">Background History</div>`;
+  DIFF_Qs.hx.forEach((q,i)=>html+=makeToggle(q,'hx',i));
+  html+=`<div class="btn-grp" style="margin-top:16px">
+    <button class="btn btn-purple" onclick="diffAnalyze()">🔍 Analyze Differential →</button>
+  </div></div></div>`;
+  MB().innerHTML=html;scrollT();}
+function makeToggle(q,sec,i){
+  return `<div class="chk-item" id="d-${sec}-${i}">
+    <div><div class="chk-label">${q.l}</div><div class="chk-sub" style="color:var(--gray);font-size:.75rem">${q.s}</div></div>
+    <div class="chk-btns">
+      <button class="chk-btn y" id="dy-${sec}-${i}" onclick="diffTog('${q.k}','${sec}',${i},true)">Yes</button>
+      <button class="chk-btn n active" id="dn-${sec}-${i}" onclick="diffTog('${q.k}','${sec}',${i},false)">No</button>
+    </div></div>`;}
+function diffTog(k,sec,i,v){
+  diffA[k]=v;
+  document.getElementById('dy-'+sec+'-'+i).className='chk-btn y'+(v?' active':'');
+  document.getElementById('dn-'+sec+'-'+i).className='chk-btn n'+(!v?' active':'');
+  document.getElementById('d-'+sec+'-'+i).className='chk-item'+(v?' selected-yes':'');}
+function diffAnalyze(){
+  const a=k=>diffA[k]===true, na=k=>diffA[k]!==true;
+  const sc={sz:0,sy:0,pn:0,bm:0};
+  if(a('olfaura'))sc.sz+=2;if(a('epiaura'))sc.sz+=2;if(a('tonicclonic'))sc.sz+=2;
+  if(a('eyedev'))sc.sz+=2;if(a('bitelat'))sc.sz+=3;if(a('incon'))sc.sz+=2;
+  if(a('pictal'))sc.sz+=2;if(a('pict5'))sc.sz+=2;if(a('fatigue'))sc.sz+=1;
+  if(a('cryout'))sc.sz+=1;if(a('injury'))sc.sz+=1;if(na('eyesclosed'))sc.sz+=1;
+  if(a('lightheaded'))sc.sy+=3;if(a('nausea'))sc.sy+=2;if(a('palpitations'))sc.sy+=2;
+  if(a('standing'))sc.sy+=3;if(a('brief'))sc.sy+=2;if(a('rapid'))sc.sy+=3;
+  if(na('pictal'))sc.sy+=2;if(a('cardiac'))sc.sy+=2;if(a('bitetip'))sc.sy+=2;if(na('incon'))sc.sy+=1;
+  if(a('stress'))sc.pn+=3;if(a('variable'))sc.pn+=3;if(a('pelvic'))sc.pn+=2;
+  if(a('eyesclosed'))sc.pn+=3;if(a('resist'))sc.pn+=3;if(a('preserved'))sc.pn+=2;
+  if(na('pictal'))sc.pn+=2;if(a('psych'))sc.pn+=2;if(a('bitetip'))sc.pn+=1;if(na('incon'))sc.pn+=1;
+  if(a('visaura'))sc.bm+=2;if(a('bsaura'))sc.bm+=4;if(a('headache'))sc.bm+=3;
+  if(a('migraine'))sc.bm+=2;if(na('unconscious'))sc.bm+=2;if(na('pictal'))sc.bm+=2;if(na('incon'))sc.bm+=1;
+  const mx=Math.max(sc.sz,sc.sy,sc.pn,sc.bm,1);
+  const pct=v=>Math.round(v/mx*100);
+  const labels=[['Epileptic Seizure',sc.sz,pct(sc.sz),'bar-blue'],['Syncope',sc.sy,pct(sc.sy),'bar-orange'],
+    ['PNES (Pseudo-seizure)',sc.pn,pct(sc.pn),'bar-purple'],['Basilar Migraine',sc.bm,pct(sc.bm),'bar-teal']];
+  labels.sort((a,b)=>b[1]-a[1]);
+  const top=labels[0][0];
+  const topKey=top.includes('Seizure')&&!top.includes('PNES')?'sz':top.includes('Syncope')?'sy':top.includes('PNES')?'pn':'bm';
+  const wkups={sz:`<ul><li>EEG within 24–48 hours (sleep-deprived increases yield)</li>
+    <li>MRI brain — epilepsy protocol</li>
+    <li>Labs: electrolytes, glucose, CBC</li>
+    <li>Consider video-EEG if diagnosis uncertain</li>
+    <li>Consider AED based on results and recurrence risk</li></ul>`,
+    sy:`<ul><li>ECG — rule out arrhythmia, prolonged QT, Brugada</li>
+    <li>Orthostatic blood pressure measurement</li>
+    <li>Consider Holter monitor or implantable loop recorder</li>
+    <li>Echocardiogram if structural disease suspected</li>
+    <li>Cardiology consultation if cardiac etiology suspected</li></ul>`,
+    pn:`<div class="note-box">⚠️ AVOID treating as epilepsy until confirmed. 10–30% of PNES patients also have comorbid epilepsy.</div>
+    <ul><li>Video-EEG monitoring — GOLD STANDARD</li>
+    <li>EEG to rule out underlying epilepsy</li>
+    <li>Psychiatric evaluation</li>
+    <li>Psychological therapy (CBT)</li></ul>`,
+    bm:`<ul><li>MRI brain — rule out posterior fossa lesion</li>
+    <li>EEG — usually normal between attacks</li>
+    <li>Consider migraine prophylaxis</li>
+    <li>Neurology consultation</li>
+    <li>Avoid vasoconstrictors (triptans) — use with caution</li></ul>`};
+  MB().innerHTML=`
+  <button class="btn-back" onclick="nav('home')">← Home</button>
+  <div class="res-card res-info">
+    <div class="res-hdr"><div class="big-icon">📊</div>
+    <div class="cat-lbl">Differential Analysis</div>
+    <h2>Most Likely: ${top}</h2></div>
+    <div class="res-body">
+      <div class="sec-title">Likelihood Scores</div>
+      ${labels.map(([l,s,p,c])=>`<div class="score-bar-wrap">
+        <div class="score-bar-label"><span>${l}</span><span>${s} pts (${p}%)</span></div>
+        <div class="score-bar-track"><div class="score-bar-fill ${c}" style="width:${p}%">${p>15?p+'%':''}</div></div>
+      </div>`).join('')}
+      <div class="sec-title">Recommended Workup</div>
+      ${wkups[topKey]}
+      <div class="sec-title">Key Discriminating Features</div>
+      <ul>
+        <li><b>Seizure vs Syncope:</b> Syncope = brief, lightheadedness prodrome, rapid recovery. Seizure = postictal confusion, lateral tongue bite, incontinence</li>
+        <li><b>Tongue bite location:</b> LATERAL = Seizure | TIP = Syncope</li>
+        <li><b>Eyes:</b> OPEN/deviated = Seizure | CLOSED = PNES | upward rolling = Syncope</li>
+        <li><b>Seizure vs PNES:</b> PNES = eyes closed, variable movements, pelvic thrusting, resists examination, no postictal confusion</li>
+        <li><b>Seizure vs Basilar Migraine:</b> BM = prominent brainstem symptoms, followed by occipital headache, migraine history</li>
+        <li><b>Gold standard for PNES:</b> Video-EEG monitoring during a clinical event</li>
+      </ul>
+      <div class="sec-title">Comparison Table</div>
+      <div style="overflow-x:auto"><table style="width:100%;font-size:.8rem;border-collapse:collapse;margin-top:4px">
+        <thead><tr style="background:var(--gray-l)">${['Feature','Seizure','Syncope','PNES','Basilar M.'].map(h=>`<th style="padding:7px 8px;text-align:left;border-bottom:2px solid var(--border)">${h}</th>`).join('')}</tr></thead>
+        <tbody>${[['Prodrome','Aura','Lightheaded','Variable','Brainstem Sx'],
+          ['Duration','1–3 min','< 1 min','Variable','Minutes–hrs'],
+          ['Motor','Tonic-clonic','None/minor','Variable','None'],
+          ['Eyes','Open/deviated','Upward rolling','Closed','Normal'],
+          ['Tongue bite','Lateral','Tip','Rare','No'],
+          ['Incontinence','Common','Rare','Rare','No'],
+          ['Post-event','Confusion','Rapid clear','Normal','Headache'],
+          ['EEG','Abnormal','Normal','Normal','Normal'],
+        ].map((row,ri)=>`<tr style="background:${ri%2?'#fff':'#f9fafb'}">${row.map(c=>`<td style="padding:6px 8px;border-bottom:1px solid var(--border)">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+      </table></div>
+    </div></div>
+  <button class="btn-restart" onclick="nav('home')">← Back to Home</button>`;}
+
+// ═══════════════ TOOL 4: AED DECISION ═══════════════
+const AED_RF=[
+  {k:'highrisk',l:'High-Risk Occupation',s:'Pilot, driver, operating machinery, working at heights, swimming',w:1},
+  {k:'neuro',l:'Abnormal Neurological Examination',s:'Focal deficits, developmental delay, cognitive impairment',w:3},
+  {k:'family',l:'First-Degree Family History of Epilepsy',s:'Parent, sibling, or child with epilepsy',w:2},
+  {k:'febrile',l:'History of Febrile Convulsions in Childhood',s:'Especially if prolonged or multiple',w:1},
+  {k:'sleep',l:'Seizure Occurred During Sleep',s:'Sleep-related seizures have higher recurrence risk',w:2},
+  {k:'postpartum',l:'Seizure Occurred Postpartum (within 6 weeks after delivery)',s:'Rule out PRES, eclampsia, venous sinus thrombosis',w:2},
+  {k:'pregnancy',l:'Seizure Occurred During Pregnancy',s:'Rule out eclampsia first',w:2},
+  {k:'eeg',l:'Abnormal EEG with Epileptiform Discharges',s:'Spikes, sharp waves, spike-wave complexes',w:3},
+  {k:'lesion',l:'Structural Brain Lesion on Imaging',s:'Tumor, stroke, trauma, malformation, infection',w:3},
+  {k:'nocturnal',l:'All Seizures are Always Nocturnal Only',s:'May have different treatment approach',w:1},
+];
+let aedRF={};
+function aedReset(){aedRF={};aedStep1();}
+function aedStep1(){
+  MB().innerHTML=`<button class="btn-back" onclick="nav('home')">← Home</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🔍</span><span class="cat">First Seizure Confirmation</span></div>
+  <div class="card-body">
+    <div class="q-text">Is this truly a <b>first unprovoked seizure</b>?</div>
+    <div class="hint hint-orange">💡 This tool is for FIRST seizures only. For recurrent seizures, AED therapy is typically already indicated.</div>
+    <div class="btn-grp">
+      <button class="btn btn-yes" onclick="aedStep2()">✓ Yes — First Unprovoked Seizure</button>
+      <button class="btn btn-no" onclick="aedNotFirst()">✗ No — Recurrent Seizure</button>
+    </div>
+  </div></div>`;scrollT();}
+function aedNotFirst(){
+  MB().innerHTML=`<button class="btn-back" onclick="aedStep1()">← Back</button>
+  <div class="res-card res-urgent">
+    <div class="res-hdr"><div class="big-icon">💊</div>
+    <div class="cat-lbl">Recurrent Seizures</div>
+    <h2>AED Therapy Is Indicated</h2></div>
+    <div class="res-body">
+      <ul><li>Recurrent unprovoked seizures = epilepsy diagnosis</li>
+      <li>AED therapy is standard of care</li>
+      <li>Use the AED Selection Guide below for drug choice</li>
+      <li>Neurology referral within 1–2 weeks</li></ul>
+      ${aedDrugTable()}
+    </div></div>
+  <button class="btn-restart" onclick="nav('home')">← Back to Home</button>`;}
+function aedStep2(){
+  let html=`<button class="btn-back" onclick="aedStep1()">← Back</button>
+  <div class="card"><div class="card-hdr"><span class="icon">📋</span><span class="cat">Recurrence Risk Factors</span></div>
+  <div class="card-body">
+    <div class="q-text">Select <b>all applicable risk factors</b> for seizure recurrence</div>
+    <div class="hint hint-orange">💡 Tap each factor to toggle it ON (orange) or OFF. Score is calculated automatically.</div>`;
+  AED_RF.forEach((r,i)=>{
+    html+=`<div class="rf-item" id="rf-${i}" onclick="aedTogRF('${r.k}',${i})">
+      <div><div class="rf-label">${r.l}</div><div class="rf-sub">${r.s}</div></div>
+      <div class="rf-weight">+${r.w} pt${r.w>1?'s':''}</div>
+    </div>`;});
+  html+=`<div class="btn-grp" style="margin-top:14px">
+    <button class="btn btn-orange" onclick="aedResults()">Calculate Risk →</button>
+  </div></div></div>`;
+  MB().innerHTML=html;scrollT();}
+function aedTogRF(k,i){
+  aedRF[k]=!aedRF[k];
+  document.getElementById('rf-'+i).className='rf-item'+(aedRF[k]?' active':'');}
+function aedDrugTable(){return `<div class="sec-title">AED Selection by Seizure Type</div>
+  <ul><li><b>Focal / Partial seizures:</b> Levetiracetam (preferred), Lamotrigine, Carbamazepine</li>
+  <li><b>Generalised seizures:</b> Valproate, Levetiracetam, Lamotrigine</li>
+  <li><b>JME (Juvenile Myoclonic):</b> Valproate, Levetiracetam — avoid carbamazepine</li>
+  <li><b>Absence seizures:</b> Ethosuximide, Valproate, Lamotrigine</li>
+  <li><b>Unknown type:</b> Levetiracetam, Valproate</li></ul>
+  <div class="sec-title">First-Line Options</div>
+  <ul><li><b>Levetiracetam (Keppra)</b> — 500 mg BID (can titrate to 1500 mg BID). No interactions, no lab monitoring. Side effects: behavioral changes, drowsiness.</li>
+  <li><b>Lamotrigine</b> — Start 25 mg/day, titrate slowly. Good cognitive profile. Caution: risk of serious rash.</li>
+  <li><b>Valproate</b> — 500–1000 mg BID. Broad spectrum. Caution: weight gain, teratogenic, liver monitoring needed. AVOID in women of childbearing potential if possible.</li>
+  <li><b>Carbamazepine</b> — 200–400 mg BID. Effective for focal seizures. Caution: drug interactions, CBC monitoring needed.</li></ul>
+  <div class="sec-title">Pregnancy-Safe Options</div>
+  <ul><li><b>Levetiracetam</b> — Preferred in pregnancy. Good safety profile. Monitor levels — may need dose increase.</li>
+  <li><b>Lamotrigine</b> — Acceptable. Levels decrease in pregnancy — monitor closely and adjust.</li>
+  <li><b>AVOID Valproate</b> — High teratogenicity. Neural tube defects, cognitive effects in offspring.</li></ul>`;}
+function aedResults(){
+  const pos=AED_RF.filter(r=>aedRF[r.k]);
+  const score=pos.reduce((s,r)=>s+r.w,0);
+  const strong=['neuro','eeg','lesion'].some(k=>aedRF[k]);
+  const preg=aedRF['pregnancy'],pp=aedRF['postpartum'];
+  let rl,rr,col,icon,title,rec='';
+  if(score>=5||strong){rl='HIGH';rr='>50%';col='urgent';icon='💊';title='AED Therapy Recommended';
+    rec=`<div class="success-box">✅ Start anticonvulsant medication. High recurrence risk warrants treatment.</div>
+    <ul><li>Discuss AED options with patient — shared decision-making</li>
+    <li>Neurology follow-up within 1–2 weeks</li>
+    <li>Driving restrictions per local regulations (typically 3–12 months seizure-free)</li></ul>`;}
+  else if(score>=3){rl='MODERATE';rr='30–50%';col='watch';icon='⚖️';title='Individualized Decision Required';
+    rec=`<div class="note-box">⚖️ Moderate recurrence risk. Decision must be individualized with patient.</div>
+    <ul><li>Discuss risks of recurrent seizure (injury, driving, work) vs. medication side effects</li>
+    <li>Option A: Start AED now — especially if high-risk occupation or strong patient preference</li>
+    <li>Option B: Defer AED with close neurology follow-up</li></ul>`;}
+  else if(score>=1){rl='LOW-MODERATE';rr='15–30%';col='routine';icon='👀';title='Observation or Individualized Decision';
+    rec=`<div class="hint hint-blue">📋 Low-moderate recurrence risk. AED not mandatory — discuss with patient.</div>
+    <ul><li>Observation without AED is reasonable</li>
+    <li>Close neurology follow-up</li>
+    <li>Educate patient about seizure precautions and warning signs</li></ul>`;}
+  else{rl='LOW';rr='< 15%';col='good';icon='✅';title='AED Not Routinely Indicated';
+    rec=`<div class="success-box">✅ Low recurrence risk. AED therapy not recommended at this stage.</div>
+    <ul><li>Observation without AED is appropriate</li>
+    <li>Return to ER if another seizure occurs</li>
+    <li>Consider EEG and MRI outpatient</li></ul>`;}
+  const pillClass={'urgent':'pill-red','watch':'pill-orange','routine':'pill-yellow','good':'pill-green'}[col];
+  MB().innerHTML=`
+  <button class="btn-back" onclick="aedStep2()">← Back</button>
+  ${preg?`<div class="alert-box">🤰 <b>Pregnancy:</b> Rule out eclampsia first (check BP, proteinuria). Preferred AEDs: Levetiracetam, Lamotrigine. AVOID Valproate. OB/GYN + Neurology consult required.</div>`:''}
+  ${pp?`<div class="alert-box">🤱 <b>Postpartum Seizure:</b> Differential includes PRES, eclampsia (up to 6 weeks postpartum), venous sinus thrombosis, Sheehan's syndrome with hyponatremia. MRI with venography, BP monitoring, electrolytes. Consider anticoagulation if VST suspected.</div>`:''}
+  <div class="res-card res-${col}">
+    <div class="res-hdr"><div class="big-icon">${icon}</div>
+    <div class="cat-lbl">First Seizure — AED Decision</div>
+    <h2>${title}</h2></div>
+    <div class="res-body">
+      <div class="sec-title">Risk Summary</div>
+      <ul>
+        <li>Total Risk Score: <b>${score} points</b> &nbsp; <span class="score-pill ${pillClass}">${rl} RISK</span></li>
+        <li>Estimated 2-year recurrence risk: <b>${rr}</b></li>
+        ${strong?`<li>⚠️ Strong indicator present (abnormal neuro exam / EEG / structural lesion)</li>`:''}
+        ${pos.length>0?`<li>Active risk factors: ${pos.map(r=>r.l).join(', ')}</li>`:'<li>No risk factors identified</li>'}
+      </ul>
+      ${rec}
+      ${aedDrugTable()}
+      <div class="sec-title">Safety &amp; Lifestyle</div>
+      <ul><li>Avoid sleep deprivation, excessive alcohol, known triggers</li>
+      <li>No swimming alone, no working at heights or heavy machinery</li>
+      <li>Shower instead of bath (or supervised)</li>
+      <li>Driving restrictions — check local regulations; typically 3–12 months seizure-free required</li></ul>
+      <div class="sec-title">Follow-Up</div>
+      <ul><li>Neurology appointment within 1–4 weeks</li>
+      <li>If on AED: check drug levels as indicated</li>
+      <li>Repeat EEG in 3–6 months or sooner if seizures recur</li>
+      <li>MRI if not already performed and clinically indicated</li></ul>
+    </div></div>
+  <button class="btn-restart" onclick="nav('home')">← Back to Home</button>`;}
+
+renderHome();
+
+</script>
+</body>
+</html>
