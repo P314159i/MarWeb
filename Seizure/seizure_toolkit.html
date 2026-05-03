@@ -48,6 +48,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 .tool-card:hover{transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.16)}
 .tool-card.t1{border-top-color:var(--blue)}.tool-card.t2{border-top-color:var(--green)}
 .tool-card.t3{border-top-color:var(--purple)}.tool-card.t4{border-top-color:var(--orange)}
+.tool-card.t5{border-top-color:var(--teal)}
+.tool-card.t5-full{border-top-color:var(--teal);grid-column:1/-1}
 .tc-icon{font-size:1.9rem;margin-bottom:8px}
 .tc-title{font-size:.95rem;font-weight:700;color:var(--blue-d);margin-bottom:4px}
 .tc-desc{font-size:.8rem;color:var(--gray);line-height:1.4}
@@ -75,6 +77,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 .btn-yes{background:var(--green);color:#fff}.btn-no{background:var(--red);color:#fff}
 .btn-primary{background:var(--blue);color:#fff}.btn-red{background:var(--red);color:#fff}
 .btn-orange{background:var(--orange);color:#fff}.btn-purple{background:var(--purple);color:#fff}
+.btn-teal{background:var(--teal);color:#fff}
 .btn-secondary{background:var(--purple-l);color:var(--purple);border:2px solid var(--purple)}
 .btn-secondary:hover{background:var(--purple);color:#fff}
 .btn-back{display:flex;align-items:center;gap:6px;background:#fff;border:2px solid var(--border);
@@ -111,6 +114,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 .res-watch .res-hdr{background:var(--yellow-l);border-bottom:5px solid var(--yellow)}
 .res-info .res-hdr{background:var(--purple-l);border-bottom:5px solid var(--purple)}
 .res-orange .res-hdr{background:var(--orange-l);border-bottom:5px solid var(--orange)}
+.res-teal .res-hdr{background:var(--teal-l);border-bottom:5px solid var(--teal)}
 .res-hdr{padding:18px 22px}
 .res-hdr .big-icon{font-size:1.9rem;margin-bottom:5px}
 .res-hdr .cat-lbl{font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;opacity:.65;margin-bottom:3px}
@@ -118,6 +122,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 .res-urgent h2{color:var(--red)}.res-routine h2{color:var(--blue)}
 .res-good h2{color:var(--green)}.res-watch h2{color:var(--yellow)}
 .res-info h2{color:var(--purple)}.res-orange h2{color:var(--orange)}
+.res-teal h2{color:var(--teal)}
 .res-body{padding:18px 22px;background:#fff}
 .res-body ul{list-style:none}
 .res-body li{padding:7px 0;border-bottom:1px solid var(--border);font-size:.9rem;
@@ -127,12 +132,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
 .res-urgent li::before{color:var(--red)}.res-routine li::before{color:var(--blue)}
 .res-good li::before{color:var(--green)}.res-watch li::before{color:var(--yellow)}
 .res-info li::before{color:var(--purple)}.res-orange li::before{color:var(--orange)}
+.res-teal li::before{color:var(--teal)}
 .note-box{background:var(--yellow-l);border:1px solid #fcd34d;border-radius:8px;
   padding:11px 14px;font-size:.84rem;color:#78350f;margin-bottom:10px}
 .alert-box{background:var(--red-l);border:1px solid #fca5a5;border-radius:8px;
   padding:11px 14px;font-size:.84rem;color:var(--red-d);margin-bottom:10px}
 .success-box{background:var(--green-l);border:1px solid #86efac;border-radius:8px;
   padding:11px 14px;font-size:.84rem;color:#14532d;margin-bottom:10px}
+.teal-box{background:var(--teal-l);border:1px solid #67e8f9;border-radius:8px;
+  padding:11px 14px;font-size:.84rem;color:#164e63;margin-bottom:10px}
 /* Score bar */
 .score-bar-wrap{margin-bottom:10px}
 .score-bar-label{display:flex;justify-content:space-between;font-size:.84rem;margin-bottom:4px}
@@ -168,7 +176,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     <div style="font-size:2.2rem;margin-bottom:7px">🧠</div>
     <h1>Seizure Toolkit</h1>
     <p>CT &amp; EEG Indications · Post-Seizure Control · Differential Diagnosis · AED Decision</p>
-    <span class="badge">Doctor Assistant · 4 Clinical Tools</span>
+    <span class="badge">Doctor Assistant · 5 Clinical Tools</span>
   </div>
 
   <div class="disclaimer">
@@ -198,7 +206,8 @@ function SP(c,t){document.getElementById('prog-wrap').style.display='block';
 function scrollT(){window.scrollTo({top:0,behavior:'smooth'});}
 function nav(p){APP=p;HB().innerHTML='';document.getElementById('prog-wrap').style.display='none';
   if(p==='home')renderHome();else if(p==='ct')ctReset();
-  else if(p==='check')checkReset();else if(p==='diff')diffReset();else aedReset();
+  else if(p==='check')checkReset();else if(p==='diff')diffReset();
+  else if(p==='aed')aedReset();else treatReset();
   scrollT();}
 
 // ═══════════════ HOME ═══════════════
@@ -206,6 +215,11 @@ function renderHome(){
   document.getElementById('prog-wrap').style.display='none';
   MB().innerHTML=`
   <div class="tool-grid">
+    <div class="tool-card t4" onclick="nav('aed')">
+      <div class="tc-icon">💊</div>
+      <div class="tc-title">Antiepileptic Drug in patient with First time Seizure</div>
+      <div class="tc-desc">Decide whether to start anticonvulsant therapy after a first unprovoked seizure.</div>
+    </div>
     <div class="tool-card t1" onclick="nav('ct')">
       <div class="tc-icon">🩻</div>
       <div class="tc-title">CT &amp; EEG Indications</div>
@@ -221,10 +235,10 @@ function renderHome(){
       <div class="tc-title">Differential Diagnosis</div>
       <div class="tc-desc">Distinguish Seizure, Syncope, PNES, and Basilar Migraine from clinical history.</div>
     </div>
-    <div class="tool-card t4" onclick="nav('aed')">
-      <div class="tc-icon">💊</div>
-      <div class="tc-title">AED Decision Tool</div>
-      <div class="tc-desc">Decide whether to start anticonvulsant therapy after a first unprovoked seizure.</div>
+    <div class="tool-card t5-full" onclick="nav('treat')">
+      <div class="tc-icon">🏥</div>
+      <div class="tc-title">Acute Seizure Treatment Protocol</div>
+      <div class="tc-desc">Time-based drug escalation protocol — benzodiazepines, second-line agents, refractory management with weight-based dosing.</div>
     </div>
   </div>`;}
 
@@ -791,6 +805,183 @@ function aedResults(){
       <li>If on AED: check drug levels as indicated</li>
       <li>Repeat EEG in 3–6 months or sooner if seizures recur</li>
       <li>MRI if not already performed and clinically indicated</li></ul>
+    </div></div>
+  <button class="btn-restart" onclick="nav('home')">← Back to Home</button>`;}
+
+// ═══════════════ TOOL 5: ACUTE SEIZURE TREATMENT PROTOCOL ═══════════════
+let treatS={},treatStep=1;
+function treatReset(){treatS={};treatStep=1;treatRender();}
+function treatRender(){SP(treatStep,4);
+  if(treatStep===1)treatS1();else if(treatStep===2)treatS2();
+  else if(treatStep===3)treatS3();else treatResults();}
+function treatS1(){MB().innerHTML=`<button class="btn-back" onclick="nav('home')">← Home</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🏥</span><span class="cat">Seizure Status</span></div>
+  <div class="card-body">
+    <div class="q-text">Is the seizure <b>currently active / ongoing</b>?</div>
+    <div class="hint hint-red">🚨 Treatment must begin at 5 minutes — do not wait for spontaneous cessation.</div>
+    <div class="btn-grp">
+      <button class="btn btn-red" onclick="treatActive(true)">⚡ Yes — Actively Seizing</button>
+      <button class="btn btn-yes" onclick="treatActive(false)">✓ No — Seizure Has Stopped</button>
+    </div>
+  </div></div>`;scrollT();}
+function treatActive(v){treatS.active=v;treatStep=2;treatRender();}
+function treatS2(){MB().innerHTML=`<button class="btn-back" onclick="treatS1()">← Back</button>
+  <div class="card"><div class="card-hdr"><span class="icon">⏱️</span><span class="cat">Seizure Duration</span></div>
+  <div class="card-body">
+    <div class="q-text">Total duration of seizure activity in minutes?</div>
+    <div class="hint hint-red">💡 Status Epilepticus = ≥ 5 min continuous OR ≥ 2 seizures without full recovery between them.</div>
+    <div class="inp-group"><label>Duration (minutes)</label>
+      <input type="number" id="tr-dur" min="0" placeholder="e.g. 8"></div>
+    <div class="btn-grp"><button class="btn btn-red" onclick="treatNext2()">Continue →</button></div>
+  </div></div>`;scrollT();}
+function treatNext2(){const d=parseFloat(document.getElementById('tr-dur').value);
+  if(isNaN(d)||d<0){alert('Enter a valid number.');return;}
+  treatS.dur=d;treatStep=3;treatRender();}
+function treatS3(){MB().innerHTML=`<button class="btn-back" onclick="treatS2()">← Back</button>
+  <div class="card"><div class="card-hdr"><span class="icon">🧑‍⚕️</span><span class="cat">Patient Details</span></div>
+  <div class="card-body">
+    <div class="q-text">Enter patient details for weight-based dosing</div>
+    <div class="inp-group"><label>Weight (kg)</label>
+      <input type="number" id="tr-wt" min="1" placeholder="e.g. 70"></div>
+    <div class="inp-group"><label>Age (years)</label>
+      <input type="number" id="tr-age" min="0" placeholder="e.g. 35"></div>
+    <div class="sec-title">IV Access Available?</div>
+    <div class="btn-grp" style="margin-bottom:16px">
+      <button class="btn btn-yes" id="triv-y" onclick="treatSetIV(true)">✓ Yes — IV Access</button>
+      <button class="btn btn-orange" id="triv-n" onclick="treatSetIV(false)">✗ No IV — Alternate Route</button>
+    </div>
+    <div class="btn-grp"><button class="btn btn-teal" onclick="treatNext3()">Get Protocol →</button></div>
+  </div></div>`;scrollT();}
+function treatSetIV(v){treatS.iv=v;
+  document.getElementById('triv-y').className='btn btn-yes'+(v?' active':'');
+  document.getElementById('triv-n').className='btn btn-orange'+(!v?' active':'');}
+function treatNext3(){
+  const wt=parseFloat(document.getElementById('tr-wt').value);
+  const age=parseFloat(document.getElementById('tr-age').value);
+  if(isNaN(wt)||wt<=0||isNaN(age)||age<0){alert('Enter valid weight and age.');return;}
+  if(treatS.iv===undefined){alert('Please select IV access status.');return;}
+  treatS.wt=wt;treatS.age=age;treatStep=4;treatRender();}
+function treatResults(){
+  const {active,dur,wt,age,iv}=treatS;
+  const peds=age<18;
+  const se=dur>=5;
+  const refr=dur>=20;
+  const superRefr=dur>=60;
+  const lorazepamIV=Math.min(peds?0.1*wt:4,4).toFixed(1);
+  const diazepamIV=Math.min(peds?0.2*wt:10,10).toFixed(1);
+  const midazIV=Math.min(peds?0.15*wt:10,10).toFixed(1);
+  const midazIM=Math.min(peds?(wt>=40?10:0.2*wt):10,10).toFixed(1);
+  const midazBuc=Math.min(peds?0.5*wt:10,10).toFixed(1);
+  const midazNasal=Math.min(peds?0.3*wt:10,10).toFixed(1);
+  const diazRec=Math.min(peds?0.5*wt:10,20).toFixed(1);
+  const leveIV=Math.min(peds?60*wt:3000,3000).toFixed(0);
+  const vpaIV=Math.min(peds?40*wt:3000,3000).toFixed(0);
+  const phenytoin=Math.min(peds?20*wt:1500,1500).toFixed(0);
+  const phenobarb=Math.min(peds?20*wt:1000,1000).toFixed(0);
+  let col,icon,title;
+  if(superRefr){col='urgent';icon='🚨';title='SUPER-REFRACTORY STATUS EPILEPTICUS (> 60 min)';}
+  else if(refr){col='urgent';icon='🚨';title='REFRACTORY STATUS EPILEPTICUS (20–60 min)';}
+  else if(se){col='urgent';icon='⚡';title='STATUS EPILEPTICUS — TREAT IMMEDIATELY (≥ 5 min)';}
+  else if(active){col='watch';icon='⚠️';title='ACTIVE SEIZURE — Monitor & Prepare to Treat';}
+  else{col='teal';icon='📋';title='Seizure Controlled — Post-Ictal Management';}
+  MB().innerHTML=`
+  <button class="btn-back" onclick="treatS3()">← Back</button>
+  <div class="res-card res-${col}">
+    <div class="res-hdr"><div class="big-icon">${icon}</div>
+    <div class="cat-lbl">Acute Treatment Protocol</div>
+    <h2>${title}</h2></div>
+    <div class="res-body">
+      <div class="sec-title">Patient Summary</div>
+      <ul>
+        <li>Weight: <b>${wt} kg</b> | Age: <b>${age} yrs</b> — <b>${peds?'Pediatric':'Adult'}</b></li>
+        <li>Duration: <b>${dur} minutes</b> | IV Access: <b>${iv?'Yes':'No'}</b></li>
+        <li>Status: <b>${superRefr?'Super-Refractory SE':refr?'Refractory SE':se?'Status Epilepticus':'< 5 min Seizure'}</b></li>
+      </ul>
+
+      <div class="sec-title">⚡ Immediate General Measures — All Patients</div>
+      <ul>
+        <li>Lateral decubitus (recovery position) — prevent aspiration</li>
+        <li>Airway: check patency — do NOT insert objects in mouth</li>
+        <li>O₂ via mask/nasal cannula — target SpO₂ > 94%</li>
+        <li>Continuous monitoring: BP, HR, SpO₂, RR, temperature</li>
+        <li>Bedside glucose immediately — treat if &lt; 3.5 mmol/L</li>
+        <li>IV access — obtain as soon as possible</li>
+        <li>Labs: electrolytes, CBC, tox screen, AED levels if applicable</li>
+        ${se?'<li>⚠️ Prepare for intubation — airway may be compromised in prolonged SE</li>':''}
+      </ul>
+
+      ${active||se?`
+      <div class="alert-box">🚨 TIME IS BRAIN — Start pharmacological treatment now.</div>
+
+      <div class="sec-title">⏱️ Phase 1 — 0–5 min: First-Line Benzodiazepine</div>
+      ${iv?`<ul>
+        <li><b>Lorazepam IV — ${lorazepamIV} mg</b> over 2 min. May repeat once after 5 min if no response. (${peds?'0.1 mg/kg, max 4 mg':'4 mg fixed'})</li>
+        <li><b>Diazepam IV — ${diazepamIV} mg</b> at ≤ 5 mg/min. May repeat once after 5 min. (${peds?'0.2 mg/kg, max 10 mg':'10 mg fixed'})</li>
+        <li><b>Midazolam IV — ${midazIV} mg</b> over 2 min if above unavailable. (${peds?'0.15 mg/kg':'10 mg fixed'})</li>
+      </ul>`:`<ul>
+        <li><b>Midazolam IM — ${midazIM} mg IM</b> — PREFERRED if no IV. (${peds?'0.2 mg/kg, max 10 mg':'10 mg fixed'})</li>
+        <li><b>Midazolam Buccal — ${midazBuc} mg</b> between cheek and gum. (${peds?'0.5 mg/kg':'10 mg'})</li>
+        <li><b>Midazolam Intranasal — ${midazNasal} mg</b> (split between nostrils). (${peds?'0.3 mg/kg':'10 mg'})</li>
+        <li><b>Diazepam Rectal — ${diazRec} mg PR</b> if all else unavailable.</li>
+        <li>⚡ Establish IV access simultaneously while giving alternate route</li>
+      </ul>`}
+
+      <div class="sec-title">⏱️ Phase 2 — 5–20 min: Second-Line (if no response to benzo)</div>
+      <ul>
+        <li><b>Levetiracetam IV — ${leveIV} mg</b> over 5–15 min. (${peds?'60 mg/kg, max 3000 mg':'3000 mg'}). First choice: no monitoring, no interactions.</li>
+        <li><b>Valproate IV — ${vpaIV} mg</b> over 5–10 min. (${peds?'40 mg/kg, max 3000 mg':'3000 mg'}). Avoid: liver disease, pregnancy, mitochondrial disorders.</li>
+        <li><b>Lacosamide IV — 400 mg</b> over 15–60 min (adults; limited pediatric data). Useful if cardiac-safe profile needed.</li>
+        <li><b>Phenytoin IV — ${phenytoin} mg</b> at ≤ 50 mg/min with ECG monitoring. (${peds?'20 mg/kg':'15–20 mg/kg'}). Risk: hypotension, arrhythmia.</li>
+        <li><b>Phenobarbital IV — ${phenobarb} mg</b> at ≤ 100 mg/min. (${peds?'20 mg/kg, max 1000 mg':'1000 mg'}). Caution: respiratory depression.</li>
+      </ul>
+
+      ${refr?`<div class="alert-box">🚨 REFRACTORY SE — ICU transfer required. Continuous EEG monitoring mandatory.</div>
+      <div class="sec-title">⏱️ Phase 3 — 20–60 min: Anesthetic Agents (ICU)</div>
+      <ul>
+        <li><b>Midazolam infusion</b> — 0.2 mg/kg IV bolus → 0.05–2 mg/kg/hr infusion. Titrate to burst suppression on EEG.</li>
+        <li><b>Propofol infusion</b> — 1–2 mg/kg IV bolus → 2–10 mg/kg/hr. Adults only — avoid prolonged use in children (propofol infusion syndrome).</li>
+        <li><b>Thiopental / Pentobarbital</b> — For cases not responding to midazolam or propofol. Requires anaesthesia team.</li>
+        <li>Add/optimize second-line AED while on anesthetic agents</li>
+        <li>Identify and treat underlying cause urgently</li>
+      </ul>`:''}
+
+      ${superRefr?`<div class="alert-box">🚨 SUPER-REFRACTORY SE — Tertiary epilepsy center referral required.</div>
+      <div class="sec-title">⏱️ Phase 4 — > 60 min: Super-Refractory Management</div>
+      <ul>
+        <li><b>Ketamine infusion</b> — 1.5 mg/kg IV bolus → 1.2–7.5 mg/kg/hr. NMDA antagonist — may break refractory SE.</li>
+        <li><b>Immunotherapy</b> — IV methylprednisolone 1 g/day or IVIG 0.4 g/kg/day if autoimmune etiology suspected (anti-NMDAR, LGI1, etc.).</li>
+        <li><b>Ketogenic diet</b> — via NG tube; may be effective in super-refractory SE.</li>
+        <li><b>Hypothermia protocol</b> — Mild therapeutic hypothermia (32–35°C) at specialized centers.</li>
+        <li><b>Neurosurgical intervention</b> — if focal structural lesion is the driver.</li>
+        <li>Comprehensive autoimmune/metabolic/genetic workup</li>
+        <li>Immediate transfer to tertiary epilepsy/neurocritical care center</li>
+      </ul>`:''}
+      `:`
+      <div class="success-box">✅ Seizure has stopped. No acute pharmacological escalation required now.</div>
+      <div class="sec-title">Post-Seizure Management</div>
+      <ul>
+        <li>Monitor for seizure recurrence — clusters are common in the first 24 hours</li>
+        <li>If first seizure: use the <b>AED First Seizure Decision</b> tool for long-term treatment planning</li>
+        <li>If known epilepsy: check AED levels, assess compliance, identify triggers</li>
+        <li>Use the <b>CT &amp; EEG Indications</b> tool for imaging decisions</li>
+        <li>Observe for minimum 4–6 hours before considering discharge</li>
+      </ul>`}
+
+      <div class="sec-title">Treatment Targets</div>
+      <ul>
+        <li>Seizure cessation within 20 minutes of treatment initiation</li>
+        <li>Prevent secondary brain injury: hypoxia, hypoglycemia, hyperthermia, acidosis</li>
+        <li>Identify and treat the underlying cause</li>
+        <li>Prevent recurrence and plan long-term AED regimen</li>
+      </ul>
+
+      <div class="sec-title">When to Call Neurology / ICU</div>
+      <ul>
+        <li>Seizure duration ≥ 5 min — neurology consult immediately</li>
+        <li>No response to benzodiazepine — ICU involvement</li>
+        <li>Refractory or super-refractory SE — neurocritical care team</li>
+        <li>Suspected autoimmune encephalitis — early neurology essential</li>
+      </ul>
     </div></div>
   <button class="btn-restart" onclick="nav('home')">← Back to Home</button>`;}
 

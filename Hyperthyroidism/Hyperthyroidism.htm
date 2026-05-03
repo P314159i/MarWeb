@@ -1,0 +1,180 @@
+function section1(){
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="renderHome()">← Back</button>
+
+<div class="card">
+<div class="title">General Hyperthyroidism Symptoms</div>
+<div class="box">
+Thermal intolerance, tremor, palpitations, sweating, weight loss
+</div>
+
+<button class="yes" onclick="s1_yes()">Yes</button>
+<button class="no" onclick="section1_definite()">No</button>
+</div>
+`;
+}
+
+function s1_yes(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<b>Next Step:</b><br>
+TSH + fT4<br>
+Avoid Biotin 48h<br>
+CBC, AST, ALT, ALP
+</div>
+`;
+}
+
+/* ===== STEP 2 ===== */
+function section1_definite(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<div class="title">Definite Symptoms</div>
+<div class="box">
+Weight loss, AF, menstrual disorder, proximal myopathy
+</div>
+
+<button class="yes" onclick="s1_yes()">Yes</button>
+<button class="no" onclick="section1_thyroiditis()">No</button>
+</div>
+`;
+}
+
+/* ===== STEP 3 ===== */
+function section1_thyroiditis(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<div class="title">Subacute Thyroiditis Symptoms</div>
+<div class="box">
+Neck pain, fever, dysphagia, tender thyroid
+</div>
+
+<button class="yes" onclick="thyroiditis_yes()">Yes</button>
+<button class="no" onclick="section1_ovary()">No</button>
+</div>
+`;
+}
+
+function thyroiditis_yes(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<b>De Quervain suspected</b><br>
+CBC, ESR, CRP, Anti-TPO
+</div>
+`;
+}
+
+/* ===== STEP 4 ===== */
+function section1_ovary(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<div class="title">Ovarian Lesion?</div>
+
+<button class="yes" onclick="ovary_yes()">Yes</button>
+<button class="no" onclick="section1_central()">No</button>
+</div>
+`;
+}
+
+function ovary_yes(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<b>Struma Ovarii suspected</b><br>
+TSH + fT4 + T3
+</div>
+`;
+}
+
+/* ===== STEP 5 ===== */
+function section1_central(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<div class="title">Central Symptoms</div>
+<div class="box">
+Headache, diplopia, blurred vision
+</div>
+
+<button class="yes" onclick="central_yes()">Yes</button>
+<button class="no" onclick="section1_autoimmune()">No</button>
+</div>
+`;
+}
+
+function central_yes(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<b>Central hyperthyroidism suspected</b><br>
+TSH + fT4 + T3
+</div>
+`;
+}
+
+/* ===== STEP 6 ===== */
+function section1_autoimmune(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<div class="title">Autoimmune / Family History</div>
+
+<button class="yes" onclick="graves_yes()">Yes</button>
+<button class="no" onclick="section1_exam()">No</button>
+</div>
+`;
+}
+
+function graves_yes(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<b>Suspect Graves</b><br>
+TSH + fT4 + T3
+</div>
+`;
+}
+
+/* ===== STEP 7 ===== */
+function section1_exam(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<div class="title">Thyroid Nodule?</div>
+
+<button class="yes" onclick="nodule_yes()">Yes</button>
+<button class="no" onclick="section1_af()">No</button>
+</div>
+`;
+}
+
+function nodule_yes(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<b>Order Thyroid Scan</b>
+</div>
+`;
+}
+
+/* ===== STEP 8 ===== */
+function section1_af(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<div class="title">Atrial Fibrillation?</div>
+
+<button class="yes" onclick="af_yes()">Yes</button>
+<button class="no" onclick="go_to_lab()">No</button>
+</div>
+`;
+}
+
+function af_yes(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+EKG + TSH + fT4 + T3
+</div>
+`;
+}
+
+function go_to_lab(){
+document.getElementById("app").innerHTML += `
+<div class="card">
+<b>Proceed to Lab Interpretation</b><br>
+<button class="primary" onclick="section2()">Go to Labs</button>
+</div>
+`;
+}
